@@ -33,7 +33,16 @@ def check_and_init_database():
         if cursor.fetchone() is None:
             init_database()  # 调用真正的初始化函数
         else:
-            print("数据库已存在，无需初始化")
+            # 检查punch_records表是否有leave_status字段
+            cursor.execute("PRAGMA table_info(punch_records)")
+            columns = cursor.fetchall()
+            column_names = [column[1] for column in columns]
+            
+            if 'leave_status' not in column_names:
+                print("更新数据库表结构")
+                init_database()  # 调用初始化函数，添加leave_status字段
+            else:
+                print("数据库已存在且结构完整，无需初始化")
     finally:
         conn.close()
 

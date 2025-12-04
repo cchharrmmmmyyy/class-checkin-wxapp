@@ -19,7 +19,9 @@ Page({
     selectedClass: '', // 当前选择的班级
     classList: [], // 可选班级列表
     showClassPicker: false, // 是否显示班级选择器
-    currentMonitors: [] // 当前班级的班委信息列表（支持多个班委）
+    currentMonitors: [], // 当前班级的班委信息列表（支持多个班委）
+    leaveApplications: [], // 待审批请假申请列表
+    isLoadingLeave: false // 请假申请加载状态
   },
 
   /**
@@ -131,12 +133,13 @@ Page({
 
     this.setData({ isLoading: true });
     
-    // 同时获取班级打卡记录和班委信息
+    // 同时获取班级打卡记录、班委信息和请假申请
     Promise.all([
       auth.getClassPunchRecords(this.data.selectedClass),
-      this.getClassMonitor(this.data.selectedClass)
+      this.getClassMonitor(this.data.selectedClass),
+      this.getLeaveApplications(this.data.selectedClass)
     ])
-      .then(([recordsRes, monitorRes]) => {
+      .then(([recordsRes, monitorRes, leaveRes]) => {
         // 处理打卡记录
         if (recordsRes.success) {
           const records = recordsRes.data;
@@ -164,6 +167,15 @@ Page({
           console.error('获取班委信息失败:', monitorRes.message);
         }
         
+        // 处理请假申请
+        if (leaveRes.success) {
+          this.setData({
+            leaveApplications: leaveRes.data || []
+          });
+        } else {
+          console.error('获取请假申请失败:', leaveRes.message);
+        }
+        
         this.setData({ isLoading: false });
       })
       .catch(err => {
@@ -173,6 +185,24 @@ Page({
           icon: 'none'
         });
         this.setData({ isLoading: false });
+      });
+  },
+  
+  /**
+   * 获取待审批请假申请
+   */
+  getLeaveApplications(className) {
+    this.setData({ isLoadingLeave: true });
+    
+    return auth.getLeaveApplications(className)
+      .then(res => {
+        this.setData({ isLoadingLeave: false });
+        return res;
+      })
+      .catch(err => {
+        this.setData({ isLoadingLeave: false });
+        console.error('获取请假申请失败:', err);
+        return { success: false, message: '获取请假申请失败' };
       });
   },
 
@@ -383,6 +413,62 @@ Page({
    */
   onRefreshRecords() {
     this.loadClassRecords();
+  },
+
+  /**
+   * 同意请假申请
+   */
+  onApproveLeave(e) {
+    const leaveId = e.currentTarget.dataset.leaveId;
+    this.handleLeaveApproval(leaveId, 'approved');
+  },
+
+  /**
+   * 拒绝请假申请
+   */
+  onRejectLeave(e) {
+    const leaveId = e.currentTarget.dataset.leaveId;
+    this.handleLeaveApproval(leaveId, 'rejected');
+  },
+
+  /**
+   * 处理请假审批
+   */
+  handleLeaveApproval(leaveId, status) {
+    const { userInfo } = this.data;
+    
+    wx.showLoading({
+      title: status === 'approved' ? '同意中...' : '拒绝中...'
+    });
+    
+    // 调用后端API处理请假审批
+    auth.approveLeave(leaveId, status, userInfo.user_id)
+      .then(res => {
+        wx.hideLoading();
+        
+        if (res.success) {
+          wx.showToast({
+            title: status === 'approved' ? '同意成功' : '拒绝成功',
+            icon: 'success'
+          });
+          
+          // 重新加载所有数据，包括请假申请列表
+          this.loadClassRecords();
+        } else {
+          wx.showToast({
+            title: res.message || '审批失败',
+            icon: 'none'
+          });
+        }
+      })
+      .catch(err => {
+        wx.hideLoading();
+        console.error('请假审批失败:', err);
+        wx.showToast({
+          title: '网络错误，请重试',
+          icon: 'none'
+        });
+      });
   },
 
   /**

@@ -105,10 +105,69 @@ function getClassList() {
   return request('/teacher/class-list')
 }
 
+/**
+ * 学生提交请假申请
+ * @param {object} userInfo 用户信息
+ * @param {string} leaveStartDate 请假开始日期
+ * @param {string} leaveEndDate 请假结束日期
+ * @returns {Promise} 请假申请结果
+ */
+function submitLeaveApplication(userInfo, leaveStartDate, leaveEndDate) {
+  return request('/student/apply-leave', {
+    method: 'POST',
+    data: {
+      username: userInfo.username,
+      user_id: userInfo.user_id,
+      leave_start_date: leaveStartDate,
+      leave_end_date: leaveEndDate
+    }
+  })
+}
+
+/**
+ * 学生获取请假记录
+ * @param {string} user_id 学生ID
+ * @returns {Promise} 请假记录列表
+ */
+function getLeaveRecords(user_id) {
+  return request(`/student/leave-records?user_id=${user_id}`)
+}
+
+/**
+ * 教师获取待审批请假申请
+ * @param {string} class_name 班级名称
+ * @returns {Promise} 请假申请列表
+ */
+function getLeaveApplications(class_name) {
+  return request(`/teacher/leave-applications?class_name=${class_name}`)
+}
+
+/**
+ * 教师审批请假申请
+ * @param {string} leave_id 请假申请ID
+ * @param {string} status 审批状态（approved/rejected）
+ * @param {string} teacher_id 教师ID
+ * @returns {Promise} 审批结果
+ */
+function approveLeave(leave_id, status, teacher_id) {
+  return request('/teacher/approve-leave', {
+    method: 'POST',
+    data: {
+      id: leave_id,
+      status: status,
+      teacher_id: teacher_id
+    }
+  })
+}
+
 module.exports = {
   login,
   submitPunchRecord,
   getMyPunchRecords,
   getClassPunchRecords,
-  getClassList
+  getClassList,
+  submitLeaveApplication,
+  getLeaveRecords,
+  getLeaveApplications,
+  approveLeave
 }

@@ -1,10 +1,10 @@
 # 微信小程序打卡系统
 
-基于微信小程序的极简打卡系统，采用预分配账户和位图算法存储打卡数据，支持学生打卡、教师管理和班委统计功能。
+基于微信小程序的简单打卡系统，支持学生打卡、教师管理和班委统计功能，和基本的请假功能。
 
 ## 🚀 项目简介
 
-本项目是一个基于微信小程序的课堂打卡系统，主要解决传统考勤方式效率低下的问题，使用位图算法高效存储打卡数据。
+本项目是一个基于微信小程序的课堂打卡系统，主要解决传统考勤方式效率低下的问题，使用SQLite数据库存储打卡数据。
 
 ### 核心特点
 
@@ -32,10 +32,34 @@
 ├── miniprogram/           # 微信小程序前端
 │   ├── pages/             # 页面文件
 │   │   ├── login/         # 登录页面
+│   │   │   ├── login.js        # 登录页面逻辑
+│   │   │   ├── login.json      # 登录页面配置
+│   │   │   ├── login.wxml      # 登录页面结构
+│   │   │   └── login.wxss      # 登录页面样式
 │   │   ├── student/       # 学生页面（包含打卡功能）
+│   │   │   ├── leave-apply.js        # 请假申请页面
+│   │   │   ├── leave-apply.json      # 请假申请页面配置
+│   │   │   ├── leave-apply.wxml      # 请假申请页面结构
+│   │   │   ├── leave-apply.wxss      # 请假申请页面样式
+│   │   │   ├── leave-records.js      # 请假记录页面
+│   │   │   ├── leave-records.json    # 请假记录页面配置
+│   │   │   ├── leave-records.wxml    # 请假记录页面结构
+│   │   │   ├── leave-records.wxss    # 请假记录页面样式
+│   │   │   ├── student-detail.js     # 学生详情页面
+│   │   │   ├── student-detail.json   # 学生详情页面配置
+│   │   │   ├── student-detail.wxml   # 学生详情页面结构
+│   │   │   ├── student-detail.wxss   # 学生详情页面样式
+│   │   │   ├── student.js            # 学生主页面
+│   │   │   ├── student.json          # 学生主页面配置
+│   │   │   ├── student.wxml          # 学生主页面结构
+│   │   │   └── student.wxss          # 学生主页面样式
 │   │   └── teacher/       # 教师管理页面
+│   │       ├── teacher.js          # 教师主页面
+│   │       ├── teacher.json        # 教师主页面配置
+│   │       ├── teacher.wxml        # 教师主页面结构
+│   │       └── teacher.wxss        # 教师主页面样式
 │   ├── utils/             # 工具函数
-│   │   └── auth.js        # 认证工具
+│   │   └── auth.js        # 认证工具和API调用
 │   └── app.js             # 小程序入口
 └── docs/                  # 项目文档
 ```
@@ -56,16 +80,20 @@
 | 文件 | 功能 |
 |------|------|
 | `miniprogram/pages/login/login.js` | 登录页面逻辑，处理用户登录请求 |
-| `miniprogram/pages/student/student.js` | 学生打卡页面逻辑，包含打卡功能 |
+| `miniprogram/pages/student/student.js` | 学生主页面逻辑，包含打卡功能 |
+| `miniprogram/pages/student/student-detail.js` | 学生详情页面逻辑 |
+| `miniprogram/pages/student/leave-apply.js` | 学生请假申请页面逻辑 |
+| `miniprogram/pages/student/leave-records.js` | 学生请假记录页面逻辑 |
 | `miniprogram/pages/teacher/teacher.js` | 教师管理页面逻辑，显示学生打卡统计 |
-| `miniprogram/utils/auth.js` | 认证工具，处理登录状态管理 |
+| `miniprogram/utils/auth.js` | 认证工具，处理登录状态管理和API调用 |
+| `miniprogram/utils/geo.js` | 地理位置相关工具函数 |
 
 ## ✨ 主要功能
 
 ### 1. 登录功能
 
 - 支持学生、教师、班委三种角色登录
-- 预分配账户系统，无需注册
+- 预分配账户系统，无需注册（当前版本暂不支持用户注册功能）
 - 基于学号/工号和密码验证
 
 ### 2. 学生打卡功能
@@ -85,6 +113,18 @@
 
 - 拥有学生角色的所有功能
 - 可查看本班学生打卡情况
+
+### 5. 请假功能
+
+- **学生端**：
+  - 提交请假申请（选择开始和结束日期）
+  - 查看请假记录和审批状态
+- **教师端**：
+  - 查看班级待审批请假申请
+  - 审批请假申请（批准/拒绝）
+- **打卡记录自动处理**：
+  - 已批准的请假记录会自动标记为已打卡
+  - 请假状态在打卡统计中显示
 
 ## 📋 快速开始
 
@@ -143,6 +183,9 @@ python app.py
 - 用户名：标识打卡用户
 - 用户ID：学号/工号
 - 打卡日期：记录打卡时间
+- 请假开始日期：请假的开始日期
+- 请假结束日期：请假的结束日期
+- 请假状态：请假审批状态（pending-待审批, approved-已批准, rejected-已拒绝）
 
 ### 存储优势
 
@@ -166,23 +209,6 @@ python app.py
 ## 📄 许可证
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
-
-## 📝 更新日志
-
-### v1.0.0 (2024-09-01)
-
-- ✅ 实现基础登录功能
-- ✅ 实现学生打卡功能
-- ✅ 实现教师管理功能
-- ✅ 实现位图算法存储
-- ✅ 支持多角色系统
-
-### v1.1.0 (2024-09-15)
-
-- ✅ 添加班委角色
-- ✅ 优化打卡逻辑
-- ✅ 增加打卡记录查询
-- ✅ 优化教师统计页面
 
 ## 🌟 致谢
 

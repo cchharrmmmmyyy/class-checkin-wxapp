@@ -156,6 +156,26 @@ Page({
   },
 
   /**
+   * 申请请假
+   */
+  onApplyLeave() {
+    wx.showModal({
+      title: '申请请假',
+      content: '请选择请假类型和日期',
+      confirmText: '开始申请',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          // 跳转到请假申请页面
+          wx.navigateTo({
+            url: '/pages/student/leave-apply/leave-apply'
+          });
+        }
+      }
+    });
+  },
+
+  /**
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady() {

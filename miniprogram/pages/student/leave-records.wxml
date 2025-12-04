@@ -1,0 +1,52 @@
+<!--pages/student/leave-records.wxml-->
+<view class="container">
+  <view class="header">
+    <view class="nav-bar">
+      <view class="back-btn" bindtap="onBack">
+        <text class="back-icon">←</text>
+      </view>
+      <text class="title">请假记录</text>
+      <view class="refresh-btn" bindtap="onRefresh">
+        <text class="refresh-icon">刷新</text>
+      </view>
+    </view>
+    <text class="welcome">欢迎，{{userInfo.username}}（{{userInfo.class}}）</text>
+  </view>
+  
+  <view class="main-content">
+    <view class="records-container">
+      <!-- 加载中 -->
+      <view class="loading" wx:if="{{isLoading}}">
+        <text class="loading-text">加载中...</text>
+      </view>
+      
+      <!-- 无记录 -->
+      <view class="no-records" wx:elif="{{leaveRecords.length === 0 && !isLoading}}">
+        <text class="no-records-text">暂无请假记录</text>
+      </view>
+      
+      <!-- 请假记录列表 -->
+      <view class="records-list" wx:else>
+        <view class="record-item" wx:for="{{leaveRecords}}" wx:key="id">
+          <view class="record-header">
+            <text class="record-date">
+              {{item.leave_start_date}} 至 {{item.leave_end_date}}
+            </text>
+            <view class="status-tag" wx:if="{{item.leave_status === 'pending'}}">
+              <text class="status-text pending">待审批</text>
+            </view>
+            <view class="status-tag" wx:elif="{{item.leave_status === 'approved'}}">
+              <text class="status-text approved">已批准</text>
+            </view>
+            <view class="status-tag" wx:else>
+              <text class="status-text rejected">已拒绝</text>
+            </view>
+          </view>
+          <view class="record-footer">
+            <text class="record-id">申请ID：{{item.id}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

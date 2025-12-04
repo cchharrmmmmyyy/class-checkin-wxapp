@@ -340,3 +340,137 @@ def remove_monitor():
             'success': False,
             'message': f'移除班委失败: {str(e)}'
         }), 500
+
+@teacher_function.route('/leave-applications', methods=['GET'])
+def get_leave_applications():
+    """获取待审批请假申请"""
+    try:
+        class_name = request.args.get('class_name', '')
+        
+        if not class_name:
+            return jsonify({
+                'success': False,
+                'message': '班级名称不能为空'
+            }), 400
+        
+        # 连接数据库
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询班级待审批请假申请
+        cursor.execute(
+            "SELECT * FROM punch_records WHERE leave_status = 'pending' AND user_id IN (SELECT user_id FROM users WHERE class = ?) ORDER BY id DESC",
+            (class_name,)
+        )
+        
+        applications = cursor.fetchall()
+        
+        # 转换为字典列表
+        applications_list = []
+        for app in applications:
+            applications_list.append({
+                'id': app['id'],
+                'username': app['username'],
+                'user_id': app['user_id'],
+                'leave_start_date': app['leave_start_date'],
+                'leave_end_date': app['leave_end_date'],
+                'leave_status': app['leave_status']
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': '查询成功',
+            'data': applications_list
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'查询失败: {str(e)}'
+        }), 500
+
+@teacher_function.route('/approve-leave', methods=['POST'])
+def approve_leave():
+    """审批请假申请"""
+    try:
+        data = request.get_json()
+        print(f"收到请假审批数据: {data}")
+        
+        leave_id = data.get('id', '')
+        status = data.get('status', '')
+        teacher_id = data.get('teacher_id', '')
+        
+        # 验证输入
+        if not leave_id or not status or not teacher_id:
+            return jsonify({
+                'success': False,
+                'message': '请假ID、审批状态和教师ID不能为空'
+            }), 400
+        
+        # 验证审批状态
+        if status not in ['approved', 'rejected']:
+            return jsonify({
+                'success': False,
+                'message': '审批状态只能是approved或rejected'
+            }), 400
+        
+        # 连接数据库
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 验证教师身份
+        cursor.execute(
+            "SELECT username, role, class FROM users WHERE user_id = ?",
+            (teacher_id,)
+        )
+        teacher = cursor.fetchone()
+        
+        if not teacher or teacher['role'] != 'teacher':
+            conn.close()
+            return jsonify({
+                'success': False,
+                'message': '教师身份验证失败'
+            }), 403
+        
+        # 验证请假申请是否存在且属于该班级
+        cursor.execute(
+            "SELECT * FROM punch_records WHERE id = ? AND user_id IN (SELECT user_id FROM users WHERE class = ?)",
+            (leave_id, teacher['class'])
+        )
+        leave_application = cursor.fetchone()
+        
+        if not leave_application:
+            conn.close()
+            return jsonify({
+                'success': False,
+                'message': '未找到该请假申请或该申请不属于您的班级'
+            }), 404
+        
+        # 更新请假状态
+        cursor.execute(
+            "UPDATE punch_records SET leave_status = ? WHERE id = ?",
+            (status, leave_id)
+        )
+        
+        conn.commit()
+        conn.close()
+        
+        print(f"教师 {teacher['username']} 审批请假申请 {leave_id} 为 {status}")
+        
+        return jsonify({
+            'success': True,
+            'message': '请假审批成功',
+            'data': {
+                'leave_id': leave_id,
+                'status': status
+            }
+        }), 200
+        
+    except Exception as e:
+        print(f"请假审批过程中发生错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'请假审批失败: {str(e)}'
+        }), 500

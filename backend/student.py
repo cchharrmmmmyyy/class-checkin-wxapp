@@ -116,6 +116,105 @@ def get_punch_records(user_id):
             'message': f'查询失败: {str(e)}'
         }), 500
 
+@student_function.route('/apply-leave', methods=['POST'])
+def apply_leave():
+    """提交请假申请"""
+    try:
+        data = request.get_json()
+        print(f"收到请假申请数据: {data}")
+        
+        username = data.get('username', '')
+        user_id = data.get('user_id', '')
+        leave_start_date = data.get('leave_start_date', '')
+        leave_end_date = data.get('leave_end_date', '')
+        
+        # 验证输入
+        if not username or not user_id or not leave_start_date or not leave_end_date:
+            return jsonify({
+                'success': False,
+                'message': '用户名、用户ID、请假开始和结束日期不能为空'
+            }), 400
+        
+        # 连接数据库
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 插入请假记录
+        cursor.execute(
+            "INSERT INTO punch_records (username, user_id, punch_date, leave_start_date, leave_end_date, leave_status) VALUES (?, ?, ?, ?, ?, 'pending')",
+            (username, user_id, leave_start_date, leave_start_date, leave_end_date)
+        )
+        
+        conn.commit()
+        conn.close()
+        
+        print(f"用户 {user_id} 请假申请成功")
+        return jsonify({
+            'success': True,
+            'message': '请假申请提交成功，等待老师批准',
+            'data': {
+                'leave_start_date': leave_start_date,
+                'leave_end_date': leave_end_date
+            }
+        }), 200
+        
+    except Exception as e:
+        print(f"请假申请过程中发生错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'请假申请失败: {str(e)}'
+        }), 500
+
+@student_function.route('/leave-records', methods=['GET'])
+def get_leave_records():
+    """获取个人请假记录"""
+    try:
+        user_id = request.args.get('user_id', '')
+        
+        if not user_id:
+            return jsonify({
+                'success': False,
+                'message': '用户ID不能为空'
+            }), 400
+        
+        # 连接数据库
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询个人请假记录
+        cursor.execute(
+            "SELECT * FROM punch_records WHERE user_id = ? AND leave_start_date IS NOT NULL ORDER BY leave_start_date DESC",
+            (user_id,)
+        )
+        
+        records = cursor.fetchall()
+        
+        # 转换为字典列表
+        records_list = []
+        for record in records:
+            records_list.append({
+                'id': record['id'],
+                'user_id': record['user_id'],
+                'username': record['username'],
+                'leave_start_date': record['leave_start_date'],
+                'leave_end_date': record['leave_end_date'],
+                'leave_status': record['leave_status']
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': '查询成功',
+            'data': records_list
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'查询失败: {str(e)}'
+        }), 500
+
 @student_function.route('/class-records/<class_name>', methods=['GET'])
 def get_class_punch_records(class_name):
     """获取班级打卡记录"""
@@ -140,23 +239,38 @@ def get_class_punch_records(class_name):
         punched_records = cursor.fetchall()
         punched_user_ids = [record['user_id'] for record in punched_records]
         
+        # 查询班级今日请假记录
+        cursor.execute(
+            "SELECT user_id FROM punch_records WHERE user_id IN (SELECT user_id FROM users WHERE class = ?) AND ? BETWEEN leave_start_date AND leave_end_date AND leave_status = 'approved'",
+            (class_name, today)
+        )
+        
+        leave_records = cursor.fetchall()
+        leave_user_ids = [record['user_id'] for record in leave_records]
+        
         # 构建班级打卡情况
         class_records = []
         for student in students:
             # 检查学生是否已打卡
             punched = student['user_id'] in punched_user_ids
+            # 检查学生是否处于请假状态
+            on_leave = student['user_id'] in leave_user_ids
             
             # 添加角色信息，如果是班委则标记
             display_name = student['username']
             if student['role'] == 'monitor':
                 display_name = student['username'] + ' (班委)'
             
+            # 确定打卡状态显示
+            punch_status = '请假' if on_leave else ('已打卡' if punched else '未打卡')
+            
             class_records.append({
                 'username': display_name,
                 'user_id': student['user_id'],
                 'role': student['role'],
                 'punched': punched,
-                'punchTime': '已打卡' if punched else '未打卡'
+                'on_leave': on_leave,
+                'punchTime': punch_status
             })
         
         conn.close()

@@ -277,8 +277,132 @@
       "role": "monitor",
       "punched": false,
       "punchTime": "未打卡"
+    },
+    {
+      "username": "student3",
+      "user_id": "202430800003",
+      "role": "student",
+      "punched": false,
+      "punchTime": "请假"
     }
   ]
+}
+```
+
+### 3.10 学生提交请假申请
+
+**接口路径**：`/api/student/apply-leave`
+
+**请求方法**：`POST`
+
+**请求参数**：
+```json
+{
+  "username": "string", // 用户名
+  "user_id": "string", // 学号
+  "leave_start_date": "string", // 请假开始日期（YYYY-MM-DD）
+  "leave_end_date": "string" // 请假结束日期（YYYY-MM-DD）
+}
+```
+
+**响应数据**：
+```json
+{
+  "success": true,
+  "message": "请假申请提交成功，等待老师批准",
+  "data": {
+    "leave_start_date": "2024-09-01",
+    "leave_end_date": "2024-09-03"
+  }
+}
+```
+
+### 3.11 学生获取请假记录
+
+**接口路径**：`/api/student/leave-records`
+
+**请求方法**：`GET`
+
+**请求参数**：
+- `user_id`：学生ID（通过URL查询参数传递）
+
+**响应数据**：
+```json
+{
+  "success": true,
+  "message": "查询成功",
+  "data": [
+    {
+      "id": 1,
+      "user_id": "202430800001",
+      "username": "student1",
+      "leave_start_date": "2024-09-01",
+      "leave_end_date": "2024-09-03",
+      "leave_status": "approved"
+    },
+    {
+      "id": 2,
+      "user_id": "202430800001",
+      "username": "student1",
+      "leave_start_date": "2024-09-10",
+      "leave_end_date": "2024-09-12",
+      "leave_status": "pending"
+    }
+  ]
+}
+```
+
+### 3.12 教师获取待审批请假申请
+
+**接口路径**：`/api/teacher/leave-applications`
+
+**请求方法**：`GET`
+
+**请求参数**：
+- `class_name`：班级名称（通过URL查询参数传递）
+
+**响应数据**：
+```json
+{
+  "success": true,
+  "message": "查询成功",
+  "data": [
+    {
+      "id": 2,
+      "username": "student1",
+      "user_id": "202430800001",
+      "leave_start_date": "2024-09-10",
+      "leave_end_date": "2024-09-12",
+      "leave_status": "pending"
+    }
+  ]
+}
+```
+
+### 3.13 教师审批请假申请
+
+**接口路径**：`/api/teacher/approve-leave`
+
+**请求方法**：`POST`
+
+**请求参数**：
+```json
+{
+  "id": "string", // 请假申请ID
+  "status": "string", // 审批状态（approved/rejected）
+  "teacher_id": "string" // 教师工号
+}
+```
+
+**响应数据**：
+```json
+{
+  "success": true,
+  "message": "请假审批成功",
+  "data": {
+    "leave_id": "2",
+    "status": "approved"
+  }
 }
 ```
 
@@ -300,6 +424,9 @@
 | username | TEXT | 用户名 |
 | user_id | TEXT | 学号/工号 |
 | punch_date | DATE | 打卡日期（YYYY-MM-DD） |
+| leave_start_date | DATE | 请假开始日期（YYYY-MM-DD），默认为NULL |
+| leave_end_date | DATE | 请假结束日期（YYYY-MM-DD），默认为NULL |
+| leave_status | TEXT | 请假状态：pending-待审批，approved-已批准，rejected-已拒绝 |
 | FOREIGN KEY (username) REFERENCES users (username) | - | 外键约束，关联用户表 |
 | FOREIGN KEY (user_id) REFERENCES users (user_id) | - | 外键约束，关联用户表 |
 

@@ -124,6 +124,24 @@ Page({
   },
 
   /**
+   * 跳转到请假申请页面
+   */
+  onLeaveApply() {
+    wx.navigateTo({
+      url: '/pages/student/leave-apply'
+    });
+  },
+
+  /**
+   * 跳转到请假记录页面
+   */
+  onViewLeaveRecords() {
+    wx.navigateTo({
+      url: '/pages/student/leave-records'
+    });
+  },
+
+  /**
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady() {
