@@ -1,0 +1,18 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/student/student",
+    "pages/student/student-detail",
+    "pages/teacher/teacher"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#1E90FF",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "校园打卡",
+    "backgroundColor": "#f8f8f8"
+  },
+  "networkTimeout": {
+    "request": 10000
+  },
+  "style": "v2"
+}

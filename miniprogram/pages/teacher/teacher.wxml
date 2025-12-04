@@ -1,0 +1,99 @@
+<!--pages/teacher/teacher.wxml-->
+<view class="container">
+  <view class="header">
+    <view class="nav-bar">
+      <view class="placeholder"></view>
+      <text class="title">教师面板</text>
+      <view class="refresh-btn" bindtap="onRefreshRecords">
+        <text class="refresh-icon">刷新</text>
+      </view>
+    </view>
+    <text class="welcome">欢迎，{{userInfo.username}}</text>
+    
+    <!-- 班级选择器 -->
+    <view class="class-selector">
+      <text class="selector-label">当前班级：</text>
+      <view class="selector-box" bindtap="onShowClassPicker">
+        <text class="selector-text">{{selectedClass || '请选择班级'}}</text>
+        <text class="selector-arrow">▼</text>
+      </view>
+    </view>
+  </view>
+  
+  <view class="main-content">
+    <!-- 任命班委功能 -->
+    <view class="section">
+      <view class="section-title">任命班委</view>
+      <view class="current-monitors" wx:if="{{currentMonitors.length > 0}}">
+        <text class="monitor-label">当前班委：</text>
+        <view class="monitor-list">
+          <view class="monitor-item" wx:for="{{currentMonitors}}" wx:key="user_id">
+            <text class="monitor-name">{{item.username}} ({{item.user_id}})</text>
+            <button class="remove-btn" data-student-id="{{item.user_id}}" bindtap="onRemoveMonitor">移除</button>
+          </view>
+        </view>
+      </view>
+      <view class="no-monitor" wx:else>
+        <text class="no-monitor-text">当前班级暂无班委</text>
+      </view>
+      <view class="appoint-monitor">
+        <input class="student-id-input" placeholder="请输入学号" value="{{studentId}}" bindinput="onStudentIdInput" />
+        <button class="appoint-btn" bindtap="onAppointMonitor">任命班委</button>
+      </view>
+    </view>
+    
+    <!-- 班级打卡情况 -->
+    <view class="section">
+      <view class="section-title">班级打卡情况</view>
+      <view class="punch-rate">
+        <text class="rate-label">今日打卡率：</text>
+        <text class="rate-value">{{punchRate}}%</text>
+      </view>
+      
+      <view class="records-list">
+        <view class="list-header">
+          <text class="header-name">姓名</text>
+          <text class="header-id">学号</text>
+          <text class="header-role">角色</text>
+          <text class="header-status">状态</text>
+        </view>
+        
+        <view class="loading" wx:if="{{isLoading}}">
+          <text>加载中...</text>
+        </view>
+        
+        <view class="no-data" wx:elif="{{classRecords.length === 0}}">
+          <text>暂无打卡记录</text>
+        </view>
+        
+        <view class="record-item" wx:for="{{classRecords}}" wx:key="user_id">
+          <text class="item-name">{{item.username}}</text>
+          <text class="item-id">{{item.user_id}}</text>
+          <text class="item-role {{item.role === 'monitor' ? 'monitor' : 'student'}}">
+            {{item.role === 'monitor' ? '班委' : '学生'}}
+          </text>
+          <text class="item-status {{item.punched ? 'punched' : 'unpunched'}}">
+            {{item.punchTime}}
+          </text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 班级选择器弹窗 -->
+  <view class="class-picker-mask" wx:if="{{showClassPicker}}" bindtap="onHideClassPicker">
+    <view class="class-picker-content" catchtap="">
+      <view class="picker-header">
+        <text class="picker-title">选择班级</text>
+        <view class="picker-close" bindtap="onHideClassPicker">×</view>
+      </view>
+      <view class="picker-body">
+        <view class="class-item" wx:for="{{classList}}" wx:key="*this" 
+              data-class="{{item}}" bindtap="onSelectClass">
+          <text class="class-name">{{item}}</text>
+          <text class="class-check" wx:if="{{selectedClass === item}}">✓</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

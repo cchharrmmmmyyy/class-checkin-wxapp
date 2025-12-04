@@ -1,0 +1,374 @@
+/* pages/teacher/teacher.wxss */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8f8f8;
+}
+
+.header {
+  background-color: #1E90FF;
+  color: white;
+  padding: 20rpx 30rpx;
+}
+
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.placeholder {
+  width: 100rpx;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+}
+
+.refresh-btn {
+  width: 100rpx;
+  text-align: right;
+}
+
+.refresh-icon {
+  font-size: 28rpx;
+}
+
+.welcome {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 15rpx;
+}
+
+/* 班级选择器 */
+.class-selector {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30rpx;
+  padding: 20rpx 30rpx;
+  background-color: #f8f8f8;
+  border-radius: 16rpx;
+}
+
+.selector-label {
+  font-size: 28rpx;
+  color: #333;
+  margin-right: 20rpx;
+}
+
+.selector-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  padding: 16rpx 24rpx;
+  background-color: #fff;
+  border: 1rpx solid #ddd;
+  border-radius: 12rpx;
+  min-height: 40rpx;
+}
+
+.selector-text {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.selector-arrow {
+  font-size: 24rpx;
+  color: #888;
+}
+
+.main-content {
+  flex: 1;
+  padding: 30rpx;
+}
+
+.section {
+  background-color: white;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 30rpx;
+  color: #333;
+  border-bottom: 1rpx solid #eee;
+  padding-bottom: 15rpx;
+}
+
+/* 任命班委样式 */
+.appoint-monitor {
+  display: flex;
+  flex-direction: column;
+}
+
+.student-id-input {
+  height: 80rpx;
+  border: 1rpx solid #ddd;
+  border-radius: 10rpx;
+  padding: 0 20rpx;
+  margin-bottom: 30rpx;
+  font-size: 28rpx;
+}
+
+.appoint-btn {
+  background-color: #1E90FF;
+  color: white;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 10rpx;
+  font-size: 30rpx;
+}
+
+.current-monitors {
+  margin-bottom: 20rpx;
+  padding: 16rpx 24rpx;
+  background-color: #f0f9ff;
+  border-radius: 12rpx;
+  border-left: 8rpx solid #07C160;
+}
+
+.monitor-label {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.monitor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.monitor-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.monitor-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+.remove-btn {
+  background-color: #ff4d4f;
+  color: white;
+  font-size: 24rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  min-width: 100rpx;
+  height: 50rpx;
+  line-height: 50rpx;
+  margin-left: 20rpx;
+}
+
+.current-monitor {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 16rpx 24rpx;
+  background-color: #f0f9ff;
+  border-radius: 12rpx;
+  border-left: 8rpx solid #07C160;
+}
+
+.no-monitor {
+  margin-bottom: 20rpx;
+  padding: 16rpx 24rpx;
+  background-color: #fff7e6;
+  border-radius: 12rpx;
+  border-left: 8rpx solid #ff9500;
+}
+
+.no-monitor-text {
+  font-size: 28rpx;
+  color: #ff9500;
+}
+
+/* 打卡率样式 */
+.punch-rate {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.rate-label {
+  font-size: 30rpx;
+  color: #666;
+}
+
+.rate-value {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #1E90FF;
+  margin-left: 10rpx;
+}
+
+/* 打卡记录列表样式 */
+.records-list {
+  border-top: 1rpx solid #eee;
+  padding-top: 20rpx;
+}
+
+.list-header {
+  display: flex;
+  padding: 15rpx 0;
+  border-bottom: 1rpx solid #eee;
+  font-weight: bold;
+  color: #666;
+}
+
+.header-name {
+  flex: 2;
+  font-size: 28rpx;
+}
+
+.header-id {
+  flex: 2;
+  font-size: 28rpx;
+}
+
+.header-role {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+}
+
+.header-status {
+  flex: 1.5;
+  font-size: 28rpx;
+  text-align: right;
+}
+
+.loading, .no-data {
+  text-align: center;
+  padding: 40rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.record-item {
+  display: flex;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.item-name {
+  flex: 2;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.item-id {
+  flex: 2;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.item-role {
+  flex: 1;
+  text-align: center;
+  color: #666;
+}
+
+.item-role.monitor {
+  color: #e64340;
+  font-weight: bold;
+}
+
+.item-status {
+  flex: 1.5;
+  font-size: 28rpx;
+  text-align: right;
+}
+
+.punched {
+  color: #07C160;
+}
+
+.unpunched {
+  color: #FA5151;
+}
+
+/* 班级选择器弹窗 */
+.class-picker-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.class-picker-content {
+  width: 80%;
+  max-height: 60%;
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.picker-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.picker-close {
+  font-size: 24px;
+  color: #999;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.picker-body {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.class-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.class-item:last-child {
+  border-bottom: none;
+}
+
+.class-name {
+  font-size: 16px;
+  color: #333;
+}
+
+.class-check {
+  font-size: 18px;
+  color: #07c160;
+}

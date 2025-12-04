@@ -1,0 +1,25 @@
+<!--pages/student/student.wxml-->
+<view class="container">
+  <view class="header">
+    <view class="nav-bar">
+      <view class="placeholder"></view>
+      <text class="title">{{userInfo.role === 'monitor' ? '班委面板' : '学生面板'}}</text>
+      <view class="detail-btn" bindtap="onGoToDetail">
+        <text class="detail-icon">打卡查询</text>
+      </view>
+    </view>
+    <text class="welcome">欢迎，{{userInfo.username}}（{{userInfo.class}}）</text>
+  </view>
+  
+  <view class="main-content">
+    <!-- 打卡功能 -->
+    <view class="punch-card-section">
+      <button class="punch-btn" bindtap="onPunchCard">
+        <text class="btn-text">打卡</text>
+      </button>
+      <text class="punch-time" wx:if="{{lastPunchTime}}">
+        上次打卡时间：{{lastPunchTime}}
+      </text>
+    </view>
+  </view>
+</view>

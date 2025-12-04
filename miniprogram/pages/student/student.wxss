@@ -1,0 +1,97 @@
+/* pages/student/student.wxss */
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.header {
+  padding: 40rpx 30rpx 20rpx;
+  text-align: center;
+  color: white;
+}
+
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.placeholder {
+  width: 80rpx;
+}
+
+.title {
+  font-size: 48rpx;
+  font-weight: bold;
+}
+
+.detail-btn {
+  width: 80rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 30rpx;
+}
+
+.detail-icon {
+  font-size: 28rpx;
+  color: white;
+}
+
+.welcome {
+  font-size: 32rpx;
+  opacity: 0.9;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 30rpx;
+}
+
+.punch-card-section {
+  text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.punch-btn {
+  width: 300rpx;
+  height: 300rpx;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  border: none;
+  box-shadow: 0 10rpx 30rpx rgba(255, 107, 107, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40rpx;
+  transition: all 0.3s ease;
+}
+
+.punch-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 5rpx 15rpx rgba(255, 107, 107, 0.5);
+}
+
+.btn-text {
+  color: white;
+  font-size: 48rpx;
+  font-weight: bold;
+}
+
+.punch-time {
+  color: white;
+  font-size: 28rpx;
+  opacity: 0.8;
+  display: block;
+}

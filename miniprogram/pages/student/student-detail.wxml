@@ -1,0 +1,68 @@
+<!--pages/student/student-detail.wxml-->
+<view class="container">
+  <view class="header">
+    <view class="nav-bar">
+      <view class="placeholder"></view>
+      <text class="title">{{userInfo.role === 'monitor' ? '班委详情' : '学生详情'}}</text>
+      <view class="placeholder"></view>
+    </view>
+    <text class="welcome">欢迎，{{userInfo.username}}（{{userInfo.class}}）</text>
+  </view>
+  
+  <view class="main-content">
+    <!-- 查询功能 -->
+    <view class="query-section">
+      <!-- 普通学生显示一个查询按钮 -->
+      <view wx:if="{{userInfo.role !== 'monitor'}}" class="single-btn-container">
+        <button class="query-btn" bindtap="onQueryMyRecords">
+          <text class="btn-text">查询打卡记录</text>
+        </button>
+      </view>
+      
+      <!-- 班委显示两个查询按钮 -->
+      <view wx:if="{{userInfo.role === 'monitor'}}" class="dual-btn-container">
+        <button class="query-btn personal-btn" bindtap="onQueryMyRecords">
+          <text class="btn-text">查询个人打卡记录</text>
+        </button>
+        <button class="query-btn class-btn" bindtap="onQueryClassRecords">
+          <text class="btn-text">查询全班打卡记录</text>
+        </button>
+      </view>
+    </view>
+    
+    <!-- 查询结果区域 -->
+    <view class="result-section" wx:if="{{showResults}}">
+      <text class="result-title">{{resultTitle}}</text>
+      
+      <!-- 普通学生显示个人记录 -->
+      <view wx:if="{{userInfo.role !== 'monitor'}}" class="record-list">
+        <view class="record-item" wx:for="{{myRecords}}" wx:key="index">
+          <text class="record-date">{{item.punch_date}}</text>
+          <text class="record-status">已打卡</text>
+        </view>
+        <text wx:if="{{myRecords.length === 0}}" class="no-data">暂无打卡记录</text>
+      </view>
+      
+      <!-- 班委显示个人记录 -->
+      <view wx:if="{{userInfo.role === 'monitor' && myRecords.length > 0}}" class="record-list">
+        <view class="record-item" wx:for="{{myRecords}}" wx:key="index">
+          <text class="record-date">{{item.punch_date}}</text>
+          <text class="record-status">已打卡</text>
+        </view>
+        <text wx:if="{{myRecords.length === 0}}" class="no-data">暂无打卡记录</text>
+      </view>
+      
+      <!-- 班委显示班级记录 -->
+      <view wx:if="{{userInfo.role === 'monitor' && classRecords.length > 0}}" class="class-record-list">
+        <view class="class-record-item" wx:for="{{classRecords}}" wx:key="index">
+          <text class="student-name">{{item.username}}</text>
+          <text class="punch-status" style="color: {{item.punched ? '#52c41a' : '#ff4d4f'}}">
+            {{item.punched ? '已打卡' : '未打卡'}}
+          </text>
+          <text class="punch-time" wx:if="{{item.punchTime}}">{{item.punchTime}}</text>
+        </view>
+        <text wx:if="{{classRecords.length === 0}}" class="no-data">暂无班级打卡数据</text>
+      </view>
+    </view>
+  </view>
+</view>
