@@ -3,6 +3,8 @@
     "pages/login/login",
     "pages/student/student",
     "pages/student/student-detail",
+    "pages/student/leave-apply",
+    "pages/student/leave-records",
     "pages/teacher/teacher"
   ],
   "window": {

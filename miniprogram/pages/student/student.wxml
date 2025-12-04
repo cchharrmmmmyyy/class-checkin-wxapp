@@ -21,5 +21,15 @@
         上次打卡时间：{{lastPunchTime}}
       </text>
     </view>
+    
+    <!-- 请假功能 -->
+    <view class="leave-section">
+      <button class="leave-btn" bindtap="onLeaveApply">
+        <text class="btn-text">请假</text>
+      </button>
+      <button class="leave-records-btn" bindtap="onViewLeaveRecords">
+        <text class="btn-text">请假记录</text>
+      </button>
+    </view>
   </view>
 </view>

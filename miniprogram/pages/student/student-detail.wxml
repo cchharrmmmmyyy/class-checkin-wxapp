@@ -30,6 +30,7 @@
       </view>
     </view>
     
+
     <!-- 查询结果区域 -->
     <view class="result-section" wx:if="{{showResults}}">
       <text class="result-title">{{resultTitle}}</text>

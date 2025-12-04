@@ -42,6 +42,37 @@
       </view>
     </view>
     
+    <!-- 请假审批功能 -->
+    <view class="section">
+      <view class="section-title">请假审批</view>
+      
+      <!-- 加载中 -->
+      <view class="loading" wx:if="{{isLoadingLeave}}">
+        <text>加载中...</text>
+      </view>
+      
+      <!-- 无请假申请 -->
+      <view class="no-data" wx:elif="{{leaveApplications.length === 0 && !isLoadingLeave}}">
+        <text>暂无待审批请假申请</text>
+      </view>
+      
+      <!-- 请假申请列表 -->
+      <view class="leave-list" wx:else>
+        <view class="leave-item" wx:for="{{leaveApplications}}" wx:key="id">
+          <view class="leave-header">
+            <text class="leave-student">{{item.username}} ({{item.user_id}})</text>
+            <view class="leave-date">
+              {{item.leave_start_date}} 至 {{item.leave_end_date}}
+            </view>
+          </view>
+          <view class="leave-actions">
+            <button class="approve-btn" data-leave-id="{{item.id}}" bindtap="onApproveLeave">同意</button>
+            <button class="reject-btn" data-leave-id="{{item.id}}" bindtap="onRejectLeave">拒绝</button>
+          </view>
+        </view>
+      </view>
+    </view>
+    
     <!-- 班级打卡情况 -->
     <view class="section">
       <view class="section-title">班级打卡情况</view>

@@ -1,0 +1,58 @@
+<!--pages/student/leave-apply.wxml-->
+<view class="container">
+  <view class="header">
+    <view class="nav-bar">
+      <view class="back-btn" bindtap="onBack">
+        <text class="back-icon">←</text>
+      </view>
+      <text class="title">请假申请</text>
+      <view class="placeholder"></view>
+    </view>
+    <text class="welcome">欢迎，{{userInfo.username}}（{{userInfo.class}}）</text>
+  </view>
+  
+  <view class="main-content">
+    <form class="leave-form">
+      <view class="form-item">
+        <text class="form-label">请假开始日期</text>
+        <view class="date-picker" bindtap="onStartDateTap">
+          <text class="date-text">{{leaveStartDate || '请选择日期'}}</text>
+          <text class="date-arrow">▼</text>
+        </view>
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">请假结束日期</text>
+        <view class="date-picker" bindtap="onEndDateTap">
+          <text class="date-text">{{leaveEndDate || '请选择日期'}}</text>
+          <text class="date-arrow">▼</text>
+        </view>
+      </view>
+      
+      <view class="form-item">
+        <text class="form-tip" wx:if="{{leaveDays > 0}}">
+          请假天数：{{leaveDays}} 天
+        </text>
+      </view>
+      
+      <button class="submit-btn" bindtap="onSubmitLeave" disabled="{{!leaveStartDate || !leaveEndDate}}">
+        <text class="btn-text">提交请假申请</text>
+      </button>
+    </form>
+  </view>
+  
+  <!-- 日期选择器 -->
+  <view class="picker-mask" bindtap="onHideDatePicker" wx:if="{{showDatePicker}}"></view>
+  <view class="picker-content" wx:if="{{showDatePicker}}">
+    <view class="picker-header">
+      <text class="picker-btn" bindtap="onHideDatePicker">取消</text>
+      <text class="picker-title">选择日期</text>
+      <text class="picker-btn" bindtap="onConfirmDate">确定</text>
+    </view>
+    <picker mode="date" value="{{pickerValue}}" start="{{minDate}}" end="{{maxDate}}" bindchange="onDateChange">
+      <view class="picker-display">
+        <text>{{pickerValue}}</text>
+      </view>
+    </picker>
+  </view>
+</view>

@@ -372,3 +372,62 @@
   font-size: 18px;
   color: #07c160;
 }
+
+/* 请假审批样式 */
+.leave-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.leave-item {
+  background-color: #f9f9f9;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  border-left: 8rpx solid #1E90FF;
+}
+
+.leave-header {
+  margin-bottom: 20rpx;
+}
+
+.leave-student {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.leave-date {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.leave-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15rpx;
+}
+
+.approve-btn {
+  background-color: #07C160;
+  color: white;
+  font-size: 28rpx;
+  padding: 10rpx 30rpx;
+  border-radius: 8rpx;
+  min-width: 120rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+}
+
+.reject-btn {
+  background-color: #FA5151;
+  color: white;
+  font-size: 28rpx;
+  padding: 10rpx 30rpx;
+  border-radius: 8rpx;
+  min-width: 120rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+}

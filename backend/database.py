@@ -43,11 +43,23 @@ def init_database():
                 username TEXT,-- 用户名
                 user_id TEXT,-- 学号/工号
                 punch_date DATE,-- 打卡日期
+                leave_start_date DATE,-- 请假开始日期，默认为NULL
+                leave_end_date DATE,-- 请假结束日期，默认为NULL
+                leave_status TEXT DEFAULT 'pending',-- 请假状态：pending-待审批，approved-已批准，rejected-已拒绝
                 FOREIGN KEY (username) REFERENCES users (username),-- 外键约束，关联用户表
                 FOREIGN KEY (user_id) REFERENCES users (user_id)-- 外键约束，关联用户表
             )
         ''')
         
+        # 检查punch_records表是否有leave_status字段，如果没有则添加
+        cursor.execute("PRAGMA table_info(punch_records)")
+        columns = cursor.fetchall()
+        column_names = [column[1] for column in columns]
+        
+        if 'leave_status' not in column_names:
+            print("添加leave_status字段")
+            cursor.execute("ALTER TABLE punch_records ADD COLUMN leave_status TEXT DEFAULT 'pending'")
+            
         # 创建必要的索引
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_date ON punch_records(username, punch_date)')
         
