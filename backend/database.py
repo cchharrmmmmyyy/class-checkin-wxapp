@@ -65,6 +65,7 @@ def init_database():
         
         # 插入示例用户数据（如果不存在）
         sample_users = [
+            ('admin', 'admin123', 'admin', '', 'ADMIN001'),
             ('student1', '123456', 'student', '计算机1班', '202430800001'),
             ('student2', '123456', 'student', '计算机1班', '202430800002'),
             ('monitor1', '123456', 'monitor', '计算机1班', '202430800003'),
