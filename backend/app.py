@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
 import os
@@ -12,6 +12,9 @@ from student import student_function
 # 导入教师模块
 from teacher import teacher_function
 
+# 导入管理员模块
+from admin import admin_bp
+
 # 导入数据库模块
 from database import init_database, execute_query_one, get_db_connection
 
@@ -20,6 +23,15 @@ app.register_blueprint(student_function)
 
 # 注册教师蓝图
 app.register_blueprint(teacher_function)
+
+# 注册管理员蓝图
+app.register_blueprint(admin_bp)
+
+# 添加管理员页面路由
+@app.route('/admin')
+def admin_page():
+    """管理员页面"""
+    return send_from_directory('../', 'admin.html')
 
 # 检查并初始化数据库，只在需要时初始化
 def check_and_init_database():
