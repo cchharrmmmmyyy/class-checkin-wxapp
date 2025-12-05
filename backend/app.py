@@ -31,7 +31,7 @@ app.register_blueprint(admin_bp)
 @app.route('/admin')
 def admin_page():
     """管理员页面"""
-    return send_from_directory('../', 'admin.html')
+    return send_from_directory('.', 'admin.html')
 
 # 检查并初始化数据库，只在需要时初始化
 def check_and_init_database():
