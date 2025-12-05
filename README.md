@@ -30,8 +30,8 @@
 │   ├── database.py        # 数据库初始化和操作
 │   ├── student.py         # 学生相关API
 │   ├── teacher.py         # 教师相关API
-│   └── admin.py           # 管理员相关API
-├── admin.html             # 管理员Web管理界面
+│   ├── admin.py           # 管理员相关API
+│   └── admin.html         # 管理员Web管理界面
 ├── miniprogram/           # 微信小程序前端
 │   ├── pages/             # 页面文件
 │   │   ├── login/         # 登录页面
@@ -78,7 +78,7 @@
 | `backend/student.py` | 学生相关API，如打卡、查询打卡记录 |
 | `backend/teacher.py` | 教师相关API，如查看学生打卡情况、统计数据 |
 | `backend/admin.py` | 管理员相关API，如用户管理、权限控制 |
-| `admin.html` | 管理员Web管理界面，用于用户管理操作 |
+| `backend/admin.html` | 管理员Web管理界面，用于用户管理操作 |
 
 #### 前端文件
 

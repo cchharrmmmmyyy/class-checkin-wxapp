@@ -180,4 +180,4 @@ def delete_user(user_id):
 @admin_bp.route('/admin.html')
 def admin_page():
     """提供管理员HTML页面"""
-    return send_from_directory('../', 'admin.html')
+    return send_from_directory('.', 'admin.html')
