@@ -406,6 +406,108 @@
 }
 ```
 
+### 4. 管理员接口
+
+### 4.1 管理员登录
+
+**接口路径**：`/api/admin/login`
+
+**请求方法**：`POST`
+
+**请求参数**：
+```json
+{
+  "username": "string", // 管理员用户名
+  "password": "string"  // 管理员密码
+}
+```
+
+**响应数据**：
+```json
+{
+  "success": true,
+  "message": "登录成功",
+  "admin": {
+    "username": "admin",
+    "user_id": "ADMIN001"
+  }
+}
+```
+
+### 4.2 获取所有用户列表
+
+**接口路径**：`/api/admin/users`
+
+**请求方法**：`GET`
+
+**请求参数**：无
+
+**响应数据**：
+```json
+{
+  "success": true,
+  "message": "查询成功",
+  "data": [
+    {
+      "username": "admin",
+      "user_id": "ADMIN001",
+      "password": "admin123",
+      "role": "admin",
+      "class": ""
+    },
+    {
+      "username": "student1",
+      "user_id": "202430800001",
+      "password": "123456",
+      "role": "student",
+      "class": "计算机1班"
+    }
+  ]
+}
+```
+
+### 4.3 添加或修改用户
+
+**接口路径**：`/api/admin/users`
+
+**请求方法**：`POST`
+
+**请求参数**：
+```json
+{
+  "username": "string", // 用户名
+  "user_id": "string", // 用户ID（学号/工号）
+  "password": "string", // 密码
+  "role": "string", // 角色（student, teacher, monitor, admin）
+  "class": "string" // 班级名称（可选，管理员可以为空）
+}
+```
+
+**响应数据**：
+```json
+{
+  "success": true,
+  "message": "用户添加成功" // 或 "用户更新成功"
+}
+```
+
+### 4.4 删除用户
+
+**接口路径**：`/api/admin/users/<user_id>`
+
+**请求方法**：`DELETE`
+
+**请求参数**：
+- `user_id`：用户ID（通过URL路径传递）
+
+**响应数据**：
+```json
+{
+  "success": true,
+  "message": "用户删除成功"
+}
+```
+
 ## 4. 数据模型
 
 ### 4.1 用户表（users）
@@ -413,7 +515,7 @@
 |--------|------|------|
 | username | TEXT | 用户名（主键） |
 | password | TEXT | 密码 |
-| role | TEXT | 角色（student, teacher, monitor） |
+| role | TEXT | 角色（student, teacher, monitor, admin） |
 | class | TEXT | 班级名称 |
 | user_id | TEXT | 学号/工号，唯一标识 |
 
