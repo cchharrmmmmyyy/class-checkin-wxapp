@@ -18,7 +18,6 @@ backend/
 ├── database.py         # 数据库操作模块，封装 DB 交互
 ├── student.py          # 学生相关接口，处理学生端请求
 ├── teacher.py          # 教师相关接口，处理教师端请求
-├── update_db.py        # 数据库更新脚本
 └── user.db             # SQLite 数据库文件
 ```
 

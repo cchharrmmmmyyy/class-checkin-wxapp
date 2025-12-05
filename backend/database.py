@@ -3,9 +3,12 @@
 负责所有数据库连接、表初始化和基本SQL操作
 """
 import sqlite3
+import os
 
-# 数据库文件路径
-DATABASE_FILE = 'user.db'
+# 获取当前文件所在目录的绝对路径
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# 数据库文件路径 - 使用绝对路径确保一致
+DATABASE_FILE = os.path.join(BASE_DIR, 'user.db')
 
 def get_db_connection():
     """
