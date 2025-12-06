@@ -176,6 +176,41 @@
             margin-bottom: 20px;
         }
         
+        /* 标签页样式 */
+        .tab-navigation {
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+            margin-right: 5px;
+        }
+        
+        .tab-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* 筛选区域样式 */
+        .filter-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        
         /* 响应式设计 */
         @media (max-width: 768px) {
             table {
@@ -189,6 +224,22 @@
             .btn {
                 padding: 8px 12px;
                 font-size: 12px;
+            }
+            
+            .filter-section .form-group {
+                display: block !important;
+                width: 100% !important;
+                margin-right: 0 !important;
+                margin-bottom: 10px !important;
+            }
+            
+            .filter-section label {
+                display: inline-block !important;
+                width: 100px !important;
+            }
+            
+            .filter-section input, .filter-section select {
+                width: calc(100% - 110px) !important;
             }
         }
     </style>
@@ -216,30 +267,97 @@
         
         <!-- 管理员管理区域 -->
         <div class="admin-section" id="adminSection">
-            <div class="action-buttons">
-                <h2>用户管理</h2>
-                <button class="btn btn-success" onclick="openAddModal()">添加用户</button>
-                <button class="btn" onclick="logout()">退出登录</button>
+            <!-- 标签页导航 -->
+            <div class="tab-navigation">
+                <button class="btn tab-btn active" onclick="switchTab('user')">用户管理</button>
+                <button class="btn tab-btn" onclick="switchTab('attendance')">考勤记录管理</button>
+                <button class="btn" style="float: right;" onclick="logout()">退出登录</button>
             </div>
             
             <div id="message" class="message" style="display: none;"></div>
             
-            <!-- 用户列表表格 -->
-            <table id="userTable">
-                <thead>
-                    <tr>
-                        <th>用户名</th>
-                        <th>用户ID</th>
-                        <th>密码</th>
-                        <th>角色</th>
-                        <th>班级</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="userTableBody">
-                    <!-- 用户数据将通过JavaScript动态加载 -->
-                </tbody>
-            </table>
+            <!-- 用户管理标签页 -->
+            <div id="userTab" class="tab-content active">
+                <div class="action-buttons">
+                    <h2>用户管理</h2>
+                    <button class="btn btn-success" onclick="openAddModal()">添加用户</button>
+                </div>
+                
+                <!-- 用户列表表格 -->
+                <table id="userTable">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>用户ID</th>
+                            <th>密码</th>
+                            <th>角色</th>
+                            <th>班级</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- 用户数据将通过JavaScript动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 考勤记录管理标签页 -->
+            <div id="attendanceTab" class="tab-content">
+                <div class="action-buttons">
+                    <h2>考勤记录管理</h2>
+                    <button class="btn btn-success" onclick="openAddAttendanceModal()">添加考勤记录</button>
+                </div>
+                
+                <!-- 筛选条件 -->
+                <div class="filter-section">
+                    <div class="form-group" style="display: inline-block; width: 18%; margin-right: 1%;">
+                        <label for="filterUsername" style="display: inline-block; margin-right: 5px;">用户名：</label>
+                        <input type="text" id="filterUsername" placeholder="输入用户名" style="width: 70%;">
+                    </div>
+                    <div class="form-group" style="display: inline-block; width: 18%; margin-right: 1%;">
+                        <label for="filterUserId" style="display: inline-block; margin-right: 5px;">用户ID：</label>
+                        <input type="text" id="filterUserId" placeholder="输入用户ID" style="width: 70%;">
+                    </div>
+                    <div class="form-group" style="display: inline-block; width: 20%; margin-right: 1%;">
+                        <label for="filterStartDate" style="display: inline-block; margin-right: 5px;">开始日期：</label>
+                        <input type="date" id="filterStartDate" style="width: 65%;">
+                    </div>
+                    <div class="form-group" style="display: inline-block; width: 20%; margin-right: 1%;">
+                        <label for="filterEndDate" style="display: inline-block; margin-right: 5px;">结束日期：</label>
+                        <input type="date" id="filterEndDate" style="width: 65%;">
+                    </div>
+                    <div class="form-group" style="display: inline-block; width: 15%; margin-right: 1%;">
+                        <label for="filterLeaveStatus" style="display: inline-block; margin-right: 5px;">请假状态：</label>
+                        <select id="filterLeaveStatus" style="width: 65%;">
+                            <option value="">全部</option>
+                            <option value="pending">待审批</option>
+                            <option value="approved">已批准</option>
+                            <option value="rejected">已拒绝</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="searchAttendanceRecords()">查询</button>
+                    <button class="btn" onclick="resetFilters()">重置</button>
+                </div>
+                
+                <!-- 考勤记录列表表格 -->
+                <table id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>用户ID</th>
+                            <th>打卡日期</th>
+                            <th>请假开始日期</th>
+                            <th>请假结束日期</th>
+                            <th>请假状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        <!-- 考勤记录数据将通过JavaScript动态加载 -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     
@@ -283,6 +401,54 @@
                 
                 <button type="submit" class="btn btn-success">保存</button>
                 <button type="button" class="btn" onclick="closeModal()">取消</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 添加/编辑考勤记录模态框 -->
+    <div id="attendanceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAttendanceModal()">&times;</span>
+            <h3 id="attendanceModalTitle">添加考勤记录</h3>
+            <form id="attendanceForm">
+                <input type="hidden" id="editRecordId">
+                
+                <div class="form-group">
+                    <label for="attendanceUsername">用户名</label>
+                    <input type="text" id="attendanceUsername" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="attendanceUserId">用户ID</label>
+                    <input type="text" id="attendanceUserId" name="user_id" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="attendancePunchDate">打卡日期</label>
+                    <input type="date" id="attendancePunchDate" name="punch_date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="attendanceLeaveStart">请假开始日期</label>
+                    <input type="date" id="attendanceLeaveStart" name="leave_start_date">
+                </div>
+                
+                <div class="form-group">
+                    <label for="attendanceLeaveEnd">请假结束日期</label>
+                    <input type="date" id="attendanceLeaveEnd" name="leave_end_date">
+                </div>
+                
+                <div class="form-group">
+                    <label for="attendanceLeaveStatus">请假状态</label>
+                    <select id="attendanceLeaveStatus" name="leave_status" required>
+                        <option value="pending">待审批</option>
+                        <option value="approved">已批准</option>
+                        <option value="rejected">已拒绝</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-success">保存</button>
+                <button type="button" class="btn" onclick="closeAttendanceModal()">取消</button>
             </form>
         </div>
     </div>
@@ -507,6 +673,232 @@
         // 初始加载
         window.onload = function() {
             // 可以在这里添加一些初始化逻辑
+        }
+        
+        // 标签页切换功能
+        function switchTab(tabName) {
+            // 隐藏所有标签页内容
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签按钮的激活状态
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // 显示选中的标签页内容
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // 激活对应的标签按钮
+            event.target.classList.add('active');
+            
+            // 如果切换到考勤记录标签，加载考勤记录
+            if (tabName === 'attendance') {
+                loadAttendanceRecords();
+            }
+        }
+        
+        // 加载考勤记录列表
+        function loadAttendanceRecords(filters = {}) {
+            // 构建查询参数
+            let queryParams = new URLSearchParams();
+            if (filters.username) queryParams.append('username', filters.username);
+            if (filters.user_id) queryParams.append('user_id', filters.user_id);
+            if (filters.start_date) queryParams.append('start_date', filters.start_date);
+            if (filters.end_date) queryParams.append('end_date', filters.end_date);
+            if (filters.leave_status) queryParams.append('leave_status', filters.leave_status);
+            
+            fetch(`/api/admin/attendance-records?${queryParams.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderAttendanceTable(data.data);
+                } else {
+                    showMessage('获取考勤记录列表失败！', 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('获取考勤记录列表失败，请重试！', 'error');
+                console.error('Load attendance records error:', error);
+            });
+        }
+        
+        // 渲染考勤记录表格
+        function renderAttendanceTable(records) {
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = '';
+            
+            records.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.id}</td>
+                    <td>${record.username}</td>
+                    <td>${record.user_id}</td>
+                    <td>${record.punch_date}</td>
+                    <td>${record.leave_start_date || '-'}</td>
+                    <td>${record.leave_end_date || '-'}</td>
+                    <td>${getStatusText(record.leave_status)}</td>
+                    <td>
+                        <button class="btn" onclick="editAttendanceRecord(${record.id})">编辑</button>
+                        <button class="btn btn-danger" onclick="deleteAttendanceRecord(${record.id})">删除</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            switch (status) {
+                case 'pending': return '待审批';
+                case 'approved': return '已批准';
+                case 'rejected': return '已拒绝';
+                default: return '未知';
+            }
+        }
+        
+        // 打开添加考勤记录模态框
+        function openAddAttendanceModal() {
+            document.getElementById('attendanceModalTitle').textContent = '添加考勤记录';
+            document.getElementById('editRecordId').value = '';
+            document.getElementById('attendanceForm').reset();
+            document.getElementById('attendanceModal').style.display = 'block';
+        }
+        
+        // 编辑考勤记录
+        function editAttendanceRecord(recordId) {
+            fetch(`/api/admin/attendance-records`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const record = data.data.find(r => r.id === recordId);
+                    if (record) {
+                        document.getElementById('attendanceModalTitle').textContent = '编辑考勤记录';
+                        document.getElementById('editRecordId').value = recordId;
+                        document.getElementById('attendanceUsername').value = record.username;
+                        document.getElementById('attendanceUserId').value = record.user_id;
+                        document.getElementById('attendancePunchDate').value = record.punch_date;
+                        document.getElementById('attendanceLeaveStart').value = record.leave_start_date || '';
+                        document.getElementById('attendanceLeaveEnd').value = record.leave_end_date || '';
+                        document.getElementById('attendanceLeaveStatus').value = record.leave_status;
+                        document.getElementById('attendanceModal').style.display = 'block';
+                    }
+                }
+            });
+        }
+        
+        // 关闭考勤记录模态框
+        function closeAttendanceModal() {
+            document.getElementById('attendanceModal').style.display = 'none';
+        }
+        
+        // 考勤记录表单提交
+        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const recordId = document.getElementById('editRecordId').value;
+            const username = document.getElementById('attendanceUsername').value;
+            const user_id = document.getElementById('attendanceUserId').value;
+            const punch_date = document.getElementById('attendancePunchDate').value;
+            const leave_start_date = document.getElementById('attendanceLeaveStart').value;
+            const leave_end_date = document.getElementById('attendanceLeaveEnd').value;
+            const leave_status = document.getElementById('attendanceLeaveStatus').value;
+            
+            saveAttendanceRecord({
+                id: recordId,
+                username,
+                user_id,
+                punch_date,
+                leave_start_date,
+                leave_end_date,
+                leave_status
+            });
+        });
+        
+        // 保存考勤记录
+        function saveAttendanceRecord(recordData) {
+            fetch('/api/admin/attendance-records', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(recordData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    closeAttendanceModal();
+                    loadAttendanceRecords();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('操作失败，请重试！', 'error');
+                console.error('Save attendance record error:', error);
+            });
+        }
+        
+        // 删除考勤记录
+        function deleteAttendanceRecord(recordId) {
+            if (confirm('确定要删除这条考勤记录吗？')) {
+                fetch(`/api/admin/attendance-records/${recordId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        loadAttendanceRecords();
+                    } else {
+                        showMessage(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage('删除失败，请重试！', 'error');
+                    console.error('Delete attendance record error:', error);
+                });
+            }
+        }
+        
+        // 搜索考勤记录
+        function searchAttendanceRecords() {
+            const filters = {
+                username: document.getElementById('filterUsername').value.trim(),
+                user_id: document.getElementById('filterUserId').value.trim(),
+                start_date: document.getElementById('filterStartDate').value,
+                end_date: document.getElementById('filterEndDate').value,
+                leave_status: document.getElementById('filterLeaveStatus').value
+            };
+            loadAttendanceRecords(filters);
+        }
+        
+        // 重置筛选条件
+        function resetFilters() {
+            document.getElementById('filterUsername').value = '';
+            document.getElementById('filterUserId').value = '';
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            document.getElementById('filterLeaveStatus').value = '';
+            loadAttendanceRecords();
+        }
+        
+        // 点击考勤记录模态框外部关闭
+        window.onclick = function(event) {
+            const userModal = document.getElementById('userModal');
+            const attendanceModal = document.getElementById('attendanceModal');
+            if (event.target == userModal) {
+                userModal.style.display = 'none';
+            } else if (event.target == attendanceModal) {
+                attendanceModal.style.display = 'none';
+            }
         }
     </script>
 </body>

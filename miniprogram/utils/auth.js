@@ -1,7 +1,7 @@
 // API工具函数，用于与后端通信
 
 // 后端API基础URL
-const BASE_URL = 'http://localhost:5000/api'
+const BASE_URL = 'http://192.168.31.113:5000/api'
 
 /**
  * 封装微信小程序的请求方法
@@ -160,6 +160,51 @@ function approveLeave(leave_id, status, teacher_id) {
   })
 }
 
+/**
+ * 获取班级班委信息
+ * @param {string} className 班级名称
+ * @returns {Promise} 班委信息
+ */
+function getClassMonitor(className) {
+  return request(`/teacher/class-monitor/${className}`)
+}
+
+/**
+ * 任命班委
+ * @param {string} student_id 学生ID
+ * @param {string} class_name 班级名称
+ * @param {string} teacher_id 教师ID
+ * @returns {Promise} 任命结果
+ */
+function appointMonitor(student_id, class_name, teacher_id) {
+  return request('/teacher/appoint-monitor', {
+    method: 'POST',
+    data: {
+      student_id,
+      class_name,
+      teacher_id
+    }
+  })
+}
+
+/**
+ * 撤销班委
+ * @param {string} student_id 学生ID
+ * @param {string} class_name 班级名称
+ * @param {string} teacher_id 教师ID
+ * @returns {Promise} 撤销结果
+ */
+function removeMonitor(student_id, class_name, teacher_id) {
+  return request('/teacher/remove-monitor', {
+    method: 'POST',
+    data: {
+      student_id,
+      class_name,
+      teacher_id
+    }
+  })
+}
+
 module.exports = {
   login,
   submitPunchRecord,
@@ -169,5 +214,8 @@ module.exports = {
   submitLeaveApplication,
   getLeaveRecords,
   getLeaveApplications,
-  approveLeave
+  approveLeave,
+  getClassMonitor,
+  appointMonitor,
+  removeMonitor
 }

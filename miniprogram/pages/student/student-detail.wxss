@@ -88,6 +88,10 @@
   font-weight: bold;
 }
 
+.black-text {
+  color: black;
+}
+
 .result-section {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 20rpx;

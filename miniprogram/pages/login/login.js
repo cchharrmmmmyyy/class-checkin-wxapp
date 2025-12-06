@@ -1,4 +1,6 @@
 // pages/login/login.js
+const auth = require('../../utils/auth');
+
 Page({
 
   /**
@@ -29,7 +31,7 @@ Page({
   /**
    * 登录事件
    */
-  onLogin() {
+  async onLogin() {
     const { user_id, password } = this.data;
     
     // 简单验证
@@ -54,67 +56,57 @@ Page({
       title: '登录中...'
     });
     
-    // 准备登录数据
-    const loginData = {
-      user_id: user_id,
-      password: password
-    };
-    
-    // 调用后端API进行登录
-    wx.request({
-      url: 'http://localhost:5000/api/login',
-      method: 'POST',
-      data: loginData,
-      success: (res) => {
-        wx.hideLoading();
-        
-        if (res.data.success) {
-          wx.showToast({
-            title: '登录成功',
-            icon: 'success'
-          });
-          
-          // 保存用户信息到本地存储
-          wx.setStorageSync('userInfo', res.data.user);
-          
-          // 根据后端返回的重定向URL进行跳转
-          if (res.data.redirect_url) {
-            // 如果是学生角色，跳转到学生页面
-            if (res.data.user.role === 'student') {
-              wx.redirectTo({
-                url: '/pages/student/student'
-              });
-            } else if (res.data.user.role === 'teacher') {
-              wx.redirectTo({
-                url: '/pages/teacher/teacher'
-              });
-            } else if (res.data.user.role === 'monitor') {
-              // 班委角色也跳转到学生页面
-              wx.redirectTo({
-                url: '/pages/student/student'
-              });
-            } else {
-              wx.redirectTo({
-                url: '/pages/student/student'
-              });
-            }
-          }
-        } else {
-          wx.showToast({
-            title: res.data.message || '登录失败',
-            icon: 'none'
-          });
-        }
-      },
-      fail: (err) => {
-        wx.hideLoading();
+    try {
+      // 调用auth.js中的login函数进行登录
+      const res = await auth.login(user_id, password);
+      
+      wx.hideLoading();
+      
+      if (res.success) {
         wx.showToast({
-          title: '网络错误，请检查后端服务',
+          title: '登录成功',
+          icon: 'success'
+        });
+        
+        // 保存用户信息到本地存储
+        wx.setStorageSync('userInfo', res.user);
+        
+        // 根据后端返回的重定向URL进行跳转
+        if (res.redirect_url) {
+          // 如果是学生角色，跳转到学生页面
+          if (res.user.role === 'student') {
+            wx.redirectTo({
+              url: '/pages/student/student'
+            });
+          } else if (res.user.role === 'teacher') {
+            wx.redirectTo({
+              url: '/pages/teacher/teacher'
+            });
+          } else if (res.user.role === 'monitor') {
+            // 班委角色也跳转到学生页面
+            wx.redirectTo({
+              url: '/pages/student/student'
+            });
+          } else {
+            wx.redirectTo({
+              url: '/pages/student/student'
+            });
+          }
+        }
+      } else {
+        wx.showToast({
+          title: res.message || '登录失败',
           icon: 'none'
         });
-        console.error('登录请求失败:', err);
       }
-    });
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({
+        title: '网络错误，请检查后端服务',
+        icon: 'none'
+      });
+      console.error('登录请求失败:', err);
+    }
   },
 
   /**

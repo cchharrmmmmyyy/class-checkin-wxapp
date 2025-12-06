@@ -15,7 +15,7 @@
       <!-- 普通学生显示一个查询按钮 -->
       <view wx:if="{{userInfo.role !== 'monitor'}}" class="single-btn-container">
         <button class="query-btn" bindtap="onQueryMyRecords">
-          <text class="btn-text">查询打卡记录</text>
+          <text class="btn-text black-text">查询打卡记录</text>
         </button>
       </view>
       

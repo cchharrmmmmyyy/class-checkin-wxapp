@@ -210,18 +210,7 @@ Page({
    * 获取班级班委信息
    */
   getClassMonitor(className) {
-    return new Promise((resolve, reject) => {
-      wx.request({
-        url: `http://localhost:5000/api/teacher/class-monitor/${className}`,
-        method: 'GET',
-        success: (res) => {
-          resolve(res.data);
-        },
-        fail: (err) => {
-          reject(err);
-        }
-      });
-    });
+    return auth.getClassMonitor(className);
   },
 
   /**
@@ -261,7 +250,7 @@ Page({
   /**
    * 执行任命班委操作
    */
-  appointMonitor(studentId) {
+  async appointMonitor(studentId) {
     wx.showLoading({
       title: '任命中...'
     });
@@ -275,55 +264,48 @@ Page({
     console.log('发送任命班委请求:', requestData);
     console.log('当前用户信息:', this.data.userInfo);
 
-    // 调用后端API任命班委
-    wx.request({
-      url: 'http://localhost:5000/api/teacher/appoint-monitor',
-      method: 'POST',
-      data: requestData,
-      success: (res) => {
-        console.log('任命班委响应:', res);
-        wx.hideLoading();
+    try {
+      // 调用auth.js中的appointMonitor函数
+      const res = await auth.appointMonitor(studentId, this.data.selectedClass, this.data.userInfo.user_id);
+      console.log('任命班委响应:', res);
+      wx.hideLoading();
+      
+      if (res.success) {
+        wx.showToast({
+          title: '任命成功',
+          icon: 'success'
+        });
         
-        if (res.data.success) {
-          wx.showToast({
-            title: '任命成功',
-            icon: 'success'
-          });
-          
-          // 清空输入框
+        // 清空输入框
+        this.setData({
+          studentId: ''
+        });
+        
+        // 更新班委信息
+        const monitorRes = await this.getClassMonitor(this.data.selectedClass);
+        if (monitorRes.success) {
           this.setData({
-            studentId: ''
-          });
-          
-          // 更新班委信息
-          this.getClassMonitor(this.data.selectedClass)
-            .then(monitorRes => {
-              if (monitorRes.success) {
-                this.setData({
-                  currentMonitors: monitorRes.data || []
-                });
-              }
-            });
-          
-          // 刷新班级打卡记录
-          this.loadClassRecords();
-        } else {
-          wx.showToast({
-            title: res.data.message || '任命失败',
-            icon: 'none'
+            currentMonitors: monitorRes.data || []
           });
         }
-      },
-      fail: (err) => {
-        console.error('任命班委请求失败:', err);
-        wx.hideLoading();
+        
+        // 刷新班级打卡记录
+        this.loadClassRecords();
+      } else {
         wx.showToast({
-          title: '网络错误，请重试',
+          title: res.message || '任命失败',
           icon: 'none'
         });
-        console.error('任命班委失败:', err);
       }
-    });
+    } catch (err) {
+      console.error('任命班委请求失败:', err);
+      wx.hideLoading();
+      wx.showToast({
+        title: '网络错误，请重试',
+        icon: 'none'
+      });
+      console.error('任命班委失败:', err);
+    }
   },
 
   /**
@@ -355,57 +337,47 @@ Page({
   /**
    * 执行移除班委操作
    */
-  removeMonitor(studentId) {
+  async removeMonitor(studentId) {
     wx.showLoading({
       title: '移除中...'
     });
 
-    // 调用后端API移除班委
-    wx.request({
-      url: 'http://localhost:5000/api/teacher/remove-monitor',
-      method: 'POST',
-      data: {
-        student_id: studentId,
-        teacher_id: this.data.userInfo.user_id
-      },
-      success: (res) => {
-        console.log('移除班委响应:', res);
-        wx.hideLoading();
+    try {
+      // 调用auth.js中的removeMonitor函数
+      const res = await auth.removeMonitor(studentId, this.data.selectedClass, this.data.userInfo.user_id);
+      console.log('移除班委响应:', res);
+      wx.hideLoading();
+      
+      if (res.success) {
+        wx.showToast({
+          title: '移除成功',
+          icon: 'success'
+        });
         
-        if (res.data.success) {
-          wx.showToast({
-            title: '移除成功',
-            icon: 'success'
-          });
-          
-          // 更新班委信息
-          this.getClassMonitor(this.data.selectedClass)
-            .then(monitorRes => {
-              if (monitorRes.success) {
-                this.setData({
-                  currentMonitors: monitorRes.data || []
-                });
-              }
-            });
-          
-          // 刷新班级打卡记录
-          this.loadClassRecords();
-        } else {
-          wx.showToast({
-            title: res.data.message || '移除失败',
-            icon: 'none'
+        // 更新班委信息
+        const monitorRes = await this.getClassMonitor(this.data.selectedClass);
+        if (monitorRes.success) {
+          this.setData({
+            currentMonitors: monitorRes.data || []
           });
         }
-      },
-      fail: (err) => {
-        console.error('移除班委请求失败:', err);
-        wx.hideLoading();
+        
+        // 刷新班级打卡记录
+        this.loadClassRecords();
+      } else {
         wx.showToast({
-          title: '网络错误，请重试',
+          title: res.message || '移除失败',
           icon: 'none'
         });
       }
-    });
+    } catch (err) {
+      console.error('移除班委请求失败:', err);
+      wx.hideLoading();
+      wx.showToast({
+        title: '网络错误，请重试',
+        icon: 'none'
+      });
+    }
   },
 
   /**
