@@ -176,6 +176,156 @@ def delete_user(user_id):
             'message': f'删除用户失败: {str(e)}'
         }), 500
 
+# 获取考勤记录列表
+@admin_bp.route('/attendance-records', methods=['GET'])
+def get_attendance_records():
+    """获取考勤记录列表，支持筛选"""
+    try:
+        # 获取查询参数
+        username = request.args.get('username', '').strip()
+        user_id = request.args.get('user_id', '').strip()
+        start_date = request.args.get('start_date', '').strip()
+        end_date = request.args.get('end_date', '').strip()
+        leave_status = request.args.get('leave_status', '').strip()
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 构建查询语句
+        query = "SELECT * FROM punch_records WHERE 1=1"
+        params = []
+        
+        if username:
+            query += " AND username LIKE ?"
+            params.append(f"%{username}%")
+        
+        if user_id:
+            query += " AND user_id LIKE ?"
+            params.append(f"%{user_id}%")
+        
+        if start_date:
+            query += " AND punch_date >= ?"
+            params.append(start_date)
+        
+        if end_date:
+            query += " AND punch_date <= ?"
+            params.append(end_date)
+        
+        if leave_status:
+            query += " AND leave_status = ?"
+            params.append(leave_status)
+        
+        # 添加排序
+        query += " ORDER BY punch_date DESC"
+        
+        cursor.execute(query, params)
+        records = cursor.fetchall()
+        conn.close()
+        
+        # 转换为字典列表
+        record_list = []
+        for record in records:
+            record_list.append({
+                'id': record['id'],
+                'username': record['username'],
+                'user_id': record['user_id'],
+                'punch_date': record['punch_date'],
+                'leave_start_date': record['leave_start_date'],
+                'leave_end_date': record['leave_end_date'],
+                'leave_status': record['leave_status']
+            })
+        
+        return jsonify({
+            'success': True,
+            'data': record_list
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'获取考勤记录失败: {str(e)}'
+        }), 500
+
+# 修改考勤记录
+@admin_bp.route('/attendance-records', methods=['POST'])
+def add_or_update_attendance_record():
+    """添加或修改考勤记录"""
+    try:
+        data = request.get_json()
+        record_id = data.get('id', '').strip()
+        username = data.get('username', '').strip()
+        user_id = data.get('user_id', '').strip()
+        punch_date = data.get('punch_date', '').strip()
+        leave_start_date = data.get('leave_start_date', '')
+        leave_end_date = data.get('leave_end_date', '')
+        leave_status = data.get('leave_status', 'pending').strip()
+        
+        # 验证必填字段
+        if not username or not user_id or not punch_date:
+            return jsonify({
+                'success': False,
+                'message': '用户名、用户ID和打卡日期不能为空'
+            }), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        if record_id:
+            # 更新现有记录
+            cursor.execute(
+                "UPDATE punch_records SET username = ?, user_id = ?, punch_date = ?, leave_start_date = ?, leave_end_date = ?, leave_status = ? WHERE id = ?",
+                (username, user_id, punch_date, leave_start_date, leave_end_date, leave_status, record_id)
+            )
+            message = '考勤记录更新成功'
+        else:
+            # 添加新记录
+            cursor.execute(
+                "INSERT INTO punch_records (username, user_id, punch_date, leave_start_date, leave_end_date, leave_status) VALUES (?, ?, ?, ?, ?, ?)",
+                (username, user_id, punch_date, leave_start_date, leave_end_date, leave_status)
+            )
+            message = '考勤记录添加成功'
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': message
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'操作考勤记录失败: {str(e)}'
+        }), 500
+
+# 删除考勤记录
+@admin_bp.route('/attendance-records/<record_id>', methods=['DELETE'])
+def delete_attendance_record(record_id):
+    """删除指定考勤记录"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            "DELETE FROM punch_records WHERE id = ?",
+            (record_id,)
+        )
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': '考勤记录删除成功'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'删除考勤记录失败: {str(e)}'
+        }), 500
+
 # 静态文件服务
 @admin_bp.route('/admin.html')
 def admin_page():
