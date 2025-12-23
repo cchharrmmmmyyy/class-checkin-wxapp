@@ -1,7 +1,7 @@
 // API工具函数，用于与后端通信
 
 // 后端API基础URL
-const BASE_URL = 'http://192.168.31.113:5000/api'
+const BASE_URL = 'http://127.0.0.1:5000/api'
 
 /**
  * 封装微信小程序的请求方法
@@ -43,7 +43,22 @@ function request(url, options = {}) {
       },
       fail: (err) => {
         console.error(`请求网络错误:`, err)
-        reject(err)
+        
+        // 增强错误信息
+        let enhancedError = err
+        if (err.errMsg) {
+          if (err.errMsg.includes('timeout')) {
+            enhancedError = new Error('网络连接超时，请检查网络设置')
+            enhancedError.originalError = err
+            enhancedError.type = 'timeout'
+          } else if (err.errMsg.includes('fail')) {
+            enhancedError = new Error('网络连接失败，请检查后端服务')
+            enhancedError.originalError = err
+            enhancedError.type = 'network_error'
+          }
+        }
+        
+        reject(enhancedError)
       }
     })
   })
