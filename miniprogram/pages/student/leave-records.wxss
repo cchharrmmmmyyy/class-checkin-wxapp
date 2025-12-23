@@ -1,15 +1,36 @@
 /* pages/student/leave-records.wxss */
+/* 使用全局样式类 */
 .container {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(45deg, #2E8B57, #3CB371, #4F9D5D, #8FBC8F);
+  background-size: 600% 600%;
+  animation: vibrantBackground 8s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
 }
 
+/* 背景装饰效果 */
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  animation: rippleEffect 6s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* 头部样式 */
 .header {
-  padding: 40rpx 30rpx 20rpx;
   text-align: center;
-  color: white;
+  margin-bottom: 60rpx;
+  position: relative;
+  z-index: 2;
 }
 
 .nav-bar {
@@ -17,16 +38,26 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20rpx;
+  padding: 0 20rpx;
 }
 
-.back-btn {
-  width: 80rpx;
+.back-btn, .refresh-btn {
+  width: 100rpx;
   height: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 30rpx;
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.back-btn:active, .refresh-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .back-icon {
@@ -35,48 +66,60 @@
   font-weight: bold;
 }
 
-.refresh-btn {
-  width: 80rpx;
-  height: 60rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 30rpx;
-}
-
 .refresh-icon {
   font-size: 28rpx;
   color: white;
+  font-weight: 500;
 }
 
 .placeholder {
-  width: 80rpx;
+  width: 100rpx;
 }
 
 .title {
   font-size: 48rpx;
   font-weight: bold;
+  color: white;
+  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.2);
+  letter-spacing: 4rpx;
 }
 
 .welcome {
   font-size: 32rpx;
+  color: white;
   opacity: 0.9;
+  text-shadow: 0 1rpx 5rpx rgba(0, 0, 0, 0.15);
+  margin-top: 10rpx;
+  display: block;
 }
 
+/* 主要内容区域 */
 .main-content {
   flex: 1;
   padding: 40rpx 30rpx;
   overflow-y: auto;
+  position: relative;
+  z-index: 2;
 }
 
+/* 记录容器 */
 .records-container {
-  background: white;
-  border-radius: 40rpx;
-  padding: 30rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(30rpx);
+  -webkit-backdrop-filter: blur(30rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 30rpx;
+  padding: 40rpx 30rpx;
+  box-shadow: 0 20rpx 60rpx rgba(46, 139, 87, 0.15);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.records-container:hover {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 30rpx 80rpx rgba(46, 139, 87, 0.2);
+}
+
+/* 加载状态 */
 .loading {
   display: flex;
   justify-content: center;
@@ -86,89 +129,148 @@
 
 .loading-text {
   font-size: 32rpx;
-  color: #666;
+  color: var(--primary-color);
+  font-weight: 500;
+  letter-spacing: 2rpx;
 }
 
+/* 无记录状态 */
 .no-records {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 200rpx;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20rpx;
+  box-shadow: 0 5rpx 20rpx rgba(46, 139, 87, 0.1);
 }
 
 .no-records-text {
   font-size: 32rpx;
-  color: #999;
+  color: var(--light-text);
+  font-weight: 500;
+  letter-spacing: 2rpx;
 }
 
+/* 记录列表 */
 .records-list {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 30rpx;
 }
 
+/* 记录项 */
 .record-item {
-  background: #f9f9f9;
+  background: rgba(255, 255, 255, 0.8);
   border-radius: 20rpx;
-  padding: 30rpx;
-  border-left: 8rpx solid #667eea;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  padding: 35rpx;
+  border-left: 8rpx solid var(--primary-color);
+  box-shadow: 0 5rpx 20rpx rgba(46, 139, 87, 0.1);
+  transition: all 0.3s ease;
 }
 
+.record-item:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10rpx 30rpx rgba(46, 139, 87, 0.2);
+  transform: translateX(5rpx);
+}
+
+/* 记录头部 */
 .record-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 25rpx;
+  flex-wrap: wrap;
+  gap: 20rpx;
 }
 
 .record-date {
   font-size: 32rpx;
-  color: #333;
+  color: var(--text-color);
   font-weight: bold;
+  letter-spacing: 1rpx;
+  flex: 1;
+  min-width: 200rpx;
 }
 
+/* 状态标签 */
 .status-tag {
-  padding: 10rpx 20rpx;
-  border-radius: 20rpx;
-  font-size: 24rpx;
+  padding: 12rpx 25rpx;
+  border-radius: 25rpx;
+  font-size: 26rpx;
   font-weight: bold;
+  box-shadow: 0 3rpx 10rpx rgba(0, 0, 0, 0.1);
 }
 
-.status-text.pending {
+/* 待审批状态 */
+.status-tag .status-text.pending {
   color: #ff9800;
 }
 
-.status-text.approved {
-  color: #4caf50;
+.status-tag:has(.pending) {
+  background: rgba(255, 152, 0, 0.1);
 }
 
-.status-text.rejected {
-  color: #f44336;
+/* 已批准状态 */
+.status-tag .status-text.approved {
+  color: var(--primary-color);
 }
 
-.status-tag {
-  background: #e3f2fd;
+.status-tag:has(.approved) {
+  background: rgba(46, 139, 87, 0.1);
 }
 
-.status-tag.pending {
-  background: #fff3e0;
+/* 已拒绝状态 */
+.status-tag .status-text.rejected {
+  color: #ff6b6b;
 }
 
-.status-tag.approved {
-  background: #e8f5e8;
+.status-tag:has(.rejected) {
+  background: rgba(255, 107, 107, 0.1);
 }
 
-.status-tag.rejected {
-  background: #ffebee;
-}
-
+/* 记录底部 */
 .record-footer {
   display: flex;
   justify-content: flex-end;
+  padding-top: 20rpx;
+  border-top: 1rpx solid rgba(46, 139, 87, 0.1);
 }
 
 .record-id {
-  font-size: 24rpx;
-  color: #999;
+  font-size: 26rpx;
+  color: var(--light-text);
+  font-weight: 500;
+  letter-spacing: 1rpx;
+}
+
+/* 动画效果 */
+@keyframes vibrantBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes rippleEffect {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
 }

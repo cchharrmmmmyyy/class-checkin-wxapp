@@ -1,15 +1,30 @@
 /* pages/student/student.wxss */
+/* 使用全局样式类 */
 .container {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(45deg, #2E8B57, #3CB371, #4F9D5D, #8FBC8F);
+  background-size: 600% 600%;
+  animation: vibrantBackground 8s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
 }
 
+/* 页面内容 */
+.page-content {
+  flex: 1;
+  width: 100%;
+  padding: 40rpx 30rpx;
+  box-sizing: border-box;
+}
+
+/* 头部样式 */
 .header {
-  padding: 40rpx 30rpx 20rpx;
   text-align: center;
-  color: white;
+  margin-bottom: 60rpx;
+  position: relative;
+  z-index: 2;
 }
 
 .nav-bar {
@@ -17,133 +32,241 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20rpx;
+  padding: 0 20rpx;
 }
 
 .placeholder {
-  width: 80rpx;
+  width: 120rpx;
 }
 
 .title {
   font-size: 48rpx;
   font-weight: bold;
+  color: white;
+  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.2);
+  letter-spacing: 4rpx;
 }
 
 .detail-btn {
-  width: 80rpx;
+  width: 120rpx;
   height: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 30rpx;
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.detail-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .detail-icon {
   font-size: 28rpx;
   color: white;
+  font-weight: 500;
 }
 
 .welcome {
   font-size: 32rpx;
+  color: white;
   opacity: 0.9;
+  text-shadow: 0 1rpx 5rpx rgba(0, 0, 0, 0.15);
+  margin-top: 10rpx;
+  display: block;
 }
 
+/* 主要内容区域 */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 30rpx;
+  gap: 80rpx;
+  position: relative;
+  z-index: 2;
 }
 
+/* 打卡区域 */
 .punch-card-section {
   text-align: center;
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 60rpx;
+  gap: 30rpx;
 }
 
+/* 打卡按钮 */
 .punch-btn {
   width: 300rpx;
   height: 300rpx;
   border-radius: 50%;
-  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
   border: none;
-  box-shadow: 0 10rpx 30rpx rgba(255, 107, 107, 0.3);
+  box-shadow: 0 20rpx 60rpx rgba(46, 139, 87, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 40rpx;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: vibrantFloat 3s ease-in-out infinite;
+}
+
+.punch-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  pointer-events: none;
+}
+
+.punch-btn:active::after {
+  width: 400rpx;
+  height: 400rpx;
 }
 
 .punch-btn:active {
   transform: scale(0.95);
-  box-shadow: 0 5rpx 15rpx rgba(255, 107, 107, 0.5);
+  box-shadow: 0 10rpx 40rpx rgba(46, 139, 87, 0.5);
+  background: linear-gradient(135deg, #287d4b 0%, #36a365 100%);
 }
 
-.btn-text {
+.punch-btn:hover {
+  box-shadow: 0 30rpx 80rpx rgba(46, 139, 87, 0.6);
+  transform: translateY(-5rpx);
+}
+
+.punch-btn .btn-text {
   color: white;
-  font-size: 48rpx;
+  font-size: 56rpx;
   font-weight: bold;
+  letter-spacing: 8rpx;
+  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
 }
 
 .punch-time {
   color: white;
   font-size: 28rpx;
-  opacity: 0.8;
+  opacity: 0.9;
   display: block;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 15rpx 30rpx;
+  border-radius: 25rpx;
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 5rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
+/* 请假功能区域 */
 .leave-section {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 40rpx;
-  margin-top: 0;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
+}
+
+/* 请假按钮 */
+.leave-btn, .leave-records-btn {
+  width: 220rpx;
+  height: 90rpx;
+  border-radius: 45rpx;
+  border: none;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
 }
 
 .leave-btn {
-  width: 200rpx;
-  height: 80rpx;
-  border-radius: 40rpx;
-  background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-  border: none;
-  box-shadow: 0 6rpx 20rpx rgba(78, 205, 196, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.leave-btn:active {
-  transform: scale(0.95);
-  box-shadow: 0 3rpx 10rpx rgba(78, 205, 196, 0.5);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--primary-color);
+  border: 2rpx solid var(--primary-color);
 }
 
 .leave-records-btn {
-  width: 200rpx;
-  height: 80rpx;
-  border-radius: 40rpx;
-  background: linear-gradient(45deg, #a8edea, #fed6e3);
-  border: none;
-  box-shadow: 0 6rpx 20rpx rgba(168, 237, 234, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+  color: white;
 }
 
-.leave-records-btn:active {
+.leave-btn:active, .leave-records-btn:active {
   transform: scale(0.95);
-  box-shadow: 0 3rpx 10rpx rgba(168, 237, 234, 0.5);
 }
 
-.leave-records-btn .btn-text {
-  color: #333;
+.leave-btn:hover {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 15rpx 40rpx rgba(46, 139, 87, 0.4);
+}
+
+.leave-records-btn:hover {
+  box-shadow: 0 15rpx 40rpx rgba(46, 139, 87, 0.4);
+  transform: translateY(-3rpx);
+}
+
+.leave-btn .btn-text, .leave-records-btn .btn-text {
+  font-size: 32rpx;
+  font-weight: bold;
+  letter-spacing: 2rpx;
+  position: relative;
+  z-index: 1;
+}
+
+/* 背景装饰效果 */
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  animation: rippleEffect 6s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes rippleEffect {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* 浮动动画 */
+@keyframes vibrantFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-20rpx) scale(1.05);
+  }
 }

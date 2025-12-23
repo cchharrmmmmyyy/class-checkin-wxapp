@@ -1,90 +1,461 @@
 /* pages/login/login.wxss */
+
+/* 登录容器 */
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(45deg, #2E8B57, #3CB371, #4F9D5D, #8FBC8F, #6B8E23, #90EE90);
+  background-size: 600% 600%;
   padding: 40rpx;
+  position: relative;
+  overflow: hidden;
+  animation: vibrantBackground 8s ease-in-out infinite;
 }
 
+/* 活力背景动画 */
+@keyframes vibrantBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 背景波纹效果 */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  animation: rippleEffect 6s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes rippleEffect {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* 自定义顶部栏 */
+.custom-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 88rpx;
+  background: linear-gradient(90deg, #2E8B57 0%, #3CB371 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  box-shadow: 0 2rpx 20rpx rgba(46, 139, 87, 0.3);
+}
+
+.navbar-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: white;
+  letter-spacing: 2rpx;
+  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 几何装饰元素样式 */
+.decor-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.8;
+  z-index: 1;
+  filter: blur(1rpx);
+  box-shadow: 0 0 30rpx rgba(255, 255, 255, 0.3);
+}
+
+.decor-circle-1 {
+  width: 300rpx;
+  height: 300rpx;
+  background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+  top: -100rpx;
+  left: -100rpx;
+  animation: vibrantFloat 4s ease-in-out infinite, vibrantPulse 2s ease-in-out infinite alternate;
+}
+
+.decor-circle-2 {
+  width: 200rpx;
+  height: 200rpx;
+  background: linear-gradient(135deg, #3CB371 0%, #4F9D5D 100%);
+  bottom: -50rpx;
+  right: -50rpx;
+  animation: vibrantFloat 5s ease-in-out infinite reverse, vibrantPulse 2.5s ease-in-out infinite alternate-reverse;
+}
+
+.decor-circle-3 {
+  width: 150rpx;
+  height: 150rpx;
+  background: linear-gradient(135deg, #4F9D5D 0%, #2E8B57 100%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.4;
+  animation: vibrantFloat 6s ease-in-out infinite, vibrantPulse 3s ease-in-out infinite alternate;
+}
+
+.decor-circle-4 {
+  width: 80rpx;
+  height: 80rpx;
+  background: linear-gradient(135deg, #8FBC8F 0%, #3CB371 100%);
+  top: 20%;
+  right: 15%;
+  opacity: 0.7;
+  animation: vibrantFloat 3.5s ease-in-out infinite, vibrantRotate 8s linear infinite;
+}
+
+.decor-circle-5 {
+  width: 120rpx;
+  height: 120rpx;
+  background: linear-gradient(135deg, #6B8E23 0%, #8FBC8F 100%);
+  bottom: 25%;
+  left: 10%;
+  opacity: 0.6;
+  animation: vibrantFloat 4.5s ease-in-out infinite reverse, vibrantRotate 10s linear infinite reverse;
+}
+
+/* 装饰线条 */
+.decor-line {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, rgba(46, 139, 87, 0.4), transparent);
+  opacity: 0.8;
+  z-index: 1;
+  box-shadow: 0 0 10rpx rgba(46, 139, 87, 0.5);
+}
+
+.decor-line-1 {
+  width: 200rpx;
+  height: 2rpx;
+  top: 30%;
+  left: 20%;
+  animation: vibrantLineSlide 5s ease-in-out infinite;
+}
+
+.decor-line-2 {
+  width: 300rpx;
+  height: 2rpx;
+  bottom: 30%;
+  right: 15%;
+  animation: vibrantLineSlide 6s ease-in-out infinite reverse;
+}
+
+/* 线条滑动动画 */
+@keyframes vibrantLineSlide {
+  0% {
+    transform: translateX(-200rpx) scaleX(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(0) scaleX(1) rotate(0deg);
+  }
+  100% {
+    transform: translateX(200rpx) scaleX(0) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+/* 活力浮动动画 */
+@keyframes vibrantFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-40rpx) scale(1.1) rotate(90deg);
+  }
+  50% {
+    transform: translateY(-20rpx) scale(1.15) rotate(180deg);
+  }
+  75% {
+    transform: translateY(-40rpx) scale(1.1) rotate(270deg);
+  }
+}
+
+/* 活力脉冲动画 */
+@keyframes vibrantPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+    box-shadow: 0 0 30rpx rgba(255, 255, 255, 0.3);
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0.9;
+    box-shadow: 0 0 50rpx rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* 活力旋转动画 */
+@keyframes vibrantRotate {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+  to {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* 登录表单 - 半透明磨砂材质效果 */
 .login-form {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 60rpx 50rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(30rpx);
+  -webkit-backdrop-filter: blur(30rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 30rpx;
+  padding: 80rpx 50rpx;
+  box-shadow: 0 20rpx 60rpx rgba(46, 139, 87, 0.15);
   width: 100%;
   max-width: 600rpx;
+  position: relative;
+  z-index: 2;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 100rpx;
 }
 
+.login-form:hover {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 30rpx 80rpx rgba(46, 139, 87, 0.2);
+  transform: translateY(-10rpx);
+}
+
+/* Logo样式 */
 .logo {
   text-align: center;
-  margin-bottom: 60rpx;
+  margin-bottom: 80rpx;
 }
 
 .logo-text {
-  font-size: 48rpx;
+  font-size: 52rpx;
   font-weight: bold;
   color: #333;
+  letter-spacing: 8rpx;
+  background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2rpx 10rpx rgba(46, 139, 87, 0.2);
 }
 
+/* 系统副标题样式 */
+.subtitle {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2E8B57;
+  margin-top: 20rpx;
+  letter-spacing: 4rpx;
+  text-align: center;
+  text-shadow: 0 1rpx 5rpx rgba(46, 139, 87, 0.15);
+  opacity: 0.9;
+}
+
+/* 输入组样式 */
 .input-group {
-  margin-bottom: 50rpx;
+  margin-bottom: 60rpx;
 }
 
 .input-item {
-  margin-bottom: 40rpx;
+  margin-bottom: 50rpx;
+  position: relative;
 }
 
+/* 标签样式 */
 .label {
   display: block;
   font-size: 28rpx;
   color: #666;
   margin-bottom: 15rpx;
+  font-weight: 500;
+  letter-spacing: 1rpx;
 }
 
+/* 输入框样式 - 优化对比度设计 */
 .input {
   width: 100%;
   height: 80rpx;
-  border: 2rpx solid #e0e0e0;
-  border-radius: 10rpx;
-  padding: 0 25rpx;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-bottom: 2rpx solid #b8d4c6;
+  padding: 0 20rpx;
   font-size: 28rpx;
-  box-sizing: border-box;
-  transition: border-color 0.3s;
+  color: #2E8B57;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  outline: none;
+  border-radius: 8rpx;
+  box-shadow: 0 2rpx 10rpx rgba(46, 139, 87, 0.08);
 }
 
 .input:focus {
-  border-color: #667eea;
+  border-bottom-color: #2E8B57;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4rpx 20rpx rgba(46, 139, 87, 0.15);
+  transform: translateY(-2rpx);
 }
 
 .placeholder {
-  color: #ccc;
+  color: #8FBC8F;
   font-size: 28rpx;
+  font-weight: 400;
 }
 
+/* 登录按钮样式 */
 .login-btn {
   width: 100%;
-  height: 80rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  height: 90rpx;
+  background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
   color: #fff;
   border: none;
-  border-radius: 10rpx;
-  font-size: 32rpx;
+  border-radius: 45rpx;
+  font-size: 34rpx;
   font-weight: bold;
-  margin-bottom: 30rpx;
+  margin-bottom: 40rpx;
+  letter-spacing: 2rpx;
+  box-shadow: 0 10rpx 30rpx rgba(46, 139, 87, 0.4);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+}
+
+.login-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s;
+}
+
+/* 点击波纹效果 */
+.login-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  pointer-events: none;
+}
+
+.login-btn:active::after {
+  width: 300rpx;
+  height: 300rpx;
 }
 
 .login-btn:active {
-  opacity: 0.8;
+  transform: scale(0.95) translateY(2rpx);
+  box-shadow: 0 5rpx 20rpx rgba(46, 139, 87, 0.3);
+  background: linear-gradient(135deg, #287d4b 0%, #36a365 100%);
 }
 
+.login-btn:hover {
+  box-shadow: 0 15rpx 40rpx rgba(46, 139, 87, 0.5);
+  transform: translateY(-3rpx);
+}
+
+.login-btn:hover::before {
+  left: 100%;
+}
+
+
+
+/* 按钮文本和图标 */
+.btn-text {
+  font-size: 34rpx;
+  font-weight: bold;
+  margin-right: 10rpx;
+  transition: all 0.3s ease;
+}
+
+.btn-icon {
+  font-size: 28rpx;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover .btn-icon {
+  transform: translateX(5rpx);
+  animation: iconBounce 0.5s ease;
+}
+
+/* 图标弹跳动画 */
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateX(5rpx);
+  }
+  50% {
+    transform: translateX(10rpx);
+  }
+}
+
+/* 注册链接样式 */
 .register-link {
   text-align: center;
 }
 
 .link-text {
-  color: #667eea;
-  font-size: 26rpx;
-  text-decoration: underline;
+  color: #2E8B57;
+  font-size: 28rpx;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+}
+
+.link-text::after {
+  content: '';
+  position: absolute;
+  bottom: -4rpx;
+  left: 0;
+  width: 0;
+  height: 2rpx;
+  background: linear-gradient(90deg, #2E8B57 0%, #3CB371 100%);
+  transition: width 0.3s ease;
+}
+
+.link-text:hover {
+  color: #3CB371;
+  letter-spacing: 2rpx;
+}
+
+.link-text:hover::after {
+  width: 100%;
 }

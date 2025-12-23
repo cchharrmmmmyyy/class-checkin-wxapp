@@ -8,10 +8,10 @@
     "pages/teacher/teacher"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#1E90FF",
+    "navigationBarBackgroundColor": "#2E8B57",
     "navigationBarTextStyle": "white",
     "navigationBarTitleText": "校园打卡",
-    "backgroundColor": "#f8f8f8"
+    "backgroundColor": "#f0f5f0"
   },
   "networkTimeout": {
     "request": 10000
