@@ -19,6 +19,12 @@ from admin import admin_bp
 from database import init_database, execute_query_one, get_db_connection
 
 # 注册学生蓝图
+#什么是蓝图？
+"""
+蓝图（Blueprint）是Flask中用于组织路由和视图函数的工具，
+相当于一个"路由集合"。它允许你将不同功能模块的路由分开管理，
+使代码结构更清晰、易于维护。
+"""
 app.register_blueprint(student_function)
 
 # 注册教师蓝图
@@ -42,13 +48,13 @@ def check_and_init_database():
     try:
         # 检查表是否存在
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
-        if cursor.fetchone() is None:
+        if cursor.fetchone() is None:#获取查询结果的第一行，如果没有结果则返回 None
             init_database()  # 调用真正的初始化函数
         else:
             # 检查punch_records表是否有leave_status字段
             cursor.execute("PRAGMA table_info(punch_records)")
             columns = cursor.fetchall()
-            column_names = [column[1] for column in columns]
+            column_names = [column[1] for column in columns]# 提取所有列名到列表
             
             if 'leave_status' not in column_names:
                 print("更新数据库表结构")
