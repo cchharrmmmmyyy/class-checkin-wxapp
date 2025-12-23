@@ -357,9 +357,9 @@ def get_leave_applications():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # 查询班级待审批请假申请
+        # 查询班级待审批请假申请，只查询有请假日期的记录
         cursor.execute(
-            "SELECT * FROM punch_records WHERE leave_status = 'pending' AND user_id IN (SELECT user_id FROM users WHERE class = ?) ORDER BY id DESC",
+            "SELECT * FROM punch_records WHERE leave_status = 'pending' AND leave_start_date IS NOT NULL AND leave_end_date IS NOT NULL AND user_id IN (SELECT user_id FROM users WHERE class = ?) ORDER BY id DESC",
             (class_name,)
         )
         

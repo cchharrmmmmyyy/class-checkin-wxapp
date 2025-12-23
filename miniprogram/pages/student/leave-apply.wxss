@@ -1,15 +1,36 @@
 /* pages/student/leave-apply.wxss */
+/* 使用全局样式类 */
 .container {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(45deg, #2E8B57, #3CB371, #4F9D5D, #8FBC8F);
+  background-size: 600% 600%;
+  animation: vibrantBackground 8s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
 }
 
+/* 背景装饰效果 */
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  animation: rippleEffect 6s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* 头部样式 */
 .header {
-  padding: 40rpx 30rpx 20rpx;
   text-align: center;
-  color: white;
+  margin-bottom: 60rpx;
+  position: relative;
+  z-index: 2;
 }
 
 .nav-bar {
@@ -17,6 +38,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20rpx;
+  padding: 0 20rpx;
 }
 
 .back-btn {
@@ -27,6 +49,15 @@
   justify-content: center;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 30rpx;
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.back-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .back-icon {
@@ -42,13 +73,21 @@
 .title {
   font-size: 48rpx;
   font-weight: bold;
+  color: white;
+  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.2);
+  letter-spacing: 4rpx;
 }
 
 .welcome {
   font-size: 32rpx;
+  color: white;
   opacity: 0.9;
+  text-shadow: 0 1rpx 5rpx rgba(0, 0, 0, 0.15);
+  margin-top: 10rpx;
+  display: block;
 }
 
+/* 主要内容区域 */
 .main-content {
   flex: 1;
   padding: 40rpx 30rpx;
@@ -56,19 +95,34 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  z-index: 2;
 }
 
+/* 表单样式 */
 .leave-form {
-  background: white;
-  border-radius: 40rpx;
-  padding: 40rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(30rpx);
+  -webkit-backdrop-filter: blur(30rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 30rpx;
+  padding: 60rpx 40rpx;
+  box-shadow: 0 20rpx 60rpx rgba(46, 139, 87, 0.15);
   width: 100%;
+  max-width: 600rpx;
   box-sizing: border-box;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.leave-form:hover {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 30rpx 80rpx rgba(46, 139, 87, 0.2);
+  transform: translateY(-10rpx);
+}
+
+/* 表单项目 */
 .form-item {
-  margin-bottom: 40rpx;
+  margin-bottom: 60rpx;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -76,76 +130,137 @@
 }
 
 .form-label {
-  font-size: 32rpx;
-  color: #333;
-  margin-bottom: 20rpx;
+  font-size: 36rpx;
+  color: var(--primary-color);
+  margin-bottom: 25rpx;
   font-weight: bold;
+  letter-spacing: 2rpx;
 }
 
+/* 日期选择器样式 */
 .date-picker {
-  height: 80rpx;
-  border: 2rpx solid #ddd;
-  border-radius: 40rpx;
+  height: 110rpx;
+  border: 2rpx solid var(--light-green);
+  border-radius: 55rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30rpx;
-  background: #f9f9f9;
+  padding: 0 40rpx;
+  background: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.date-picker:active {
+  transform: scale(0.98);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.date-picker:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 8rpx 25rpx rgba(46, 139, 87, 0.2);
 }
 
 .date-text {
-  font-size: 32rpx;
-  color: #333;
+  font-size: 38rpx;
+  color: var(--text-color);
+  font-weight: 500;
 }
 
 .date-arrow {
-  font-size: 24rpx;
-  color: #999;
-}
-
-.form-tip {
   font-size: 28rpx;
-  color: #666;
-  margin-top: 10rpx;
-  text-align: right;
+  color: var(--light-green);
+  transition: transform 0.3s ease;
 }
 
+.date-picker:active .date-arrow {
+  transform: rotate(180deg);
+}
+
+/* 表单提示 */
+.form-tip {
+  font-size: 32rpx;
+  color: var(--primary-color);
+  margin-top: 15rpx;
+  text-align: right;
+  font-weight: 600;
+  background: rgba(46, 139, 87, 0.1);
+  padding: 15rpx 25rpx;
+  border-radius: 25rpx;
+  align-self: flex-end;
+  box-shadow: 0 3rpx 15rpx rgba(46, 139, 87, 0.1);
+}
+
+/* 提交按钮 */
 .submit-btn {
   width: 100%;
   height: 100rpx;
   border-radius: 50rpx;
-  background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+  background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
   border: none;
-  box-shadow: 0 6rpx 20rpx rgba(78, 205, 196, 0.3);
+  box-shadow: 0 10rpx 30rpx rgba(46, 139, 87, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 20rpx;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+}
+
+.submit-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  pointer-events: none;
+}
+
+.submit-btn:active::after {
+  width: 400rpx;
+  height: 400rpx;
 }
 
 .submit-btn:active {
   transform: scale(0.95);
-  box-shadow: 0 3rpx 10rpx rgba(78, 205, 196, 0.5);
+  box-shadow: 0 5rpx 20rpx rgba(46, 139, 87, 0.3);
+  background: linear-gradient(135deg, #287d4b 0%, #36a365 100%);
 }
 
 .submit-btn:disabled {
-  background: #ccc;
+  background: rgba(204, 204, 204, 0.8);
   box-shadow: none;
   transform: none;
+  border: 2rpx solid #ddd;
+}
+
+.submit-btn:hover:not(:disabled) {
+  box-shadow: 0 15rpx 40rpx rgba(46, 139, 87, 0.6);
+  transform: translateY(-5rpx);
 }
 
 .btn-text {
   color: white;
   font-size: 36rpx;
   font-weight: bold;
+  letter-spacing: 4rpx;
+  position: relative;
+  z-index: 1;
 }
 
 .submit-btn:disabled .btn-text {
   color: #999;
 }
 
-/* 日期选择器样式 */
+/* 日期选择器弹窗样式 */
 .picker-mask {
   position: fixed;
   top: 0;
@@ -161,10 +276,13 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30rpx);
+  -webkit-backdrop-filter: blur(30rpx);
   border-radius: 40rpx 40rpx 0 0;
   padding: 30rpx;
   z-index: 1000;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.3);
 }
 
 .picker-header {
@@ -172,16 +290,59 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30rpx;
+  padding: 0 10rpx;
 }
 
 .picker-title {
   font-size: 36rpx;
   font-weight: bold;
-  color: #333;
+  color: var(--primary-color);
+  letter-spacing: 2rpx;
 }
 
 .picker-btn {
   font-size: 32rpx;
-  color: #4ecdc4;
+  color: var(--primary-color);
   font-weight: bold;
+  transition: all 0.3s ease;
+  padding: 10rpx 20rpx;
+  border-radius: 25rpx;
+}
+
+.picker-btn:active {
+  background: rgba(46, 139, 87, 0.1);
+}
+
+.picker-btn:hover {
+  color: var(--secondary-color);
+}
+
+/* 动画效果 */
+@keyframes vibrantBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes rippleEffect {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
 }

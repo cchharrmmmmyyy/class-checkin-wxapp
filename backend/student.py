@@ -129,7 +129,7 @@ def apply_leave():
         leave_end_date = data.get('leave_end_date', '')
         
         # 验证输入
-        if not username or not user_id or not leave_start_date or not leave_end_date:
+        if not username or not user_id or not leave_start_date or not leave_end_date or leave_start_date == 'null' or leave_end_date == 'null' or leave_start_date == 'undefined' or leave_end_date == 'undefined':
             return jsonify({
                 'success': False,
                 'message': '用户名、用户ID、请假开始和结束日期不能为空'

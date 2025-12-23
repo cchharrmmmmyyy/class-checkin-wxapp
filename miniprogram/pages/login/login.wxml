@@ -1,8 +1,23 @@
 <!--pages/login/login.wxml-->
 <view class="login-container">
+  <!-- 自定义顶部栏 -->
+  <view class="custom-navbar">
+    <view class="navbar-title">校园打卡</view>
+  </view>
+  
+  <!-- 几何装饰元素 -->
+  <view class="decor-circle decor-circle-1"></view>
+  <view class="decor-circle decor-circle-2"></view>
+  <view class="decor-circle decor-circle-3"></view>
+  <view class="decor-circle decor-circle-4"></view>
+  <view class="decor-circle decor-circle-5"></view>
+  <view class="decor-line decor-line-1"></view>
+  <view class="decor-line decor-line-2"></view>
+  
   <view class="login-form">
     <view class="logo">
       <text class="logo-text">登录</text>
+      <text class="subtitle">校园打卡系统</text>
     </view>
     
     <view class="input-group">
@@ -31,7 +46,10 @@
       </view>
     </view>
     
-    <button class="login-btn" bindtap="onLogin">登录</button>
+    <button class="login-btn" bindtap="onLogin">
+      <span class="btn-text">登录</span>
+      <span class="btn-icon">→</span>
+    </button>
     
     <view class="register-link">
       <text class="link-text" bindtap="onRegister">没有账号？立即注册</text>
