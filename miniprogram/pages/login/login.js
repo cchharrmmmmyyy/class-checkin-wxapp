@@ -101,11 +101,52 @@ Page({
       }
     } catch (err) {
       wx.hideLoading();
+      
+      // 更详细的错误处理
+      let errorMessage = '登录失败，请重试';
+      
+      // 判断错误类型
+      if (err.errMsg && err.errMsg.includes('request:fail')) {
+        // 网络请求失败
+        if (err.errMsg.includes('timeout')) {
+          errorMessage = '网络连接超时，请检查网络设置';
+        } else if (err.errMsg.includes('fail')) {
+          errorMessage = '网络连接失败，请检查后端服务是否正常运行';
+        }
+      } else if (err.statusCode) {
+        // HTTP状态码错误
+        switch (err.statusCode) {
+          case 401:
+            errorMessage = '学号/工号或密码错误';
+            break;
+          case 403:
+            errorMessage = '账号被禁用，请联系管理员';
+            break;
+          case 404:
+            errorMessage = '登录服务不可用，请联系技术支持';
+            break;
+          case 500:
+            errorMessage = '服务器内部错误，请稍后再试';
+            break;
+          default:
+            errorMessage = `登录失败 (错误码: ${err.statusCode})`;
+        }
+      } else if (err.message) {
+        // 后端返回的错误信息
+        errorMessage = err.message;
+      }
+      
       wx.showToast({
-        title: '网络错误，请检查后端服务',
-        icon: 'none'
+        title: errorMessage,
+        icon: 'none',
+        duration: 3000
       });
-      console.error('登录请求失败:', err);
+      
+      console.error('登录失败详情:', {
+        error: err,
+        user_id: user_id,
+        timestamp: new Date().toISOString()
+      });
     }
   },
 
