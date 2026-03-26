@@ -9,19 +9,24 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
 def admin_login():
     """管理员登录验证"""
     try:
-        # 获取请求数据
         data = request.get_json()
-        user_name = data.get('username', '').strip()
+        if not data:
+            return jsonify({
+                'success': False,
+                'message': '请求数据不能为空'
+            }), 400
+        
+        user_id = data.get('user_id', '').strip()
         user_password = data.get('password', '').strip()
         
         # 连接数据库
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # 执行查询
+        # 执行查询 - 使用 user_id 查询管理员
         cursor.execute(
-            "SELECT * FROM users WHERE username = ? AND role = 'admin'",
-            (user_name,)
+            "SELECT * FROM users WHERE user_id = ? AND role = 'admin'",
+            (user_id,)
         )
         
         # 获取查询结果
@@ -41,7 +46,7 @@ def admin_login():
         else:
             return jsonify({
                 'success': False,
-                'message': '用户名或密码错误'
+                'message': '工号或密码错误'
             }), 401
     except Exception as e:
         # 处理异常
@@ -68,7 +73,6 @@ def get_all_users():
             user_list.append({
                 'username': user['username'],
                 'user_id': user['user_id'],
-                'password': user['password'],
                 'role': user['role'],
                 'class': user['class']
             })
@@ -148,7 +152,7 @@ def delete_user(user_id):
     """删除指定用户"""
     try:
         # 不允许删除管理员账户
-        if user_id == 'ADMIN001':
+        if user_id == 'admin001':
             return jsonify({
                 'success': False,
                 'message': '不允许删除管理员账户'
@@ -192,12 +196,8 @@ def get_attendance_records():
         cursor = conn.cursor()
         
         # 构建查询语句
-        query = "SELECT * FROM punch_records WHERE 1=1"
+        query = "SELECT pr.*, u.username FROM punch_records pr LEFT JOIN users u ON pr.user_id = u.user_id WHERE 1=1"
         params = []
-        
-        if username:
-            query += " AND username LIKE ?"
-            params.append(f"%{username}%")
         
         if user_id:
             query += " AND user_id LIKE ?"
@@ -253,7 +253,6 @@ def add_or_update_attendance_record():
     try:
         data = request.get_json()
         record_id = data.get('id', '').strip()
-        username = data.get('username', '').strip()
         user_id = data.get('user_id', '').strip()
         punch_date = data.get('punch_date', '').strip()
         leave_start_date = data.get('leave_start_date', '')
@@ -261,27 +260,32 @@ def add_or_update_attendance_record():
         leave_status = data.get('leave_status', 'pending').strip()
         
         # 验证必填字段
-        if not username or not user_id or not punch_date:
+        if not user_id or not punch_date:
             return jsonify({
                 'success': False,
-                'message': '用户名、用户ID和打卡日期不能为空'
+                'message': '用户ID和打卡日期不能为空'
             }), 400
         
         conn = get_db_connection()
         cursor = conn.cursor()
         
+        # 获取用户名
+        cursor.execute("SELECT username FROM users WHERE user_id = ?", (user_id,))
+        user = cursor.fetchone()
+        username = user['username'] if user else ''
+        
         if record_id:
             # 更新现有记录
             cursor.execute(
-                "UPDATE punch_records SET username = ?, user_id = ?, punch_date = ?, leave_start_date = ?, leave_end_date = ?, leave_status = ? WHERE id = ?",
-                (username, user_id, punch_date, leave_start_date, leave_end_date, leave_status, record_id)
+                "UPDATE punch_records SET user_id = ?, punch_date = ?, leave_start_date = ?, leave_end_date = ?, leave_status = ? WHERE id = ?",
+                (user_id, punch_date, leave_start_date, leave_end_date, leave_status, record_id)
             )
             message = '考勤记录更新成功'
         else:
             # 添加新记录
             cursor.execute(
-                "INSERT INTO punch_records (username, user_id, punch_date, leave_start_date, leave_end_date, leave_status) VALUES (?, ?, ?, ?, ?, ?)",
-                (username, user_id, punch_date, leave_start_date, leave_end_date, leave_status)
+                "INSERT INTO punch_records (user_id, punch_date, leave_start_date, leave_end_date, leave_status) VALUES (?, ?, ?, ?, ?)",
+                (user_id, punch_date, leave_start_date, leave_end_date, leave_status)
             )
             message = '考勤记录添加成功'
         
@@ -417,4 +421,63 @@ def set_punch_location():
         return jsonify({
             'success': False,
             'message': f'设置打卡位置失败: {str(e)}'
+        }), 500
+
+import random
+import string
+
+def generate_random_password(length=8):
+    """生成随机密码"""
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(length))
+
+@admin_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    """重置用户密码为随机密码"""
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id', '').strip()
+        
+        if not user_id:
+            return jsonify({
+                'success': False,
+                'message': '用户ID不能为空'
+            }), 400
+        
+        if user_id == 'ADMIN001':
+            return jsonify({
+                'success': False,
+                'message': '不允许重置管理员账户密码'
+            }), 403
+        
+        new_password = generate_random_password()
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            "UPDATE users SET password = ? WHERE user_id = ?",
+            (new_password, user_id)
+        )
+        
+        if cursor.rowcount == 0:
+            conn.close()
+            return jsonify({
+                'success': False,
+                'message': '用户不存在'
+            }), 404
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': '密码重置成功',
+            'new_password': new_password
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'重置密码失败: {str(e)}'
         }), 500

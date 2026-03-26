@@ -30,13 +30,14 @@ def init_database():
     
     try:
         # 用户表：存储学生、班长、老师的基本信息
+        # user_id 作为主键（学号/工号）
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
-                username TEXT PRIMARY KEY,-- 用户名作为主键
+                user_id TEXT PRIMARY KEY,-- 学号/工号作为主键
+                username TEXT,-- 用户名（显示名称）
                 password TEXT,-- 密码
                 role TEXT,-- 角色
-                class TEXT,-- 班级
-                user_id TEXT UNIQUE-- 学号/工号，唯一标识
+                class TEXT-- 班级
             )
         ''')
         
@@ -44,13 +45,11 @@ def init_database():
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS punch_records (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,-- 自增主键
-                username TEXT,-- 用户名
                 user_id TEXT,-- 学号/工号
                 punch_date DATE,-- 打卡日期
                 leave_start_date DATE,-- 请假开始日期，默认为NULL
                 leave_end_date DATE,-- 请假结束日期，默认为NULL
                 leave_status TEXT DEFAULT 'pending',-- 请假状态：pending-待审批，approved-已批准，rejected-已拒绝
-                FOREIGN KEY (username) REFERENCES users (username),-- 外键约束，关联用户表
                 FOREIGN KEY (user_id) REFERENCES users (user_id)-- 外键约束，关联用户表
             )
         ''')
@@ -92,19 +91,21 @@ def init_database():
             ''')
             
         # 创建必要的索引
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_date ON punch_records(username, punch_date)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_date ON punch_records(user_id, punch_date)')
         
         # 插入示例用户数据（如果不存在）
+        # 注意：这些是示例用户，首次部署时请修改为安全的默认密码
+        # 顺序：user_id(主键), username, password, role, class
         sample_users = [
-            ('admin', 'rPmuy@!$YNJ.}=-xk[Nb', 'admin', '', 'ADMIN001'),
-            ('student1', '123456', 'student', '计算机1班', '202430800001'),
-            ('student2', '123456', 'student', '计算机1班', '202430800002'),
-            ('monitor1', '123456', 'monitor', '计算机1班', '202430800003'),
-            ('teacher1', '123456', 'teacher', '计算机1班', 'T001'),
-            ('student3', '123456', 'student', '计算机2班', '202430800004'),
-            ('student4', '123456', 'student', '计算机2班', '202430800005'),
-            ('monitor2', '123456', 'monitor', '计算机2班', '202430800006'),
-            ('teacher2', '123456', 'teacher', '计算机2班', 'T002')
+            ('admin001', '管理员', 'admin123', 'admin', ''),
+            ('2024001', '张三', '123456', 'student', '计算机1班'),
+            ('2024002', '李四', '123456', 'student', '计算机1班'),
+            ('2024003', '王五', '123456', 'monitor', '计算机1班'),
+            ('t001', '张老师', '123456', 'teacher', '计算机1班'),
+            ('2024004', '赵六', '123456', 'student', '计算机2班'),
+            ('2024005', '钱七', '123456', 'student', '计算机2班'),
+            ('2024006', '孙八', '123456', 'monitor', '计算机2班'),
+            ('t002', '李老师', '123456', 'teacher', '计算机2班')
         ]
         
         cursor.executemany(

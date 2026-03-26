@@ -33,17 +33,21 @@ def submit_punch():
         data = request.get_json()
         print(f"收到打卡请求数据: {data}")
         
-        username = data.get('username', '')
         user_id = data.get('user_id', '')
         role = data.get('role', '')
         class_name = data.get('class', '')
         latitude = data.get('latitude')
         longitude = data.get('longitude')
         
-        print(f"用户信息: username={username}, user_id={user_id}, role={role}, class={class_name}, lat={latitude}, lng={longitude}")
-        
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # 通过 user_id 获取用户名
+        cursor.execute("SELECT username FROM users WHERE user_id = ?", (user_id,))
+        user = cursor.fetchone()
+        username = user['username'] if user else ''
+        
+        print(f"用户信息: username={username}, user_id={user_id}, role={role}, class={class_name}, lat={latitude}, lng={longitude}")
         
         cursor.execute("SELECT * FROM punch_location LIMIT 1")
         punch_location = cursor.fetchone()
@@ -93,8 +97,8 @@ def submit_punch():
             }), 400
         
         cursor.execute(
-            "INSERT INTO punch_records (username, user_id, punch_date) VALUES (?, ?, ?)",
-            (username, user_id, today)
+            "INSERT INTO punch_records (user_id, punch_date) VALUES (?, ?)",
+            (user_id, today)
         )
         
         conn.commit()
@@ -126,7 +130,7 @@ def get_punch_records(user_id):
         
         # 查询个人打卡记录，按日期降序排列
         cursor.execute(
-            "SELECT * FROM punch_records WHERE user_id = ? ORDER BY punch_date DESC LIMIT 30",
+            "SELECT pr.*, u.username FROM punch_records pr LEFT JOIN users u ON pr.user_id = u.user_id WHERE pr.user_id = ? ORDER BY pr.punch_date DESC LIMIT 30",
             (user_id,)
         )
         
@@ -163,26 +167,30 @@ def apply_leave():
         data = request.get_json()
         print(f"收到请假申请数据: {data}")
         
-        username = data.get('username', '')
         user_id = data.get('user_id', '')
         leave_start_date = data.get('leave_start_date', '')
         leave_end_date = data.get('leave_end_date', '')
         
         # 验证输入
-        if not username or not user_id or not leave_start_date or not leave_end_date or leave_start_date == 'null' or leave_end_date == 'null' or leave_start_date == 'undefined' or leave_end_date == 'undefined':
+        if not user_id or not leave_start_date or not leave_end_date or leave_start_date == 'null' or leave_end_date == 'null' or leave_start_date == 'undefined' or leave_end_date == 'undefined':
             return jsonify({
                 'success': False,
-                'message': '用户名、用户ID、请假开始和结束日期不能为空'
+                'message': '用户ID、请假开始和结束日期不能为空'
             }), 400
         
         # 连接数据库
         conn = get_db_connection()
         cursor = conn.cursor()
         
+        # 通过 user_id 获取用户名
+        cursor.execute("SELECT username FROM users WHERE user_id = ?", (user_id,))
+        user = cursor.fetchone()
+        username = user['username'] if user else ''
+        
         # 插入请假记录
         cursor.execute(
-            "INSERT INTO punch_records (username, user_id, punch_date, leave_start_date, leave_end_date, leave_status) VALUES (?, ?, ?, ?, ?, 'pending')",
-            (username, user_id, leave_start_date, leave_start_date, leave_end_date)
+            "INSERT INTO punch_records (user_id, punch_date, leave_start_date, leave_end_date, leave_status) VALUES (?, ?, ?, ?, 'pending')",
+            (user_id, leave_start_date, leave_start_date, leave_end_date)
         )
         
         conn.commit()
@@ -223,7 +231,7 @@ def get_leave_records():
         
         # 查询个人请假记录
         cursor.execute(
-            "SELECT * FROM punch_records WHERE user_id = ? AND leave_start_date IS NOT NULL ORDER BY leave_start_date DESC",
+            "SELECT pr.*, u.username FROM punch_records pr LEFT JOIN users u ON pr.user_id = u.user_id WHERE pr.user_id = ? AND pr.leave_start_date IS NOT NULL ORDER BY pr.leave_start_date DESC",
             (user_id,)
         )
         
