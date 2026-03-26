@@ -271,6 +271,7 @@
             <div class="tab-navigation">
                 <button class="btn tab-btn active" onclick="switchTab('user')">用户管理</button>
                 <button class="btn tab-btn" onclick="switchTab('attendance')">考勤记录管理</button>
+                <button class="btn tab-btn" onclick="switchTab('location')">打卡位置管理</button>
                 <button class="btn" style="float: right;" onclick="logout()">退出登录</button>
             </div>
             
@@ -357,6 +358,48 @@
                         <!-- 考勤记录数据将通过JavaScript动态加载 -->
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- 打卡位置管理标签页 -->
+            <div id="locationTab" class="tab-content">
+                <div class="action-buttons">
+                    <h2>打卡位置管理</h2>
+                </div>
+                
+                <div class="filter-section">
+                    <div class="form-group">
+                        <label for="locationName">位置名称</label>
+                        <input type="text" id="locationName" placeholder="例如：学校大门、办公楼">
+                    </div>
+                    <div class="form-group">
+                        <label for="locationLatitude">纬度</label>
+                        <input type="number" step="0.000001" id="locationLatitude" placeholder="例如：39.908823">
+                    </div>
+                    <div class="form-group">
+                        <label for="locationLongitude">经度</label>
+                        <input type="number" step="0.000001" id="locationLongitude" placeholder="例如：116.397470">
+                    </div>
+                    <div class="form-group">
+                        <label for="locationRadius">打卡范围（米）</label>
+                        <input type="number" id="locationRadius" placeholder="例如：500">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="locationEnabled" checked> 启用位置校验
+                        </label>
+                    </div>
+                    <button class="btn btn-success" onclick="savePunchLocation()">保存</button>
+                    <button class="btn" onclick="loadPunchLocation()">刷新</button>
+                </div>
+                
+                <div id="locationInfo" style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 4px; display: none;">
+                    <h3>当前打卡位置设置</h3>
+                    <p><strong>位置名称：</strong><span id="currentLocationName">-</span></p>
+                    <p><strong>纬度：</strong><span id="currentLocationLat">-</span></p>
+                    <p><strong>经度：</strong><span id="currentLocationLng">-</span></p>
+                    <p><strong>打卡范围：</strong><span id="currentLocationRadius">-</span> 米</p>
+                    <p><strong>状态：</strong><span id="currentLocationStatus">-</span></p>
+                </div>
             </div>
         </div>
     </div>
@@ -698,6 +741,8 @@
             // 如果切换到考勤记录标签，加载考勤记录
             if (tabName === 'attendance') {
                 loadAttendanceRecords();
+            } else if (tabName === 'location') {
+                loadPunchLocation();
             }
         }
         
@@ -899,6 +944,84 @@
             } else if (event.target == attendanceModal) {
                 attendanceModal.style.display = 'none';
             }
+        }
+        
+        // 加载打卡位置配置
+        function loadPunchLocation() {
+            fetch('/api/admin/punch-location')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const locationInfo = document.getElementById('locationInfo');
+                    if (data.data) {
+                        document.getElementById('locationName').value = data.data.name || '';
+                        document.getElementById('locationLatitude').value = data.data.latitude || '';
+                        document.getElementById('locationLongitude').value = data.data.longitude || '';
+                        document.getElementById('locationRadius').value = data.data.radius || '';
+                        document.getElementById('locationEnabled').checked = data.data.enabled === 1;
+                        
+                        document.getElementById('currentLocationName').textContent = data.data.name || '-';
+                        document.getElementById('currentLocationLat').textContent = data.data.latitude || '-';
+                        document.getElementById('currentLocationLng').textContent = data.data.longitude || '-';
+                        document.getElementById('currentLocationRadius').textContent = data.data.radius || '-';
+                        document.getElementById('currentLocationStatus').textContent = data.data.enabled === 1 ? '已启用' : '已禁用';
+                        
+                        locationInfo.style.display = 'block';
+                    } else {
+                        document.getElementById('locationName').value = '';
+                        document.getElementById('locationLatitude').value = '';
+                        document.getElementById('locationLongitude').value = '';
+                        document.getElementById('locationRadius').value = '';
+                        document.getElementById('locationEnabled').checked = true;
+                        locationInfo.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => {
+                showMessage('加载打卡位置失败！', 'error');
+                console.error('Load punch location error:', error);
+            });
+        }
+        
+        // 保存打卡位置配置
+        function savePunchLocation() {
+            const name = document.getElementById('locationName').value.trim();
+            const latitude = parseFloat(document.getElementById('locationLatitude').value);
+            const longitude = parseFloat(document.getElementById('locationLongitude').value);
+            const radius = parseFloat(document.getElementById('locationRadius').value);
+            const enabled = document.getElementById('locationEnabled').checked ? 1 : 0;
+            
+            if (!name || isNaN(latitude) || isNaN(longitude) || isNaN(radius)) {
+                showMessage('请填写完整的打卡位置信息！', 'error');
+                return;
+            }
+            
+            fetch('/api/admin/punch-location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name,
+                    latitude,
+                    longitude,
+                    radius,
+                    enabled
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    loadPunchLocation();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('保存打卡位置失败！', 'error');
+                console.error('Save punch location error:', error);
+            });
         }
     </script>
 </body>

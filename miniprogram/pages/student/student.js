@@ -72,8 +72,9 @@ Page({
   },
 
   async onPunchCard() {
+    let location = null;
     try {
-      const location = await this.getLocation();
+      location = await this.getLocation();
       console.log('定位信息 - latitude:', location.latitude, 'longitude:', location.longitude);
     } catch (err) {
       const errMsg = err.errMsg || '';
@@ -94,7 +95,7 @@ Page({
     const now = new Date();
     const punchTime = utils.formatDate(now, 'YYYY-MM-DD HH:mm:ss');
 
-    api.student.punch(this.data.userInfo)
+    api.student.punch(this.data.userInfo, location)
       .then(res => {
         if (res.success) {
           utils.showToast('打卡成功！', 'success', 2000);
@@ -110,8 +111,11 @@ Page({
       })
       .catch(err => {
         const isAlreadyPunched = err.data && err.data.already_punched;
+        const isOutOfRange = err.data && err.data.out_of_range;
 
-        if (isAlreadyPunched || (err.message && err.message.includes('已打卡'))) {
+        if (isOutOfRange) {
+          utils.showToast(err.data.message || '不在打卡范围内', 'none', 2000);
+        } else if (isAlreadyPunched || (err.message && err.message.includes('已打卡'))) {
           utils.showToast('今日已打卡', 'none', 2000);
         } else {
           utils.showToast('网络错误，打卡失败', 'none', 2000);

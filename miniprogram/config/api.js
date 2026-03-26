@@ -31,7 +31,10 @@ const API_ENDPOINTS = {
   TEACHER_APPROVE_LEAVE: '/teacher/approve-leave',
   TEACHER_CLASS_MONITOR: '/teacher/class-monitor',
   TEACHER_APPOINT_MONITOR: '/teacher/appoint-monitor',
-  TEACHER_REMOVE_MONITOR: '/teacher/remove-monitor'
+  TEACHER_REMOVE_MONITOR: '/teacher/remove-monitor',
+  
+  // 管理员相关
+  ADMIN_PUNCH_LOCATION: '/admin/punch-location'
 };
 
 const CURRENT_CONFIG = API_CONFIG[env];

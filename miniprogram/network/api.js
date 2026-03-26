@@ -17,12 +17,14 @@ const api = {
 
   // 学生相关
   student: {
-    punch(userInfo) {
+    punch(userInfo, location) {
       return request.post(API_ENDPOINTS.STUDENT_PUNCH, {
         username: userInfo.username,
         user_id: userInfo.user_id,
         role: userInfo.role,
-        class: userInfo.class
+        class: userInfo.class,
+        latitude: location ? location.latitude : null,
+        longitude: location ? location.longitude : null
       });
     },
 
@@ -84,6 +86,16 @@ const api = {
         class_name,
         teacher_id
       });
+    }
+  },
+
+  admin: {
+    getPunchLocation() {
+      return request.get(API_ENDPOINTS.ADMIN_PUNCH_LOCATION);
+    },
+    
+    setPunchLocation(data) {
+      return request.post(API_ENDPOINTS.ADMIN_PUNCH_LOCATION, data);
     }
   }
 };

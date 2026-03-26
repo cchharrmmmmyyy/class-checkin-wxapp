@@ -64,6 +64,33 @@ def init_database():
             print("添加leave_status字段")
             cursor.execute("ALTER TABLE punch_records ADD COLUMN leave_status TEXT DEFAULT 'pending'")
             
+        # 创建打卡位置配置表
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS punch_location (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                latitude REAL NOT NULL,
+                longitude REAL NOT NULL,
+                radius REAL NOT NULL,
+                enabled INTEGER DEFAULT 1
+            )
+        ''')
+        
+        # 检查并创建punch_location表（兼容已存在的数据库）
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='punch_location'")
+        if not cursor.fetchone():
+            print("创建punch_location表")
+            cursor.execute('''
+                CREATE TABLE punch_location (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    latitude REAL NOT NULL,
+                    longitude REAL NOT NULL,
+                    radius REAL NOT NULL,
+                    enabled INTEGER DEFAULT 1
+                )
+            ''')
+            
         # 创建必要的索引
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_date ON punch_records(username, punch_date)')
         
