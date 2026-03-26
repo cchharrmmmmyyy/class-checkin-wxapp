@@ -1,244 +1,262 @@
-# 微信小程序打卡系统
+# 微信小程序班级打卡系统
 
-基于微信小程序的简单打卡系统，支持学生打卡、教师管理和班委统计功能，和基本的请假功能。
+基于微信小程序的班级考勤打卡系统，支持学生打卡、教师管理、班委统计、请假审批以及位置范围打卡功能。
 
-## 🚀 项目简介
+## 项目简介
 
-本项目是一个基于微信小程序的课堂打卡系统，主要解决传统考勤方式效率低下的问题，使用SQLite数据库存储打卡数据。
+本项目是一个完整的班级考勤解决方案，使用微信小程序作为前端，Flask后端提供API服务，SQLite数据库存储数据。系统支持多种角色登录、地理位置范围打卡、请假审批等功能。
 
 ### 核心特点
 
-- 💾 **关系型数据库存储**：使用SQLite存储打卡记录
-- 👥 **多角色支持**：学生、教师、班委、管理员四种角色
-- 📱 **微信小程序原生开发**：无需下载额外应用
-- 🌐 **Web管理界面**：管理员可通过浏览器进行用户管理
+- **多角色支持**：学生、教师、班委、管理员四种角色
+- **位置打卡**：支持设置打卡位置范围，学生必须在范围内才能打卡成功
+- **请假审批**：完整的请假申请和审批流程
+- **主题切换**：支持多主题切换，适配不同用户偏好
+- **Web管理后台**：管理员可通过浏览器管理用户和考勤记录
 
-## 🛠️ 技术架构
+## 技术架构
 
-| 模块 | 技术栈 | 功能 |
+| 模块 | 技术栈 | 说明 |
 |------|--------|------|
-| 前端 | 微信小程序原生开发 | 用户界面、打卡操作 |
-| 后端 | Flask + SQLite | 用户认证、数据存储、业务逻辑 |
-| 数据存储 | SQLite关系型数据库 | 存储打卡记录
+| 前端 | 微信小程序原生开发 | 用户界面、打卡操作、地图展示 |
+| 后端 | Flask + Flask-CORS | RESTful API服务 |
+| 数据库 | SQLite | 轻量级关系型数据库 |
+| 管理后台 | HTML + JavaScript | 管理员Web界面 |
 
-## 📁 项目结构
+## 项目结构
 
 ```
-.
-├── backend/                # 后端服务
-│   ├── app.py             # Flask应用入口
-│   ├── database.py        # 数据库初始化和操作
-│   ├── student.py         # 学生相关API
-│   ├── teacher.py         # 教师相关API
-│   ├── admin.py           # 管理员相关API
-│   └── admin.html         # 管理员Web管理界面
-├── miniprogram/           # 微信小程序前端
-│   ├── pages/             # 页面文件
-│   │   ├── login/         # 登录页面
-│   │   │   ├── login.js        # 登录页面逻辑
-│   │   │   ├── login.json      # 登录页面配置
-│   │   │   ├── login.wxml      # 登录页面结构
-│   │   │   └── login.wxss      # 登录页面样式
-│   │   ├── student/       # 学生页面（包含打卡功能）
-│   │   │   ├── leave-apply.js        # 请假申请页面
-│   │   │   ├── leave-apply.json      # 请假申请页面配置
-│   │   │   ├── leave-apply.wxml      # 请假申请页面结构
-│   │   │   ├── leave-apply.wxss      # 请假申请页面样式
-│   │   │   ├── leave-records.js      # 请假记录页面
-│   │   │   ├── leave-records.json    # 请假记录页面配置
-│   │   │   ├── leave-records.wxml    # 请假记录页面结构
-│   │   │   ├── leave-records.wxss    # 请假记录页面样式
-│   │   │   ├── student-detail.js     # 学生详情页面
-│   │   │   ├── student-detail.json   # 学生详情页面配置
-│   │   │   ├── student-detail.wxml   # 学生详情页面结构
-│   │   │   ├── student-detail.wxss   # 学生详情页面样式
-│   │   │   ├── student.js            # 学生主页面
-│   │   │   ├── student.json          # 学生主页面配置
-│   │   │   ├── student.wxml          # 学生主页面结构
-│   │   │   └── student.wxss          # 学生主页面样式
-│   │   └── teacher/       # 教师管理页面
-│   │       ├── teacher.js          # 教师主页面
-│   │       ├── teacher.json        # 教师主页面配置
-│   │       ├── teacher.wxml        # 教师主页面结构
-│   │       └── teacher.wxss        # 教师主页面样式
-│   ├── utils/             # 工具函数
-│   │   └── auth.js        # 认证工具和API调用
-│   └── app.js             # 小程序入口
-└── docs/                  # 项目文档
+class-checkin-wxapp/
+├── backend/                      # Flask后端服务
+│   ├── app.py                    # 应用入口、登录接口
+│   ├── database.py               # 数据库初始化和操作
+│   ├── student.py                # 学生相关API（打卡、请假）
+│   ├── teacher.py                # 教师相关API（班委管理、请假审批）
+│   ├── admin.py                  # 管理员API（用户管理、位置配置）
+│   ├── admin.html                # 管理员Web管理界面
+│   ├── user.db                   # SQLite数据库文件
+│   ├── requirements.txt          # Python依赖
+│   └── docs/                     # 后端文档
+├── miniprogram/                   # 微信小程序前端
+│   ├── config/
+│   │   └── api.js                # API接口配置
+│   ├── network/
+│   │   ├── api.js                # API调用封装
+│   │   └── request.js            # 网络请求封装
+│   ├── pages/
+│   │   ├── login/                # 登录页面
+│   │   │   ├── login.js
+│   │   │   ├── login.wxml
+│   │   │   ├── login.wxss
+│   │   │   └── login.json
+│   │   ├── student/              # 学生页面
+│   │   │   ├── student.js        # 打卡主页面（含地图）
+│   │   │   ├── student.wxml
+│   │   │   ├── student.wxss
+│   │   │   ├── student-detail.js  # 打卡记录查询
+│   │   │   ├── leave-apply.js     # 请假申请
+│   │   │   └── leave-records.js  # 请假记录
+│   │   └── teacher/              # 教师页面
+│   │       ├── teacher.js        # 班级管理
+│   │       ├── teacher.wxml
+│   │       └── teacher.wxss
+│   ├── utils/
+│   │   ├── auth.js               # 认证工具
+│   │   ├── theme.js              # 主题管理
+│   │   └── utils.js              # 通用工具
+│   ├── styles/
+│   │   ├── base.wxss             # 基础样式
+│   │   └── theme.wxss            # 主题样式
+│   ├── app.js                   # 小程序入口
+│   ├── app.json                 # 小程序配置
+│   └── app.wxss                 # 全局样式
+├── README.md                     # 项目说明文档
+└── requirements.txt              # 项目依赖
 ```
 
-### 主要文件说明
+## 功能列表
 
-#### 后端文件
+### 1. 登录认证
+- 支持学生、教师、班委、管理员四种角色
+- 学号/工号 + 密码登录
+- 登录成功后自动存储用户信息
 
-| 文件 | 功能 |
-|------|------|
-| `backend/app.py` | Flask应用入口，处理HTTP请求和路由 |
-| `backend/database.py` | 数据库初始化、连接和查询操作 |
-| `backend/student.py` | 学生相关API，如打卡、查询打卡记录 |
-| `backend/teacher.py` | 教师相关API，如查看学生打卡情况、统计数据 |
-| `backend/admin.py` | 管理员相关API，如用户管理、权限控制 |
-| `backend/admin.html` | 管理员Web管理界面，用于用户管理操作 |
+### 2. 学生功能
+- **打卡签到**：一键打卡，自动获取当前位置
+- **地图展示**：页面显示实时位置地图
+- **位置验证**：必须在管理员设置的范围内才能打卡成功
+- **请假申请**：提交请假开始和结束日期
+- **打卡记录**：查看历史打卡记录
+- **请假记录**：查看请假申请状态
 
-#### 前端文件
+### 3. 教师功能
+- **班级学生列表**：查看班级学生及打卡状态
+- **班委任命**：任命学生为班委
+- **班委移除**：移除学生班委职务
+- **请假审批**：查看并审批学生请假申请
+- **班级列表**：获取所有班级信息
 
-| 文件 | 功能 |
-|------|------|
-| `miniprogram/pages/login/login.js` | 登录页面逻辑，处理用户登录请求 |
-| `miniprogram/pages/student/student.js` | 学生主页面逻辑，包含打卡功能 |
-| `miniprogram/pages/student/student-detail.js` | 学生详情页面逻辑 |
-| `miniprogram/pages/student/leave-apply.js` | 学生请假申请页面逻辑 |
-| `miniprogram/pages/student/leave-records.js` | 学生请假记录页面逻辑 |
-| `miniprogram/pages/teacher/teacher.js` | 教师管理页面逻辑，显示学生打卡统计 |
-| `miniprogram/utils/auth.js` | 认证工具，处理登录状态管理和API调用 |
-| `miniprogram/utils/geo.js` | 地理位置相关工具函数 |
+### 4. 管理员功能
+- **用户管理**：添加、修改、删除用户
+- **考勤记录管理**：查看、添加、修改、删除考勤记录
+- **打卡位置配置**：设置打卡位置（名称、经纬度、半径）
+- **考勤筛选**：按用户名、用户ID、日期范围、请假状态筛选
 
-## ✨ 主要功能
+### 5. 主题切换
+- 支持多主题颜色切换
+- 主题状态全局保存
 
-### 1. 登录功能
+## 数据库表结构
 
-- 支持学生、教师、班委三种角色登录
-- 预分配账户系统，无需注册（当前版本暂不支持用户注册功能）
-- 基于学号/工号和密码验证
+### users 表 - 用户信息
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| username | TEXT | 用户名（主键） |
+| password | TEXT | 密码 |
+| role | TEXT | 角色：student/teacher/monitor/admin |
+| class | TEXT | 班级 |
+| user_id | TEXT | 学号/工号（唯一） |
 
-### 2. 学生打卡功能
+### punch_records 表 - 打卡记录
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER | 自增主键 |
+| username | TEXT | 用户名 |
+| user_id | TEXT | 学号/工号 |
+| punch_date | DATE | 打卡日期 |
+| leave_start_date | DATE | 请假开始日期 |
+| leave_end_date | DATE | 请假结束日期 |
+| leave_status | TEXT | 请假状态：pending/approved/rejected |
 
-- 一键快速打卡
-- 自动记录打卡时间
-- 使用SQLite数据库存储打卡记录
+### punch_location 表 - 打卡位置配置
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | INTEGER | 自增主键 |
+| name | TEXT | 位置名称 |
+| latitude | REAL | 纬度 |
+| longitude | REAL | 经度 |
+| radius | REAL | 允许打卡半径（米） |
+| enabled | INTEGER | 是否启用：0/1 |
 
-### 3. 教师管理功能
+## API接口
 
-- 查看总学生数
-- 查看今日打卡人数
-- 查看学生列表及打卡状态
-- 支持班委任命
+### 认证接口
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | /api/login | 用户登录 |
 
-### 4. 班委功能
+### 学生接口
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | /api/student/punch | 提交打卡 |
+| GET | /api/student/records/<user_id> | 获取个人打卡记录 |
+| GET | /api/student/class-records/<class_name> | 获取班级打卡记录 |
+| POST | /api/student/apply-leave | 提交请假申请 |
+| GET | /api/student/leave-records | 获取个人请假记录 |
 
-- 拥有学生角色的所有功能
-- 可查看本班学生打卡情况
+### 教师接口
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /api/teacher/class-list | 获取班级列表 |
+| GET | /api/teacher/leave-applications | 获取请假申请列表 |
+| POST | /api/teacher/approve-leave | 审批请假申请 |
+| POST | /api/teacher/appoint-monitor | 任命班委 |
+| POST | /api/teacher/remove-monitor | 移除班委 |
+| GET | /api/teacher/class-monitor/<class_name> | 获取班级班委 |
 
-### 5. 请假功能
+### 管理员接口
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | /api/admin/login | 管理员登录 |
+| GET | /api/admin/users | 获取用户列表 |
+| POST | /api/admin/users | 添加/修改用户 |
+| DELETE | /api/admin/users/<user_id> | 删除用户 |
+| GET | /api/admin/attendance-records | 获取考勤记录 |
+| POST | /api/admin/attendance-records | 添加/修改考勤记录 |
+| DELETE | /api/admin/attendance-records/<id> | 删除考勤记录 |
+| GET | /api/admin/punch-location | 获取打卡位置配置 |
+| POST | /api/admin/punch-location | 设置打卡位置 |
 
-- **学生端**：
-  - 提交请假申请（选择开始和结束日期）
-  - 查看请假记录和审批状态
-- **教师端**：
-  - 查看班级待审批请假申请
-  - 审批请假申请（批准/拒绝）
-- **打卡记录自动处理**：
-  - 已批准的请假记录会自动标记为已打卡
-  - 请假状态在打卡统计中显示
+## 快速开始
 
-### 6. 管理员功能
+### 1. 环境要求
 
-- **用户管理**：
-  - 查看所有用户列表
-  - 添加新用户
-  - 修改用户信息
-  - 删除用户
-  - 重置用户密码
-- **考勤记录管理**：
-  - 查看所有考勤记录列表
-  - 按用户名、用户ID、日期范围、请假状态筛选记录
-  - 添加新的考勤记录
-  - 编辑现有考勤记录
-  - 删除考勤记录
-- **Web管理界面**：
-  - 通过浏览器访问：`http://localhost:5000/admin`
-  - 支持标签页切换：用户管理和考勤记录管理
-  - 支持简单易用的表格操作
-  - 管理员账户：用户名`admin`，密码`rPmuy@!$YNJ.}=-xk[Nb`
-
-## 📋 快速开始
-
-### 开发环境
-
-- 微信开发者工具
 - Python 3.7+
-- Flask 2.0+
+- 微信开发者工具
+- Node.js（可选，用于代码检查）
 
-### 后端部署
+### 2. 后端部署
 
-1. 进入后端目录
 ```bash
+# 进入后端目录
 cd backend
-```
 
-2. 安装依赖
-```bash
-pip install flask flask-cors
-```
+# 安装依赖
+pip install -r requirements.txt
 
-3. 启动后端服务
-```bash
+# 启动服务
 python app.py
 ```
 
-4. 后端服务将运行在 `http://localhost:5000`
+后端服务启动后：
+- API服务：http://localhost:5000/api
+- 管理后台：http://localhost:5000/admin
 
-### 前端部署
+### 3. 前端配置
 
-1. 使用微信开发者工具导入 `miniprogram` 目录
-2. 在微信开发者工具中配置项目
-3. 修改 `utils/auth.js` 中的API地址为后端服务地址
-4. 编译并运行小程序
+1. 使用微信开发者工具打开 `miniprogram` 目录
+2. 修改 `miniprogram/config/api.js` 中的 `baseUrl` 为后端地址
+3. 在微信开发者工具中启用"不校验合法域名"
+4. 编译运行小程序
 
-## 🧪 测试
+### 4. 测试账户
 
-### 单元测试重点
+| 角色 | 用户名 | 密码 | 学号/工号 |
+|------|--------|------|-----------|
+| 管理员 | admin | rPmuy@!$YNJ.}=-xk[Nb | ADMIN001 |
+| 学生 | student1 | 123456 | 202430800001 |
+| 学生 | student2 | 123456 | 202430800002 |
+| 班委 | monitor1 | 123456 | 202430800003 |
+| 教师 | teacher1 | 123456 | T001 |
 
-- 打卡记录测试：验证打卡记录是否正确存储到数据库
-- 登录验证测试：测试账号密码验证逻辑
-- 权限控制测试：验证不同角色的权限是否正确
+## 打卡位置配置
 
-### 集成测试流程
+管理员可通过管理后台配置打卡位置：
 
-1. 学生登录 → 一键打卡 → 验证数据库记录
-2. 老师登录 → 查看统计 → 验证数据显示
-3. 班委登录 → 查看本班情况 → 验证权限控制
+1. 访问 http://localhost:5000/admin
+2. 登录管理员账户
+3. 切换到"打卡位置管理"标签
+4. 填写位置信息：
+   - 位置名称：如"教学楼A"
+   - 纬度：如 39.908823
+   - 经度：如 116.397470
+   - 半径（米）：如 100
+5. 启用位置验证
 
-## 📊 数据存储说明
+学生打卡时，系统会：
+1. 获取学生当前位置
+2. 使用Haversine公式计算与设置位置的距离
+3. 如果距离超过设置半径，返回打卡失败
+4. 成功记录打卡，不保存学生位置信息
 
-### 存储方式
+## 主题切换
 
-使用SQLite关系型数据库存储打卡记录，每个打卡记录包含以下字段：
+学生页面支持主题切换：
+1. 点击页面中的"切换主题"按钮
+2. 选择喜欢的主题颜色
+3. 主题设置会自动保存
 
-- 用户名：标识打卡用户
-- 用户ID：学号/工号
-- 打卡日期：记录打卡时间
-- 请假开始日期：请假的开始日期
-- 请假结束日期：请假的结束日期
-- 请假状态：请假审批状态（pending-待审批, approved-已批准, rejected-已拒绝）
+## 注意事项
 
-### 存储优势
+1. 首次启动后端会自动创建数据库和表
+2. 如果修改了数据库结构，需要删除 `user.db` 重启服务
+3. 微信小程序需要在 `app.json` 中配置定位权限
+4. 位置打卡使用gcj02坐标系（微信坐标系）
 
-- 结构清晰：便于查询和统计
-- 支持索引：查询效率高
-- 易于扩展：可灵活添加新字段
-- 数据安全：支持事务和外键约束
+## 许可证
 
-## 🤝 贡献
-
-欢迎提交Issue和Pull Request！
-
-### 贡献流程
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
-
-## 🌟 致谢
-
-感谢所有为本项目做出贡献的开发者！
+MIT License
 
 ---
 
-**欢迎使用微信小程序打卡系统！** 🎉
+欢迎使用微信小程序班级打卡系统！🎉
