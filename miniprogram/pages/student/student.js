@@ -1,192 +1,188 @@
 // pages/student/student.js
-const auth = require('../../utils/auth.js')
+import api from '../../network/api.js';
+import utils from '../../utils/utils.js';
 
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
     userInfo: {
       username: '学生',
       role: 'student',
       class: ''
     },
-    lastPunchTime: ''
+    lastPunchTime: '',
+    themeClass: '',
+    latitude: 39.908823,
+    longitude: 116.397470,
+    markers: []
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
   onLoad(options) {
-    // 从本地存储获取用户信息
-    const userInfo = wx.getStorageSync('userInfo');
+    const userInfo = utils.getUserInfo();
     if (userInfo) {
-      this.setData({
-        userInfo: userInfo
+      this.setData({ userInfo });
+    }
+
+    const lastPunchTime = utils.getStorage('lastPunchTime');
+    if (lastPunchTime) {
+      this.setData({ lastPunchTime });
+    }
+
+    const app = getApp();
+    if (app.themeManager) {
+      app.themeManager.applyThemeToPage(this);
+      app.themeManager.onThemeChange((themeId) => {
+        const theme = app.themeManager.getCurrentThemeClass();
+        this.setData({ themeClass: theme });
       });
     }
-    
-    // 获取上次打卡时间
-    const lastPunchTime = wx.getStorageSync('lastPunchTime');
-    if (lastPunchTime) {
-      this.setData({
-        lastPunchTime: lastPunchTime
-      });
+
+    this.initLocation();
+  },
+
+  initLocation() {
+    wx.getLocation({
+      type: 'gcj02',
+      success: (res) => {
+        this.setData({
+          latitude: res.latitude,
+          longitude: res.longitude,
+          markers: [{
+            id: 1,
+            latitude: res.latitude,
+            longitude: res.longitude
+          }]
+        });
+        console.log('定位成功 - latitude:', res.latitude, 'longitude:', res.longitude);
+      },
+      fail: (err) => {
+        console.log('定位失败', err);
+        wx.showToast({
+          title: '定位失败，请开启定位权限',
+          icon: 'none'
+        });
+      }
+    });
+  },
+
+  onUnload() {
+    const app = getApp();
+    if (app.themeManager) {
+      app.themeManager.offThemeChange();
     }
   },
 
-  /**
-   * 打卡功能
-   */
-  onPunchCard() {
+  async onPunchCard() {
+    try {
+      const location = await this.getLocation();
+      console.log('定位信息 - latitude:', location.latitude, 'longitude:', location.longitude);
+    } catch (err) {
+      const errMsg = err.errMsg || '';
+      if (errMsg.includes('auth deny') || errMsg.includes('permission') || errMsg.includes('authorize')) {
+        wx.showModal({
+          title: '提示',
+          content: '需要授权定位权限才能打卡，请点击右上角"..."按钮开启定位权限',
+          showCancel: false
+        });
+      } else if (errMsg.includes('fail')) {
+        wx.showToast({
+          title: '定位服务异常',
+          icon: 'none'
+        });
+      }
+    }
+
     const now = new Date();
-    const punchTime = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
-    
-    // 调用后端API提交打卡记录
-    auth.submitPunchRecord(this.data.userInfo)
+    const punchTime = utils.formatDate(now, 'YYYY-MM-DD HH:mm:ss');
+
+    api.student.punch(this.data.userInfo)
       .then(res => {
         if (res.success) {
-          // 显示打卡成功提示
-          wx.showToast({
-            title: '打卡成功！',
-            icon: 'success',
-            duration: 2000
-          });
-          
-          // 更新打卡时间
-          this.setData({
-            lastPunchTime: punchTime
-          });
-          
-          // 保存到本地存储
-          wx.setStorageSync('lastPunchTime', punchTime);
-          
-          console.log('打卡时间：', punchTime);
+          utils.showToast('打卡成功！', 'success', 2000);
+          this.setData({ lastPunchTime: punchTime });
+          utils.setStorage('lastPunchTime', punchTime);
         } else {
-          // 显示打卡失败信息
-          wx.showToast({
-            title: res.message || '打卡失败',
-            icon: 'none',
-            duration: 2000
-          });
-          
-          // 如果是重复打卡，更新本地存储的打卡时间
+          utils.showToast(res.message || '打卡失败', 'none', 2000);
           if (res.message && res.message.includes('已打卡')) {
-            this.setData({
-              lastPunchTime: punchTime
-            });
-            wx.setStorageSync('lastPunchTime', punchTime);
+            this.setData({ lastPunchTime: punchTime });
+            utils.setStorage('lastPunchTime', punchTime);
           }
         }
       })
       .catch(err => {
-        console.error('打卡请求失败:', err);
-        
-        // 检查是否是重复打卡错误
         const isAlreadyPunched = err.data && err.data.already_punched;
-        
+
         if (isAlreadyPunched || (err.message && err.message.includes('已打卡'))) {
-          wx.showToast({
-            title: '今日已打卡',
-            icon: 'none',
-            duration: 2000
-          });
-          
-          // 更新本地存储的打卡时间
-          this.setData({
-            lastPunchTime: punchTime
-          });
-          wx.setStorageSync('lastPunchTime', punchTime);
+          utils.showToast('今日已打卡', 'none', 2000);
         } else {
-          wx.showToast({
-            title: '网络错误，打卡失败',
-            icon: 'none',
-            duration: 2000
-          });
-          
-          // 如果网络请求失败，仍然保存到本地存储作为备份
-          this.setData({
-            lastPunchTime: punchTime
-          });
-          wx.setStorageSync('lastPunchTime', punchTime);
+          utils.showToast('网络错误，打卡失败', 'none', 2000);
         }
+
+        this.setData({ lastPunchTime: punchTime });
+        utils.setStorage('lastPunchTime', punchTime);
       });
   },
 
-  /**
-   * 跳转到详情页面
-   */
   onGoToDetail() {
-    wx.navigateTo({
-      url: '/pages/student/student-detail'
-    });
+    utils.navigateTo('/pages/student/student-detail');
   },
 
-  /**
-   * 跳转到请假申请页面
-   */
   onLeaveApply() {
-    wx.navigateTo({
-      url: '/pages/student/leave-apply'
-    });
+    utils.navigateTo('/pages/student/leave-apply');
   },
 
-  /**
-   * 跳转到请假记录页面
-   */
   onViewLeaveRecords() {
-    wx.navigateTo({
-      url: '/pages/student/leave-records'
+    utils.navigateTo('/pages/student/leave-records');
+  },
+
+  onChangeTheme() {
+    const app = getApp();
+    if (app.themeManager) {
+      app.themeManager.showThemePicker();
+    }
+  },
+
+  getLocation() {
+    return new Promise((resolve, reject) => {
+      wx.getLocation({
+        type: 'gcj02',
+        success(res) {
+          resolve(res);
+        },
+        fail(err) {
+          reject(err);
+        }
+      });
     });
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+  async onShowLocation() {
+    try {
+      const location = await this.getLocation();
+      const marker = {
+        id: 1,
+        latitude: location.latitude,
+        longitude: location.longitude
+      };
+      this.setData({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        markers: [marker]
+      });
+      console.log('当前位置 - latitude:', location.latitude, 'longitude:', location.longitude);
+    } catch (err) {
+      const errMsg = err.errMsg || '';
+      if (errMsg.includes('auth deny') || errMsg.includes('permission') || errMsg.includes('authorize')) {
+        wx.showModal({
+          title: '提示',
+          content: '需要授权定位权限才能查看地图，请点击右上角"..."按钮开启定位权限',
+          showCancel: false
+        });
+      } else {
+        wx.showToast({
+          title: '定位服务异常',
+          icon: 'none'
+        });
+      }
+    }
   }
-})
+});

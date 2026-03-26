@@ -1,8 +1,13 @@
+import themeManager from './utils/theme.js';
+
 App({
   onLaunch() {
-    // 小程序启动时的逻辑
+    themeManager.init();
   },
+
   globalData: {
     userInfo: null
-  }
-})
+  },
+
+  themeManager: themeManager
+});

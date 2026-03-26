@@ -16,5 +16,14 @@
   "networkTimeout": {
     "request": 10000
   },
-  "style": "v2"
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于打卡定位，记录您的打卡位置"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation"
+  ],
+  "style": "v2",
+  "usingComponents": {}
 }

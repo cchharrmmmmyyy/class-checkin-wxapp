@@ -1,11 +1,8 @@
 // pages/student/leave-records.js
-const auth = require('../../utils/auth.js')
+import api from '../../network/api.js';
+import utils from '../../utils/utils.js';
 
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
     userInfo: {
       username: '',
@@ -13,126 +10,69 @@ Page({
       class: ''
     },
     leaveRecords: [],
-    isLoading: false
+    isLoading: false,
+    themeClass: ''
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
   onLoad(options) {
-    // 从本地存储获取用户信息
-    const userInfo = wx.getStorageSync('userInfo');
+    const userInfo = utils.getUserInfo();
     if (userInfo) {
-      this.setData({
-        userInfo: userInfo
+      this.setData({ userInfo });
+    }
+
+    const app = getApp();
+    if (app.themeManager) {
+      app.themeManager.applyThemeToPage(this);
+      app.themeManager.onThemeChange((themeId) => {
+        const theme = app.themeManager.getCurrentThemeClass();
+        this.setData({ themeClass: theme });
       });
     }
   },
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
+  onUnload() {
+    const app = getApp();
+    if (app.themeManager) {
+      app.themeManager.offThemeChange();
+    }
+  },
+
   onShow() {
-    // 页面显示时加载请假记录
     this.getLeaveRecords();
   },
 
-  /**
-   * 返回上一页
-   */
   onBack() {
-    wx.navigateBack();
+    utils.navigateBack();
   },
 
-  /**
-   * 刷新请假记录
-   */
   onRefresh() {
     this.getLeaveRecords();
   },
 
-  /**
-   * 获取请假记录
-   */
   getLeaveRecords() {
     const { userInfo } = this.data;
-    
-    // 显示加载状态
-    this.setData({
-      isLoading: true
-    });
-    
-    // 调用后端API获取请假记录
-    auth.getLeaveRecords(userInfo.user_id)
+
+    this.setData({ isLoading: true });
+
+    api.student.getLeaveRecords(userInfo.user_id)
       .then(res => {
         if (res.success) {
-          this.setData({
-            leaveRecords: res.data || []
-          });
+          this.setData({ leaveRecords: res.data || [] });
         } else {
-          wx.showToast({
-            title: res.message || '获取请假记录失败',
-            icon: 'none',
-            duration: 2000
-          });
+          utils.showToast(res.message || '获取请假记录失败', 'none', 2000);
         }
       })
       .catch(err => {
         console.error('获取请假记录失败:', err);
-        wx.showToast({
-          title: '网络错误，获取请假记录失败',
-          icon: 'none',
-          duration: 2000
-        });
+        utils.showToast('网络错误，获取请假记录失败', 'none', 2000);
       })
       .finally(() => {
-        // 隐藏加载状态
-        this.setData({
-          isLoading: false
-        });
+        this.setData({ isLoading: false });
       });
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
   onPullDownRefresh() {
     this.getLeaveRecords();
     wx.stopPullDownRefresh();
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
   }
-})
+});
