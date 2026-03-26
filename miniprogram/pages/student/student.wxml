@@ -12,7 +12,15 @@
   </view>
   
   <view class="main-content">
-    <!-- 打卡功能 -->
+    <map 
+      class="map-view"
+      latitude="{{latitude}}" 
+      longitude="{{longitude}}" 
+      markers="{{markers}}"
+      scale="17"
+      show-location
+    ></map>
+    
     <view class="punch-card-section">
       <button class="punch-btn" bindtap="onPunchCard">
         <text class="btn-text">打卡</text>
@@ -22,7 +30,6 @@
       </text>
     </view>
     
-    <!-- 请假功能 -->
     <view class="leave-section">
       <button class="leave-btn" bindtap="onLeaveApply">
         <text class="btn-text">请假</text>

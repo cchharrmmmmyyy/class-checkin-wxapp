@@ -1,0 +1,140 @@
+/* 全局主题配置 - 换肤只需修改此处 */
+/* 主题变量定义 */
+:root {
+  /* 主色调 */
+  --primary-color: #2E8B57;
+  --primary-light: #3CB371;
+  --primary-dark: #246b43;
+  
+  /* 辅助色 */
+  --secondary-color: #3CB371;
+  --light-green: #8FBC8F;
+  
+  /* 背景色 */
+  --background-color: #f0f5f0;
+  --background-gradient-start: #2E8B57;
+  --background-gradient-end: #3CB371;
+  --background-gradient-mid1: #4F9D5D;
+  --background-gradient-mid2: #8FBC8F;
+  
+  /* 文字颜色 */
+  --text-color: #333333;
+  --text-secondary: #666666;
+  --text-light: #999999;
+  --text-white: #ffffff;
+  
+  /* 组件颜色 */
+  --card-bg: rgba(255, 255, 255, 0.6);
+  --card-border: rgba(255, 255, 255, 0.3);
+  --input-bg: rgba(255, 255, 255, 0.8);
+  --input-border: #b8d4c6;
+  
+  /* 状态颜色 */
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #f5222d;
+  --info-color: #1890ff;
+  
+  /* 阴影 */
+  --shadow-light: rgba(46, 139, 87, 0.15);
+  --shadow-medium: rgba(46, 139, 87, 0.2);
+  --shadow-heavy: rgba(46, 139, 87, 0.3);
+  
+  /* 动画时长 */
+  --transition-fast: 0.2s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.4s;
+  
+  /* 圆角 */
+  --radius-small: 8rpx;
+  --radius-medium: 15rpx;
+  --radius-large: 30rpx;
+  --radius-full: 45rpx;
+}
+
+/* 蓝色主题 */
+.theme-blue {
+  --primary-color: #1890ff;
+  --primary-light: #40a9ff;
+  --primary-dark: #096dd9;
+  --secondary-color: #69c0ff;
+  --light-green: #91d5ff;
+  --background-color: #e6f7ff;
+  --background-gradient-start: #1890ff;
+  --background-gradient-end: #40a9ff;
+  --background-gradient-mid1: #5cdbd3;
+  --background-gradient-mid2: #91d5ff;
+  --card-bg: rgba(255, 255, 255, 0.6);
+  --card-border: rgba(24, 144, 255, 0.3);
+  --input-bg: rgba(255, 255, 255, 0.8);
+  --input-border: #b3d8ff;
+  --shadow-light: rgba(24, 144, 255, 0.15);
+  --shadow-medium: rgba(24, 144, 255, 0.2);
+  --shadow-heavy: rgba(24, 144, 255, 0.3);
+}
+
+/* 紫色主题 */
+.theme-purple {
+  --primary-color: #722ed1;
+  --primary-light: #9254de;
+  --primary-dark: #531dab;
+  --secondary-color: #b37feb;
+  --light-green: #d3adf7;
+  --background-color: #f9f0ff;
+  --background-gradient-start: #722ed1;
+  --background-gradient-end: #9254de;
+  --background-gradient-mid1: #b37feb;
+  --background-gradient-mid2: #d3adf7;
+  --card-bg: rgba(255, 255, 255, 0.6);
+  --card-border: rgba(114, 46, 209, 0.3);
+  --input-bg: rgba(255, 255, 255, 0.8);
+  --input-border: #d3bcf0;
+  --shadow-light: rgba(114, 46, 209, 0.15);
+  --shadow-medium: rgba(114, 46, 209, 0.2);
+  --shadow-heavy: rgba(114, 46, 209, 0.3);
+}
+
+/* 红色主题 */
+.theme-red {
+  --primary-color: #f5222d;
+  --primary-light: #ff7875;
+  --primary-dark: #cf1322;
+  --secondary-color: #ff7875;
+  --light-green: #ffccc7;
+  --background-color: #fff1f0;
+  --background-gradient-start: #f5222d;
+  --background-gradient-end: #ff7875;
+  --background-gradient-mid1: #ffadd2;
+  --background-gradient-mid2: #ffccc7;
+  --card-bg: rgba(255, 255, 255, 0.6);
+  --card-border: rgba(245, 34, 45, 0.3);
+  --input-bg: rgba(255, 255, 255, 0.8);
+  --input-border: #ffccc7;
+  --shadow-light: rgba(245, 34, 45, 0.15);
+  --shadow-medium: rgba(245, 34, 45, 0.2);
+  --shadow-heavy: rgba(245, 34, 45, 0.3);
+}
+
+/* 暗色主题 */
+.theme-dark {
+  --primary-color: #1890ff;
+  --primary-light: #40a9ff;
+  --primary-dark: #096dd9;
+  --secondary-color: #69c0ff;
+  --light-green: #434343;
+  --background-color: #1f1f1f;
+  --background-gradient-start: #1f1f1f;
+  --background-gradient-end: #434343;
+  --background-gradient-mid1: #303030;
+  --background-gradient-mid2: #595959;
+  --text-color: #e8e8e8;
+  --text-secondary: #bfbfbf;
+  --text-light: #8c8c8c;
+  --card-bg: rgba(255, 255, 255, 0.1);
+  --card-border: rgba(255, 255, 255, 0.15);
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --input-border: #595959;
+  --shadow-light: rgba(0, 0, 0, 0.3);
+  --shadow-medium: rgba(0, 0, 0, 0.4);
+  --shadow-heavy: rgba(0, 0, 0, 0.5);
+}
