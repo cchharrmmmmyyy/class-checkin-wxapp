@@ -1,10 +1,24 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import sqlite3
+import math
 from database import get_db_connection, execute_query, execute_query_one
 
 # 创建学生蓝图
 student_function = Blueprint('student', __name__, url_prefix='/api/student')
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """计算两点之间的距离（米），使用Haversine公式"""
+    R = 6371000
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    delta_phi = math.radians(lat2 - lat1)
+    delta_lambda = math.radians(lon2 - lon1)
+    
+    a = math.sin(delta_phi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    
+    return R * c
 
 # 在这里可以添加学生相关的路由
 @student_function.route('/profile', methods=['GET'])
@@ -23,19 +37,46 @@ def submit_punch():
         user_id = data.get('user_id', '')
         role = data.get('role', '')
         class_name = data.get('class', '')
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
         
-        print(f"用户信息: username={username}, user_id={user_id}, role={role}, class={class_name}")
+        print(f"用户信息: username={username}, user_id={user_id}, role={role}, class={class_name}, lat={latitude}, lng={longitude}")
         
-        # 获取当前日期
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT * FROM punch_location LIMIT 1")
+        punch_location = cursor.fetchone()
+        
+        if punch_location and punch_location['enabled'] and latitude is not None and longitude is not None:
+            target_lat = punch_location['latitude']
+            target_lng = punch_location['longitude']
+            radius = punch_location['radius']
+            
+            distance = calculate_distance(latitude, longitude, target_lat, target_lng)
+            print(f"距离打卡点 {punch_location['name']} {distance:.2f} 米")
+            
+            if distance > radius:
+                conn.close()
+                print(f"用户 {user_id} 打卡失败：超出允许范围")
+                return jsonify({
+                    'success': False,
+                    'message': f'不在打卡范围内，距离打卡点 {int(distance)} 米',
+                    'out_of_range': True
+                }), 400
+        elif punch_location and punch_location['enabled']:
+            conn.close()
+            print(f"用户 {user_id} 打卡失败：未获取到位置")
+            return jsonify({
+                'success': False,
+                'message': '无法获取您的位置，请确保定位服务已开启',
+                'no_location': True
+            }), 400
+        
         now = datetime.now()
         today = now.strftime('%Y-%m-%d')
         print(f"当前日期: {today}")
         
-        # 连接数据库
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # 检查今天是否已经打卡
         cursor.execute(
             "SELECT id FROM punch_records WHERE user_id = ? AND punch_date = ?",
             (user_id, today)
@@ -48,10 +89,9 @@ def submit_punch():
             return jsonify({
                 'success': False,
                 'message': '今日已打卡',
-                'already_punched': True  #添加标志，便于前端处理
+                'already_punched': True
             }), 400
         
-        # 插入打卡记录
         cursor.execute(
             "INSERT INTO punch_records (username, user_id, punch_date) VALUES (?, ?, ?)",
             (username, user_id, today)

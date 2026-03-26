@@ -331,3 +331,90 @@ def delete_attendance_record(record_id):
 def admin_page():
     """提供管理员HTML页面"""
     return send_from_directory('.', 'admin.html')
+
+# 获取打卡位置配置
+@admin_bp.route('/punch-location', methods=['GET'])
+def get_punch_location():
+    """获取打卡位置配置"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT * FROM punch_location LIMIT 1")
+        location = cursor.fetchone()
+        conn.close()
+        
+        if location:
+            return jsonify({
+                'success': True,
+                'data': {
+                    'id': location['id'],
+                    'name': location['name'],
+                    'latitude': location['latitude'],
+                    'longitude': location['longitude'],
+                    'radius': location['radius'],
+                    'enabled': location['enabled']
+                }
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'data': None
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'获取打卡位置失败: {str(e)}'
+        }), 500
+
+# 设置打卡位置
+@admin_bp.route('/punch-location', methods=['POST'])
+def set_punch_location():
+    """设置打卡位置"""
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+        radius = data.get('radius')
+        enabled = data.get('enabled', 1)
+        
+        if not name or latitude is None or longitude is None or radius is None:
+            return jsonify({
+                'success': False,
+                'message': '位置名称、经纬度半径不能为空'
+            }), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT id FROM punch_location")
+        existing = cursor.fetchone()
+        
+        if existing:
+            cursor.execute(
+                "UPDATE punch_location SET name = ?, latitude = ?, longitude = ?, radius = ?, enabled = ? WHERE id = ?",
+                (name, latitude, longitude, radius, enabled, existing['id'])
+            )
+            message = '打卡位置更新成功'
+        else:
+            cursor.execute(
+                "INSERT INTO punch_location (name, latitude, longitude, radius, enabled) VALUES (?, ?, ?, ?, ?)",
+                (name, latitude, longitude, radius, enabled)
+            )
+            message = '打卡位置设置成功'
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': message
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'设置打卡位置失败: {str(e)}'
+        }), 500
