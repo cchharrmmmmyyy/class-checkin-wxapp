@@ -1,6 +1,7 @@
 {
   "libVersion": "3.11.3",
-  "projectname": "%25E5%25B0%258F%25E7%25A8%258B%25E5%25BA%258F%25E6%2589%2593%25E5%258D%25A1",
+  "projectname": "class-checkin-wxapp",
+  "appid": "wxd5abea84a2145abc",
   "setting": {
     "urlCheck": false,
     "coverView": true,
