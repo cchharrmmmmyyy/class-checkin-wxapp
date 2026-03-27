@@ -16,7 +16,7 @@ from teacher import teacher_function
 from admin import admin_bp
 
 # 导入数据库模块
-from database import init_database, execute_query_one, get_db_connection
+from database import init_database, execute_query_one, get_db_connection, verify_password
 
 # 注册学生蓝图
 #什么是蓝图？
@@ -87,8 +87,8 @@ def login():
         sql = "SELECT username, user_id, password, role, class FROM users WHERE user_id = ?"
         user = execute_query_one(sql, (user_id,))
         
-        # 验证用户
-        if user and user['password'] == password:
+        # 验证用户 - 使用哈希密码验证
+        if user and verify_password(password, user['password']):
             user_role = user['role']
             user_class = user['class']
             

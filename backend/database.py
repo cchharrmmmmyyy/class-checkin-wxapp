@@ -5,11 +5,29 @@
 """
 import sqlite3
 import os
+import hashlib
+import secrets
 
-# 获取当前文件所在目录的绝对路径
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# 数据库文件路径 - 使用绝对路径确保一致
 DATABASE_FILE = os.path.join(BASE_DIR, 'user.db')
+
+def hash_password(password):
+    """
+    使用SHA-256 + 盐值对密码进行哈希加密
+    """
+    salt = secrets.token_hex(16)
+    password_hash = hashlib.sha256((password + salt).encode()).hexdigest()
+    return salt + ':' + password_hash
+
+def verify_password(password, stored_hash):
+    """
+    验证密码是否匹配
+    """
+    try:
+        salt, password_hash = stored_hash.split(':')
+        return password_hash == hashlib.sha256((password + salt).encode()).hexdigest()
+    except:
+        return False
 
 def get_db_connection():
     """
@@ -96,16 +114,17 @@ def init_database():
         # 插入示例用户数据（如果不存在）
         # 注意：这些是示例用户，首次部署时请修改为安全的默认密码
         # 顺序：user_id(主键), username, password, role, class
+        # 密码已使用SHA-256+盐值哈希存储
         sample_users = [
-            ('admin001', '管理员', 'admin123', 'admin', ''),
-            ('2024001', '张三', '123456', 'student', '计算机1班'),
-            ('2024002', '李四', '123456', 'student', '计算机1班'),
-            ('2024003', '王五', '123456', 'monitor', '计算机1班'),
-            ('t001', '张老师', '123456', 'teacher', '计算机1班'),
-            ('2024004', '赵六', '123456', 'student', '计算机2班'),
-            ('2024005', '钱七', '123456', 'student', '计算机2班'),
-            ('2024006', '孙八', '123456', 'monitor', '计算机2班'),
-            ('t002', '李老师', '123456', 'teacher', '计算机2班')
+            ('admin001', '管理员', hash_password('admin123'), 'admin', ''),
+            ('2024001', '张三', hash_password('123456'), 'student', '计算机1班'),
+            ('2024002', '李四', hash_password('123456'), 'student', '计算机1班'),
+            ('2024003', '王五', hash_password('123456'), 'monitor', '计算机1班'),
+            ('t001', '张老师', hash_password('123456'), 'teacher', '计算机1班'),
+            ('2024004', '赵六', hash_password('123456'), 'student', '计算机2班'),
+            ('2024005', '钱七', hash_password('123456'), 'student', '计算机2班'),
+            ('2024006', '孙八', hash_password('123456'), 'monitor', '计算机2班'),
+            ('t002', '李老师', hash_password('123456'), 'teacher', '计算机2班')
         ]
         
         cursor.executemany(

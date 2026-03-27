@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, send_from_directory
-from database import get_db_connection, execute_query, execute_query_one
+from database import get_db_connection, execute_query, execute_query_one, verify_password, hash_password
 
 # 创建管理员蓝图
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
@@ -33,8 +33,8 @@ def admin_login():
         admin = cursor.fetchone()
         conn.close()
         
-        # 验证用户
-        if admin and admin['password'] == user_password:
+        # 验证用户 - 使用哈希密码验证
+        if admin and verify_password(user_password, admin['password']):
             return jsonify({
                 'success': True,
                 'message': '登录成功',
@@ -118,17 +118,19 @@ def add_or_update_user():
         existing_user = cursor.fetchone()
         
         if existing_user:
-            # 更新现有用户
+            # 更新现有用户 - 密码使用哈希存储
+            hashed_password = hash_password(password)
             cursor.execute(
                 "UPDATE users SET username = ?, password = ?, role = ?, class = ? WHERE user_id = ?",
-                (username, password, role, class_name, user_id)
+                (username, hashed_password, role, class_name, user_id)
             )
             message = '用户更新成功'
         else:
-            # 添加新用户
+            # 添加新用户 - 密码使用哈希存储
+            hashed_password = hash_password(password)
             cursor.execute(
                 "INSERT INTO users (username, password, role, class, user_id) VALUES (?, ?, ?, ?, ?)",
-                (username, password, role, class_name, user_id)
+                (username, hashed_password, role, class_name, user_id)
             )
             message = '用户添加成功'
         
@@ -451,13 +453,14 @@ def reset_password():
             }), 403
         
         new_password = generate_random_password()
+        hashed_password = hash_password(new_password)
         
         conn = get_db_connection()
         cursor = conn.cursor()
         
         cursor.execute(
             "UPDATE users SET password = ? WHERE user_id = ?",
-            (new_password, user_id)
+            (hashed_password, user_id)
         )
         
         if cursor.rowcount == 0:
