@@ -56,7 +56,13 @@ Page({
 
       if (res.success) {
         utils.showToast('登录成功', 'success');
-        utils.setUserInfo(res.user);
+        
+        // 保存用户信息和token
+        const userData = { ...res.user };
+        if (res.token) {
+          userData.token = res.token;
+        }
+        utils.setUserInfo(userData);
 
         if (res.redirect_url) {
           const role = res.user.role;
