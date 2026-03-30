@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from database import get_db_connection, execute_query, execute_query_one, verify_password, hash_password
+from auth import generate_token, token_required, role_required
 
 # 创建管理员蓝图
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
@@ -35,9 +36,17 @@ def admin_login():
         
         # 验证用户 - 使用哈希密码验证
         if admin and verify_password(user_password, admin['password']):
+            # 生成JWT令牌
+            token = generate_token(
+                admin['user_id'], 
+                admin['username'], 
+                admin['role'], 
+                admin.get('class', '')
+            )
             return jsonify({
                 'success': True,
                 'message': '登录成功',
+                'token': token,
                 'admin': {
                     'username': admin['username'],
                     'user_id': admin['user_id']
@@ -57,6 +66,8 @@ def admin_login():
 
 # 获取所有用户列表
 @admin_bp.route('/users', methods=['GET'])
+@token_required
+@role_required('admin')
 def get_all_users():
     """获取所有用户信息"""
     try:
@@ -90,6 +101,8 @@ def get_all_users():
 
 # 添加或修改用户
 @admin_bp.route('/users', methods=['POST'])
+@token_required
+@role_required('admin')
 def add_or_update_user():
     """添加新用户或修改现有用户"""
     try:
@@ -150,6 +163,8 @@ def add_or_update_user():
 
 # 删除用户
 @admin_bp.route('/users/<user_id>', methods=['DELETE'])
+@token_required
+@role_required('admin')
 def delete_user(user_id):
     """删除指定用户"""
     try:
@@ -184,6 +199,8 @@ def delete_user(user_id):
 
 # 获取考勤记录列表
 @admin_bp.route('/attendance-records', methods=['GET'])
+@token_required
+@role_required('admin')
 def get_attendance_records():
     """获取考勤记录列表，支持筛选"""
     try:
@@ -250,6 +267,8 @@ def get_attendance_records():
 
 # 修改考勤记录
 @admin_bp.route('/attendance-records', methods=['POST'])
+@token_required
+@role_required('admin')
 def add_or_update_attendance_record():
     """添加或修改考勤记录"""
     try:
@@ -307,6 +326,8 @@ def add_or_update_attendance_record():
 
 # 删除考勤记录
 @admin_bp.route('/attendance-records/<record_id>', methods=['DELETE'])
+@token_required
+@role_required('admin')
 def delete_attendance_record(record_id):
     """删除指定考勤记录"""
     try:
@@ -340,6 +361,8 @@ def admin_page():
 
 # 获取打卡位置配置
 @admin_bp.route('/punch-location', methods=['GET'])
+@token_required
+@role_required('admin')
 def get_punch_location():
     """获取打卡位置配置"""
     try:
@@ -376,6 +399,8 @@ def get_punch_location():
 
 # 设置打卡位置
 @admin_bp.route('/punch-location', methods=['POST'])
+@token_required
+@role_required('admin')
 def set_punch_location():
     """设置打卡位置"""
     try:

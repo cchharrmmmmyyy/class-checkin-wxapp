@@ -2,12 +2,15 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 import sqlite3
 from database import get_db_connection, execute_query, execute_query_one
+from auth import token_required, role_required
 
 # 创建教师蓝图
 teacher_function = Blueprint('teacher', __name__, url_prefix='/api/teacher')
 
 # 任命班委接口
 @teacher_function.route('/appoint-monitor', methods=['POST'])
+@token_required
+@role_required('teacher')
 def appoint_monitor():
     """任命班委"""
     try:
@@ -118,6 +121,8 @@ def appoint_monitor():
 
 # 获取班级班委信息接口
 @teacher_function.route('/class-monitor/<class_name>', methods=['GET'])
+@token_required
+@role_required('teacher')
 def get_class_monitor(class_name):
     """获取班级班委信息"""
     try:
@@ -163,6 +168,8 @@ def get_class_monitor(class_name):
 
 # 获取教师班级学生列表接口
 @teacher_function.route('/class-students/<class_name>', methods=['GET'])
+@token_required
+@role_required('teacher')
 def get_class_students(class_name):
     """获取教师班级学生列表"""
     try:
@@ -202,6 +209,8 @@ def get_class_students(class_name):
 
 # 获取班级列表接口
 @teacher_function.route('/class-list', methods=['GET'])
+@token_required
+@role_required('teacher')
 def get_class_list():
     """获取所有班级列表"""
     try:
@@ -234,6 +243,8 @@ def get_class_list():
 
 # 移除班委接口
 @teacher_function.route('/remove-monitor', methods=['POST'])
+@token_required
+@role_required('teacher')
 def remove_monitor():
     """移除班委"""
     try:
@@ -342,6 +353,8 @@ def remove_monitor():
         }), 500
 
 @teacher_function.route('/leave-applications', methods=['GET'])
+@token_required
+@role_required('teacher')
 def get_leave_applications():
     """获取待审批请假申请"""
     try:
@@ -392,6 +405,8 @@ def get_leave_applications():
         }), 500
 
 @teacher_function.route('/approve-leave', methods=['POST'])
+@token_required
+@role_required('teacher')
 def approve_leave():
     """审批请假申请"""
     try:

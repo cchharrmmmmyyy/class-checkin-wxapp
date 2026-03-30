@@ -3,6 +3,7 @@ from datetime import datetime
 import sqlite3
 import math
 from database import get_db_connection, execute_query, execute_query_one
+from auth import token_required, role_required
 
 # 创建学生蓝图
 student_function = Blueprint('student', __name__, url_prefix='/api/student')
@@ -22,20 +23,34 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 
 # 在这里可以添加学生相关的路由
 @student_function.route('/profile', methods=['GET'])
+@token_required
 def get_profile():
     """获取学生资料"""
-    return {'message': '学生资料接口'}
+    user_info = request.user_info
+    return jsonify({
+        'success': True,
+        'user': {
+            'user_id': user_info.get('user_id'),
+            'username': user_info.get('username'),
+            'role': user_info.get('role'),
+            'class': user_info.get('class')
+        }
+    })
 
 @student_function.route('/punch', methods=['POST'])
+@token_required
+@role_required('student', 'monitor')
 def submit_punch():
     """提交打卡记录"""
     try:
+        user_info = request.user_info
+        user_id = user_info.get('user_id')
+        role = user_info.get('role')
+        class_name = user_info.get('class', '')
+        
         data = request.get_json()
         print(f"收到打卡请求数据: {data}")
         
-        user_id = data.get('user_id', '')
-        role = data.get('role', '')
-        class_name = data.get('class', '')
         latitude = data.get('latitude')
         longitude = data.get('longitude')
         
@@ -121,8 +136,13 @@ def submit_punch():
         }), 500
 
 @student_function.route('/records/<user_id>', methods=['GET'])
+@token_required
 def get_punch_records(user_id):
     """获取个人打卡记录"""
+    current_user_id = request.user_info.get('user_id')
+    if current_user_id != user_id:
+        return jsonify({'success': False, 'message': '无权限查看他人记录'}), 403
+    
     try:
         # 连接数据库
         conn = get_db_connection()
@@ -161,13 +181,17 @@ def get_punch_records(user_id):
         }), 500
 
 @student_function.route('/apply-leave', methods=['POST'])
+@token_required
+@role_required('student', 'monitor')
 def apply_leave():
     """提交请假申请"""
     try:
+        user_info = request.user_info
+        user_id = user_info.get('user_id')
+        
         data = request.get_json()
         print(f"收到请假申请数据: {data}")
         
-        user_id = data.get('user_id', '')
         leave_start_date = data.get('leave_start_date', '')
         leave_end_date = data.get('leave_end_date', '')
         
@@ -214,10 +238,16 @@ def apply_leave():
         }), 500
 
 @student_function.route('/leave-records', methods=['GET'])
+@token_required
 def get_leave_records():
     """获取个人请假记录"""
+    current_user_id = request.user_info.get('user_id')
+    user_id = request.args.get('user_id', current_user_id)
+    
+    if current_user_id != user_id:
+        return jsonify({'success': False, 'message': '无权限查看他人记录'}), 403
+    
     try:
-        user_id = request.args.get('user_id', '')
         
         if not user_id:
             return jsonify({
@@ -264,6 +294,8 @@ def get_leave_records():
         }), 500
 
 @student_function.route('/class-records/<class_name>', methods=['GET'])
+@token_required
+@role_required('monitor', 'teacher')
 def get_class_punch_records(class_name):
     """获取班级打卡记录"""
     try:

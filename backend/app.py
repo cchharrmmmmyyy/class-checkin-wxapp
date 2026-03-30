@@ -18,6 +18,9 @@ from admin import admin_bp
 # 导入数据库模块
 from database import init_database, execute_query_one, get_db_connection, verify_password
 
+# 导入JWT认证模块
+from auth import generate_token
+
 # 注册学生蓝图
 #什么是蓝图？
 """
@@ -91,6 +94,10 @@ def login():
         if user and verify_password(password, user['password']):
             user_role = user['role']
             user_class = user['class']
+            username = user['username']
+            
+            # 生成JWT令牌
+            token = generate_token(user_id, username, user_role, user_class)
             
             # 根据用户角色决定重定向路由
             if user_role == 'student':
@@ -106,9 +113,10 @@ def login():
             return jsonify({
                 'success': True,
                 'message': '登录成功',
+                'token': token,
                 'user': {
-                    'username': user['username'],
-                    'user_id': user['user_id'],
+                    'username': username,
+                    'user_id': user_id,
                     'role': user_role,
                     'class': user_class
                 },
