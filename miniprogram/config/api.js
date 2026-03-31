@@ -5,11 +5,11 @@ const env = 'development'; // development: 开发环境, production: 生产环�
 
 const API_CONFIG = {
   development: {
-    baseUrl: 'http://YOUR_SERVER_IP:5000/api',
+    baseUrl: 'http://127.0.0.1:5000/api',
     timeout: 10000
   },
   production: {
-    baseUrl: 'https://your-production-domain.com/api',
+    baseUrl: 'http://127.0.0.1:5000/api',
     timeout: 15000
   }
 };

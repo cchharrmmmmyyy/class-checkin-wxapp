@@ -13,7 +13,13 @@ Page({
     themeClass: '',
     latitude: 39.908823,
     longitude: 116.397470,
-    markers: []
+    markers: [{
+      id: 1,
+      latitude: 39.908823,
+      longitude: 116.397470,
+      width: 30,
+      height: 30
+    }]
   },
 
   onLoad(options) {
@@ -49,7 +55,9 @@ Page({
           markers: [{
             id: 1,
             latitude: res.latitude,
-            longitude: res.longitude
+            longitude: res.longitude,
+            width: 30,
+            height: 30
           }]
         });
         console.log('定位成功 - latitude:', res.latitude, 'longitude:', res.longitude);
@@ -165,7 +173,9 @@ Page({
       const marker = {
         id: 1,
         latitude: location.latitude,
-        longitude: location.longitude
+        longitude: location.longitude,
+        width: 30,
+        height: 30
       };
       this.setData({
         latitude: location.latitude,

@@ -92,8 +92,11 @@
 }
 
 .map-view {
-  width: 100%;
-  height: 350rpx;
+  width: 90%;
+  height: 500rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.2);
 }
 
 /* 打卡区域 */

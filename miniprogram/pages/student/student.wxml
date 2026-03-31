@@ -17,8 +17,10 @@
       latitude="{{latitude}}" 
       longitude="{{longitude}}" 
       markers="{{markers}}"
-      scale="17"
+      scale="16"
       show-location
+      enable-zoom
+      enable-scroll
     ></map>
     
     <view class="punch-card-section">
