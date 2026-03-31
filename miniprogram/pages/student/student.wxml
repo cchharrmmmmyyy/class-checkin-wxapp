@@ -1,44 +1,43 @@
 <!--pages/student/student.wxml-->
-<view class="container">
-  <view class="header">
-    <view class="nav-bar">
-      <view class="placeholder"></view>
-      <text class="title">{{userInfo.role === 'monitor' ? '班委面板' : '学生面板'}}</text>
-      <view class="detail-btn" bindtap="onGoToDetail">
-        <text class="detail-icon">打卡查询</text>
+<view class="page-wrapper">
+  <!-- 用户信息头部 -->
+  <view class="user-header mb-48">
+    <view>
+      <view class="section-title mb-8" style="margin-bottom: 8rpx;">{{userInfo.username}}</view>
+      <view class="text-secondary font-28">{{userInfo.class}} · {{userInfo.role === 'monitor' ? '班委' : '学生'}}</view>
+    </view>
+  </view>
+
+  <view class="page-content">
+    <!-- 地图卡片 -->
+    <view class="modern-card mb-32" style="padding: 0; overflow: hidden; height: 400rpx;">
+      <map 
+        class="map-view"
+        style="width: 100%; height: 100%;"
+        latitude="{{latitude}}" 
+        longitude="{{longitude}}" 
+        markers="{{markers}}"
+        scale="16"
+        show-location
+      ></map>
+    </view>
+
+    <!-- 打卡主区域 -->
+    <view class="punch-section flex-column flex-center mb-48">
+      <view class="punch-circle-container mb-32" bindtap="onPunchCard">
+        <view class="punch-circle-outer">
+          <view class="punch-circle-inner flex-center flex-column">
+            <text class="punch-icon">✓</text>
+            <text class="font-bold font-32 text-white">立即打卡</text>
+          </view>
+        </view>
+      </view>
+      <view class="punch-info text-center" wx:if="{{lastPunchTime}}">
+        <text class="text-light font-24">上次打卡：{{lastPunchTime}}</text>
       </view>
     </view>
-    <text class="welcome">欢迎，{{userInfo.username}}（{{userInfo.class}}）</text>
   </view>
-  
-  <view class="main-content">
-    <map 
-      class="map-view"
-      latitude="{{latitude}}" 
-      longitude="{{longitude}}" 
-      markers="{{markers}}"
-      scale="16"
-      show-location
-      enable-zoom
-      enable-scroll
-    ></map>
-    
-    <view class="punch-card-section">
-      <button class="punch-btn" bindtap="onPunchCard">
-        <text class="btn-text">打卡</text>
-      </button>
-      <text class="punch-time" wx:if="{{lastPunchTime}}">
-        上次打卡时间：{{lastPunchTime}}
-      </text>
-    </view>
-    
-    <view class="leave-section">
-      <button class="leave-btn" bindtap="onLeaveApply">
-        <text class="btn-text">请假</text>
-      </button>
-      <button class="leave-records-btn" bindtap="onViewLeaveRecords">
-        <text class="btn-text">请假记录</text>
-      </button>
-    </view>
-  </view>
+
+  <!-- 底部导航栏组件 -->
+  <student-tabbar active="0" isMonitor="{{userInfo.role === 'monitor'}}" />
 </view>

@@ -1,56 +1,48 @@
 <!--pages/login/login.wxml-->
-<view class="login-container">
-  <!-- 自定义顶部栏 -->
-  <view class="custom-navbar">
-    <view class="navbar-title">校园打卡</view>
-  </view>
-  
-  <!-- 几何装饰元素 -->
-  <view class="decor-circle decor-circle-1"></view>
-  <view class="decor-circle decor-circle-2"></view>
-  <view class="decor-circle decor-circle-3"></view>
-  <view class="decor-circle decor-circle-4"></view>
-  <view class="decor-circle decor-circle-5"></view>
-  <view class="decor-line decor-line-1"></view>
-  <view class="decor-line decor-line-2"></view>
-  
-  <view class="login-form">
-    <view class="logo">
-      <text class="logo-text">登录</text>
-      <text class="subtitle">校园打卡系统</text>
+<view class="global-container flex-center flex-column">
+  <view class="login-content w-full">
+    <view class="logo-section mb-48 text-center">
+      <view class="section-title mb-16">校园打卡</view>
+      <view class="text-secondary font-28">欢迎回来，请登录您的账号</view>
     </view>
     
-    <view class="input-group">
-      <view class="input-item">
-        <text class="label">学号/工号</text>
-        <input 
-          class="input" 
-          type="text" 
-          placeholder="请输入学号/工号" 
-          placeholder-class="placeholder"
-          bindinput="onUserIdInput"
-          value="{{user_id}}"
-        />
+    <view class="modern-card">
+      <view class="input-group">
+        <view class="input-item mb-32">
+          <text class="label mb-16 font-bold">学号/工号</text>
+          <input 
+            class="input-field" 
+            type="text" 
+            placeholder="请输入您的账号" 
+            placeholder-class="text-light"
+            bindinput="onUserIdInput"
+            value="{{user_id}}"
+          />
+        </view>
+        
+        <view class="input-item mb-48">
+          <text class="label mb-16 font-bold">密码</text>
+          <input 
+            class="input-field" 
+            type="password" 
+            placeholder="请输入您的密码" 
+            placeholder-class="text-light"
+            bindinput="onPasswordInput"
+            value="{{password}}"
+          />
+        </view>
       </view>
       
-      <view class="input-item">
-        <text class="label">密码</text>
-        <input 
-          class="input" 
-          type="password" 
-          placeholder="请输入密码" 
-          placeholder-class="placeholder"
-          bindinput="onPasswordInput"
-          value="{{password}}"
-        />
-      </view>
+      <button class="dark-btn w-full" bindtap="onLogin">
+        <text class="btn-text">立即登录</text>
+        <view class="btn-arrow ml-16 flex-center">
+          <image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M5 12H19M19 12L12 5M19 12L12 19' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" style="width: 40rpx; height: 40rpx;" />
+        </view>
+      </button>
     </view>
     
-    <button class="login-btn" bindtap="onLogin">
-      <span class="btn-text">登录</span>
-      <span class="btn-icon">→</span>
-    </button>
-    
-
+    <view class="footer-links text-center mt-48">
+      <text class="text-light font-24">还没有账号？请联系管理员开通</text>
+    </view>
   </view>
 </view>

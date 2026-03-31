@@ -1,0 +1,19 @@
+<!--components/student-tabbar/student-tabbar.wxml-->
+<view class="tabbar">
+  <view class="tabbar-item {{active === 0 ? 'active' : ''}}" bindtap="onSwitchTab" data-index="0" data-url="/pages/student/student">
+    <text class="tabbar-icon">🏠</text>
+    <text class="tabbar-text">首页</text>
+  </view>
+  <view class="tabbar-item {{active === 1 ? 'active' : ''}}" bindtap="onSwitchTab" data-index="1" data-url="/pages/student/leave-apply">
+    <text class="tabbar-icon">📅</text>
+    <text class="tabbar-text">请假申请</text>
+  </view>
+  <view class="tabbar-item {{active === 2 ? 'active' : ''}}" bindtap="onSwitchTab" data-index="2" data-url="/pages/student/leave-records">
+    <text class="tabbar-icon">📋</text>
+    <text class="tabbar-text">请假记录</text>
+  </view>
+  <view class="tabbar-item {{active === 3 ? 'active' : ''}}" wx:if="{{isMonitor}}" bindtap="onSwitchTab" data-index="3" data-url="/pages/student/class-records">
+    <text class="tabbar-icon">👥</text>
+    <text class="tabbar-text">班级记录</text>
+  </view>
+</view>

@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "请假审批",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "teacher-tabbar": "/components/teacher-tabbar/teacher-tabbar"
+  }
+}

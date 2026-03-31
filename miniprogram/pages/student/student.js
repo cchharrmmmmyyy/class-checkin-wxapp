@@ -138,14 +138,6 @@ Page({
     utils.navigateTo('/pages/student/student-detail');
   },
 
-  onLeaveApply() {
-    utils.navigateTo('/pages/student/leave-apply');
-  },
-
-  onViewLeaveRecords() {
-    utils.navigateTo('/pages/student/leave-records');
-  },
-
   onChangeTheme() {
     const app = getApp();
     if (app.themeManager) {

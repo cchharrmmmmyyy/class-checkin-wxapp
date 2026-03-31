@@ -1,0 +1,159 @@
+/* pages/student/class-records.wxss */
+
+.page-wrapper {
+  min-height: 100vh;
+  background-color: var(--background-color);
+  padding: 32rpx;
+  box-sizing: border-box;
+}
+
+.page-header {
+  margin-bottom: 32rpx;
+}
+
+.header-title {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: var(--text-color);
+  margin-bottom: 8rpx;
+}
+
+.header-date {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+}
+
+/* 统计卡片 */
+.stats-cards {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 32rpx;
+}
+
+.stat-card {
+  flex: 1;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx 16rpx;
+  margin: 0 8rpx;
+  text-align: center;
+  box-shadow: var(--shadow-light);
+}
+
+.stat-card:first-child {
+  margin-left: 0;
+}
+
+.stat-card:last-child {
+  margin-right: 0;
+}
+
+.stat-number {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 8rpx;
+}
+
+.stat-number.punched {
+  color: var(--success-color);
+}
+
+.stat-number.leave {
+  color: var(--warning-color);
+}
+
+.stat-number.unpunched {
+  color: var(--error-color);
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+/* 学生列表 */
+.student-list {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: var(--shadow-light);
+}
+
+.list-header {
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.list-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.empty-state {
+  padding: 80rpx 32rpx;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: var(--text-light);
+}
+
+.student-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+  transition: background-color 0.3s ease;
+}
+
+.student-item:last-child {
+  border-bottom: none;
+}
+
+.student-item:active {
+  background-color: #F8F8F8;
+}
+
+.student-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.student-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 4rpx;
+}
+
+.student-id {
+  font-size: 24rpx;
+  color: var(--text-light);
+}
+
+.student-status {
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.student-status.punched {
+  background: #E8F9F0;
+  color: var(--success-color);
+}
+
+.student-status.leave {
+  background: #FFF4E5;
+  color: var(--warning-color);
+}
+
+.student-status.unpunched {
+  background: #FFE8E8;
+  color: var(--error-color);
+}

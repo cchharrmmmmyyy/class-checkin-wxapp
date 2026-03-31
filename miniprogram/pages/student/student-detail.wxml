@@ -1,30 +1,26 @@
-<!--pages/student/student-detail.wxml-->
-<view class="container">
-  <view class="header">
-    <view class="nav-bar">
-      <view class="placeholder"></view>
-      <text class="title">{{userInfo.role === 'monitor' ? '班委详情' : '学生详情'}}</text>
-      <view class="placeholder"></view>
-    </view>
-    <text class="welcome">欢迎，{{userInfo.username}}（{{userInfo.class}}）</text>
+<!-- pages/student/student-detail.wxml -->
+<view class="global-container">
+  <view class="user-header mb-48">
+    <view class="section-title mb-8" style="margin-bottom: 8rpx;">打卡查询</view>
+    <view class="text-secondary font-28">{{userInfo.username}} · {{userInfo.class}}</view>
   </view>
   
-  <view class="main-content">
+  <view class="page-content">
     <!-- 查询功能 -->
-    <view class="query-section">
+    <view class="query-section mb-48">
       <!-- 普通学生显示一个查询按钮 -->
-      <view wx:if="{{userInfo.role !== 'monitor'}}" class="single-btn-container">
-        <button class="query-btn" bindtap="onQueryMyRecords">
-          <text class="btn-text black-text">查询打卡记录</text>
+      <view wx:if="{{userInfo.role !== 'monitor'}}" class="w-full">
+        <button class="dark-btn w-full" bindtap="onQueryMyRecords">
+          <text class="btn-text">查询我的打卡记录</text>
         </button>
       </view>
       
       <!-- 班委显示两个查询按钮 -->
-      <view wx:if="{{userInfo.role === 'monitor'}}" class="dual-btn-container">
-        <button class="query-btn personal-btn" bindtap="onQueryMyRecords">
+      <view wx:if="{{userInfo.role === 'monitor'}}" class="flex-column">
+        <button class="dark-btn w-full mb-24" bindtap="onQueryMyRecords">
           <text class="btn-text">查询个人打卡记录</text>
         </button>
-        <button class="query-btn class-btn" bindtap="onQueryClassRecords">
+        <button class="primary-btn w-full" bindtap="onQueryClassRecords">
           <text class="btn-text">查询全班打卡记录</text>
         </button>
       </view>
@@ -33,36 +29,42 @@
 
     <!-- 查询结果区域 -->
     <view class="result-section" wx:if="{{showResults}}">
-      <text class="result-title">{{resultTitle}}</text>
+      <view class="card-title mb-32 text-center">{{resultTitle}}</view>
       
-      <!-- 普通学生显示个人记录 -->
-      <view wx:if="{{userInfo.role !== 'monitor'}}" class="record-list">
-        <view class="record-item" wx:for="{{myRecords}}" wx:key="index">
-          <text class="record-date">{{item.punch_date}}</text>
-          <text class="record-status">已打卡</text>
+      <!-- 个人记录列表 -->
+      <view wx:if="{{myRecords.length > 0}}" class="record-list">
+        <view class="modern-card record-item flex-between align-center" wx:for="{{myRecords}}" wx:key="index">
+          <view class="flex align-center">
+            <view class="icon-circle mr-24" style="background: #E8F1FF; width: 80rpx; height: 80rpx;">
+              <image src="data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z' stroke='%231D70F5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" style="width: 40rpx; height: 40rpx;" />
+            </view>
+            <text class="font-bold font-28">{{item.punch_date}}</text>
+          </view>
+          <view class="status-tag normal">已打卡</view>
         </view>
-        <text wx:if="{{myRecords.length === 0}}" class="no-data">暂无打卡记录</text>
       </view>
       
-      <!-- 班委显示个人记录 -->
-      <view wx:if="{{userInfo.role === 'monitor' && myRecords.length > 0}}" class="record-list">
-        <view class="record-item" wx:for="{{myRecords}}" wx:key="index">
-          <text class="record-date">{{item.punch_date}}</text>
-          <text class="record-status">已打卡</text>
-        </view>
-        <text wx:if="{{myRecords.length === 0}}" class="no-data">暂无打卡记录</text>
-      </view>
-      
-      <!-- 班委显示班级记录 -->
-      <view wx:if="{{userInfo.role === 'monitor' && classRecords.length > 0}}" class="class-record-list">
-        <view class="class-record-item" wx:for="{{classRecords}}" wx:key="index">
-          <text class="student-name">{{item.username}}</text>
-          <text class="punch-status" style="color: {{item.punched ? '#52c41a' : '#ff4d4f'}}">
+      <!-- 班级记录列表 -->
+      <view wx:if="{{classRecords.length > 0}}" class="class-record-list">
+        <view class="modern-card class-record-item flex-between align-center" wx:for="{{classRecords}}" wx:key="index">
+          <view class="flex align-center">
+            <view class="icon-circle mr-24" style="background: {{item.punched ? '#E8F9F0' : '#FFF1F0'}}; width: 80rpx; height: 80rpx;">
+              <image wx:if="{{item.punched}}" src="data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z' stroke='%232ECC71' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" style="width: 40rpx; height: 40rpx;" />
+              <image wx:else src="data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z' stroke='%23E74C3C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" style="width: 40rpx; height: 40rpx;" />
+            </view>
+            <view class="flex-column">
+              <text class="font-bold font-28">{{item.username}}</text>
+              <text class="text-light font-24" wx:if="{{item.punchTime}}">{{item.punchTime}}</text>
+            </view>
+          </view>
+          <view class="status-tag {{item.punched ? 'normal' : ''}}" style="{{!item.punched ? 'background: #FFF1F0; color: #E74C3C;' : ''}}">
             {{item.punched ? '已打卡' : '未打卡'}}
-          </text>
-          <text class="punch-time" wx:if="{{item.punchTime}}">{{item.punchTime}}</text>
+          </view>
         </view>
-        <text wx:if="{{classRecords.length === 0}}" class="no-data">暂无班级打卡数据</text>
+      </view>
+
+      <view wx:if="{{showResults && myRecords.length === 0 && classRecords.length === 0}}" class="modern-card text-center py-48">
+        <text class="text-light font-28">暂无相关打卡记录</text>
       </view>
     </view>
   </view>

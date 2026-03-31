@@ -1,3 +1,5 @@
 {
-  "usingComponents": {}
+  "usingComponents": {
+    "teacher-tabbar": "/components/teacher-tabbar/teacher-tabbar"
+  }
 }

@@ -1,52 +1,61 @@
 <!--pages/student/leave-records.wxml-->
-<view class="container">
-  <view class="header">
-    <view class="nav-bar">
-      <view class="back-btn" bindtap="onBack">
-        <text class="back-icon">←</text>
-      </view>
-      <text class="title">请假记录</text>
-      <view class="refresh-btn" bindtap="onRefresh">
-        <text class="refresh-icon">刷新</text>
-      </view>
+<view class="global-container">
+  <view class="user-header mb-48 flex-between align-center">
+    <view class="flex align-center">
+      <view class="section-title" style="margin-bottom: 0;">请假记录</view>
     </view>
-    <text class="welcome">欢迎，{{userInfo.username}}（{{userInfo.class}}）</text>
+    <view class="icon-btn" bindtap="onRefresh">
+      <image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M4 4V9H4.58152M19.9381 11C19.446 7.05361 16.0796 4 12 4C8.64262 4 5.76829 6.06817 4.58152 9M4.58152 9H9M20 20V15H19.4185M19.4185 15C18.2317 17.9318 15.3574 20 12 20C7.92038 20 4.55399 16.9464 4.06189 13M19.4185 15H15' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" style="width: 40rpx; height: 40rpx;" />
+    </view>
   </view>
   
-  <view class="main-content">
+  <view class="page-content">
     <view class="records-container">
       <!-- 加载中 -->
-      <view class="loading" wx:if="{{isLoading}}">
-        <text class="loading-text">加载中...</text>
+      <view class="modern-card flex-center py-48" wx:if="{{isLoading}}">
+        <text class="text-light font-28">加载中...</text>
       </view>
       
       <!-- 无记录 -->
-      <view class="no-records" wx:elif="{{leaveRecords.length === 0 && !isLoading}}">
-        <text class="no-records-text">暂无请假记录</text>
+      <view class="modern-card flex-center py-48" wx:elif="{{leaveRecords.length === 0 && !isLoading}}">
+        <text class="text-light font-28">暂无请假记录</text>
       </view>
       
       <!-- 请假记录列表 -->
       <view class="records-list" wx:else>
-        <view class="record-item" wx:for="{{leaveRecords}}" wx:key="id">
-          <view class="record-header">
-            <text class="record-date">
-              {{item.leave_start_date}} 至 {{item.leave_end_date}}
-            </text>
-            <view class="status-tag" wx:if="{{item.leave_status === 'pending'}}">
-              <text class="status-text pending">待审批</text>
+        <view class="modern-card record-item" wx:for="{{leaveRecords}}" wx:key="id">
+          <view class="flex-between align-center mb-24">
+            <view class="flex align-center">
+              <view class="icon-circle mr-24" style="background: #E8F1FF; width: 64rpx; height: 64rpx;">
+                <image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z' stroke='%231D70F5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" style="width: 32rpx; height: 32rpx;" />
+              </view>
+              <text class="font-bold font-32">{{item.leave_start_date}}</text>
             </view>
-            <view class="status-tag" wx:elif="{{item.leave_status === 'approved'}}">
-              <text class="status-text approved">已批准</text>
-            </view>
-            <view class="status-tag" wx:else>
-              <text class="status-text rejected">已拒绝</text>
+            
+            <view class="status-tag {{item.leave_status === 'approved' ? 'normal' : ''}}" 
+                  style="{{item.leave_status === 'pending' ? 'background: #FFF4E5; color: #F39C12;' : (item.leave_status === 'rejected' ? 'background: #FFF1F0; color: #E74C3C;' : '')}}">
+              {{item.leave_status === 'pending' ? '待审批' : (item.leave_status === 'approved' ? '已批准' : '已拒绝')}}
             </view>
           </view>
-          <view class="record-footer">
-            <text class="record-id">申请ID：{{item.id}}</text>
+          
+          <view class="record-body flex-column">
+            <view class="flex align-center mb-16">
+              <text class="text-secondary font-24 mr-16">至</text>
+              <text class="font-bold font-32">{{item.leave_end_date}}</text>
+            </view>
+            <view class="flex-between align-center mt-24 pt-24" style="border-top: 1rpx solid var(--card-border);">
+              <text class="text-light font-24">申请ID: {{item.id}}</text>
+              <view class="flex align-center">
+                <text class="text-primary font-24 font-bold">查看详情</text>
+                <image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M9 5L16 12L9 19' stroke='%231D70F5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" class="ml-8" style="width: 24rpx; height: 24rpx;" />
+              </view>
+            </view>
           </view>
         </view>
       </view>
     </view>
   </view>
+
+  <!-- 底部导航栏组件 -->
+  <student-tabbar active="2" isMonitor="{{userInfo.role === 'monitor'}}" />
 </view>

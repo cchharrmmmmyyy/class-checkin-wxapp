@@ -5,13 +5,16 @@
     "pages/student/student-detail",
     "pages/student/leave-apply",
     "pages/student/leave-records",
-    "pages/teacher/teacher"
+    "pages/student/class-records",
+    "pages/teacher/teacher",
+    "pages/teacher/leave-approval",
+    "pages/teacher/monitor-manage"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#2E8B57",
-    "navigationBarTextStyle": "white",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTextStyle": "black",
     "navigationBarTitleText": "校园打卡",
-    "backgroundColor": "#f0f5f0"
+    "backgroundColor": "#F7F8FA"
   },
   "networkTimeout": {
     "request": 10000

@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "班级打卡记录",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "student-tabbar": "/components/student-tabbar/student-tabbar"
+  }
+}
