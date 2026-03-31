@@ -102,7 +102,5 @@ Page({
     }
   },
 
-  onRegister() {
-    utils.showToast('注册功能开发中', 'none');
-  }
+
 });

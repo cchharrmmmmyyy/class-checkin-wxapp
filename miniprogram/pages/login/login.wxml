@@ -51,8 +51,6 @@
       <span class="btn-icon">→</span>
     </button>
     
-    <view class="register-link">
-      <text class="link-text" bindtap="onRegister">没有账号？立即注册</text>
-    </view>
+
   </view>
 </view>
