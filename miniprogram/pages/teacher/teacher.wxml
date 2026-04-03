@@ -1,5 +1,6 @@
 <!--pages/teacher/teacher.wxml-->
 <view class="page-wrapper">
+  <navbar title="校园打卡" />
   <!-- 用户信息头部 -->
   <view class="user-header mb-48">
     <view>

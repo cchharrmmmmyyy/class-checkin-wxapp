@@ -1,5 +1,6 @@
 <!--pages/teacher/monitor-manage.wxml-->
 <view class="page-wrapper">
+  <navbar title="班委管理" />
   <!-- 页面标题 -->
   <view class="page-header">
     <view class="header-title">班委管理</view>

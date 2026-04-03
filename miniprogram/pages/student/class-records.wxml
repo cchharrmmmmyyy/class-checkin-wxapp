@@ -1,5 +1,6 @@
 <!--pages/student/class-records.wxml-->
 <view class="page-wrapper">
+  <navbar title="班级打卡记录" />
   <!-- 页面标题 -->
   <view class="page-header">
     <view class="header-title">班级打卡记录</view>

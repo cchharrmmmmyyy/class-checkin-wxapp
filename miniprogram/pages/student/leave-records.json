@@ -1,5 +1,7 @@
 {
+  "navigationStyle": "custom",
   "usingComponents": {
+    "navbar": "/components/navbar/navbar",
     "student-tabbar": "/components/student-tabbar/student-tabbar"
   }
 }

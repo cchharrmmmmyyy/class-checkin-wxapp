@@ -1,5 +1,6 @@
 <!--pages/teacher/leave-approval.wxml-->
 <view class="page-wrapper">
+  <navbar title="请假审批" />
   <!-- 页面标题 -->
   <view class="page-header">
     <view class="header-title">请假审批</view>

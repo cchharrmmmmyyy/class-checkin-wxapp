@@ -1,8 +1,10 @@
 {
+  "navigationStyle": "custom",
   "navigationBarTitleText": "班委管理",
   "enablePullDownRefresh": true,
   "backgroundTextStyle": "dark",
   "usingComponents": {
+    "navbar": "/components/navbar/navbar",
     "teacher-tabbar": "/components/teacher-tabbar/teacher-tabbar"
   }
 }

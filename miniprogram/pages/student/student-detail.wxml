@@ -1,5 +1,6 @@
 <!-- pages/student/student-detail.wxml -->
 <view class="global-container">
+  <navbar title="打卡查询" />
   <view class="user-header mb-48">
     <view class="section-title mb-8" style="margin-bottom: 8rpx;">打卡查询</view>
     <view class="text-secondary font-28">{{userInfo.username}} · {{userInfo.class}}</view>

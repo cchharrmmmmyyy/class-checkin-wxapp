@@ -532,6 +532,7 @@
             .then(data => {
                 if (data.success) {
                     currentAdmin = data.admin;
+                    localStorage.setItem('adminToken', data.token);
                     showMessage('登录成功！', 'success', 'loginMessage');
                     setTimeout(() => {
                         document.getElementById('loginSection').style.display = 'none';
@@ -548,9 +549,30 @@
             });
         }
         
+        // 获取 token 的辅助函数
+        function getToken() {
+            return localStorage.getItem('adminToken') || '';
+        }
+        
+        // 带 token 的 fetch 封装
+        function fetchWithAuth(url, options = {}) {
+            const token = getToken();
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            return fetch(url, {
+                ...options,
+                headers
+            });
+        }
+        
         // 加载用户列表
         function loadUsers() {
-            fetch('/api/admin/users')
+            fetchWithAuth('/api/admin/users')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -599,7 +621,7 @@
         
         // 编辑用户
         function editUser(userId) {
-            fetch('/api/admin/users')
+            fetchWithAuth('/api/admin/users')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -646,7 +668,7 @@
         
         // 保存用户
         function saveUser(userData) {
-            fetch('/api/admin/users', {
+            fetchWithAuth('/api/admin/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -672,7 +694,7 @@
         // 删除用户
         function deleteUser(userId) {
             if (confirm('确定要删除这个用户吗？')) {
-                fetch(`/api/admin/users/${userId}`, {
+                fetchWithAuth(`/api/admin/users/${userId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -697,7 +719,7 @@
         // 重置用户密码
         function resetUserPassword(userId) {
             if (confirm('确定要重置这个用户的密码吗？新密码将显示在下方。')) {
-                fetch('/api/admin/reset-password', {
+                fetchWithAuth('/api/admin/reset-password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -792,7 +814,7 @@
             if (filters.end_date) queryParams.append('end_date', filters.end_date);
             if (filters.leave_status) queryParams.append('leave_status', filters.leave_status);
             
-            fetch(`/api/admin/attendance-records?${queryParams.toString()}`)
+            fetchWithAuth(`/api/admin/attendance-records?${queryParams.toString()}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -851,7 +873,7 @@
         
         // 编辑考勤记录
         function editAttendanceRecord(recordId) {
-            fetch(`/api/admin/attendance-records`)
+            fetchWithAuth(`/api/admin/attendance-records`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -901,7 +923,7 @@
         
         // 保存考勤记录
         function saveAttendanceRecord(recordData) {
-            fetch('/api/admin/attendance-records', {
+            fetchWithAuth('/api/admin/attendance-records', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -927,7 +949,7 @@
         // 删除考勤记录
         function deleteAttendanceRecord(recordId) {
             if (confirm('确定要删除这条考勤记录吗？')) {
-                fetch(`/api/admin/attendance-records/${recordId}`, {
+                fetchWithAuth(`/api/admin/attendance-records/${recordId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -984,7 +1006,7 @@
         
         // 加载打卡位置配置
         function loadPunchLocation() {
-            fetch('/api/admin/punch-location')
+            fetchWithAuth('/api/admin/punch-location')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -1032,7 +1054,7 @@
                 return;
             }
             
-            fetch('/api/admin/punch-location', {
+            fetchWithAuth('/api/admin/punch-location', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

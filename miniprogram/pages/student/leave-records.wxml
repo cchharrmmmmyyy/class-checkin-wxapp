@@ -1,5 +1,6 @@
 <!--pages/student/leave-records.wxml-->
 <view class="global-container">
+  <navbar title="请假记录" />
   <view class="user-header mb-48 flex-between align-center">
     <view class="flex align-center">
       <view class="section-title" style="margin-bottom: 0;">请假记录</view>

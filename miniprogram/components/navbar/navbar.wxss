@@ -1,0 +1,44 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 16px;
+  background-color: #FFFFFF;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-sizing: content-box;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  min-width: 80px;
+}
+
+.back-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.logout-text {
+  font-size: 14px;
+  color: #333333;
+  margin-left: 4px;
+}
+
+.navbar-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 17px;
+  font-weight: 500;
+  color: #333333;
+}
+
+.navbar-right {
+  min-width: 80px;
+}

@@ -37,11 +37,12 @@ def admin_login():
         # 验证用户 - 使用哈希密码验证
         if admin and verify_password(user_password, admin['password']):
             # 生成JWT令牌
+            admin_class = admin['class'] if admin['class'] else ''
             token = generate_token(
                 admin['user_id'], 
                 admin['username'], 
                 admin['role'], 
-                admin.get('class', '')
+                admin_class
             )
             return jsonify({
                 'success': True,

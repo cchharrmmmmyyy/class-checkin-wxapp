@@ -1,8 +1,10 @@
 {
+  "navigationStyle": "custom",
   "navigationBarTitleText": "请假审批",
   "enablePullDownRefresh": true,
   "backgroundTextStyle": "dark",
   "usingComponents": {
+    "navbar": "/components/navbar/navbar",
     "teacher-tabbar": "/components/teacher-tabbar/teacher-tabbar"
   }
 }

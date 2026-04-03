@@ -1,5 +1,6 @@
 <!--pages/student/leave-apply.wxml-->
 <view class="global-container">
+  <navbar title="请假申请" />
   <view class="user-header mb-48 flex align-center">
     <view class="section-title" style="margin-bottom: 0;">请假申请</view>
   </view>
