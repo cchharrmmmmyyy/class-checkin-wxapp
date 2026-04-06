@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, send_from_directory
-from database import get_db_connection, execute_query, execute_query_one, verify_password, hash_password
-from auth import generate_token, token_required, role_required
+from database import get_db_connection, verify_password, hash_password
+from utils.auth import generate_token, token_required, role_required
 
 # 创建管理员蓝图
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')

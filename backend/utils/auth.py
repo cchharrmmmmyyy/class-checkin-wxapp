@@ -1,3 +1,8 @@
+"""
+认证模块
+负责用户认证和授权，包括生成JWT令牌、验证令牌和装饰器
+"""
+
 import jwt
 import datetime
 import os

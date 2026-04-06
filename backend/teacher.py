@@ -1,8 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
-import sqlite3
-from database import get_db_connection, execute_query, execute_query_one
-from auth import token_required, role_required
+from database import get_db_connection
+from utils.auth import token_required, role_required
 
 # 创建教师蓝图
 teacher_function = Blueprint('teacher', __name__, url_prefix='/api/teacher')

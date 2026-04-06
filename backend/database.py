@@ -4,16 +4,31 @@
 
 """
 import sqlite3
-import os
 import hashlib
 import secrets
+from config import DATABASE_FILE, INSERT_TEST_DATA
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATABASE_FILE = os.path.join(BASE_DIR, 'user.db')
+
+# 检查并初始化数据库，只在需要时初始化
+def check_and_init_database():
+    """检查并初始化数据库，只在需要时初始化"""
+    conn = _get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 检查表是否存在
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+        if cursor.fetchone() is None:#获取查询结果的第一行，如果没有结果则返回 None
+            init_database()  # 调用真正的初始化函数
+        else:
+            print("数据库已存在且结构完整，无需初始化")
+    finally:
+        conn.close()
 
 def hash_password(password):
     """
-    使用SHA-256 + 盐值对密码进行哈希加密
+    使用SHA-256 + 盐值对密码进行哈希加密，
+    返回: 包含盐值和哈希密码的字符串，格式为 "salt:hash"，用于后续验证
     """
     salt = secrets.token_hex(16)
     password_hash = hashlib.sha256((password + salt).encode()).hexdigest()
@@ -29,8 +44,9 @@ def verify_password(password, stored_hash):
     except:
         return False
 
-def get_db_connection():
+def _get_db_connection(): # 获取数据库连接
     """
+
     获取数据库连接
     返回: sqlite3.Connection对象
     """
@@ -43,7 +59,7 @@ def init_database():
     初始化数据库表结构
     创建用户表和打卡记录表，并插入示例数据
     """
-    conn = get_db_connection()
+    conn = _get_db_connection()
     cursor = conn.cursor()
     
     try:
@@ -72,65 +88,40 @@ def init_database():
             )
         ''')
         
-        # 检查punch_records表是否有leave_status字段，如果没有则添加
-        cursor.execute("PRAGMA table_info(punch_records)")
-        columns = cursor.fetchall()
-        column_names = [column[1] for column in columns]
         
-        if 'leave_status' not in column_names:
-            print("添加leave_status字段")
-            cursor.execute("ALTER TABLE punch_records ADD COLUMN leave_status TEXT DEFAULT 'pending'")
-            
         # 创建打卡位置配置表
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS punch_location (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                latitude REAL NOT NULL,
-                longitude REAL NOT NULL,
-                radius REAL NOT NULL,
-                enabled INTEGER DEFAULT 1
+                id INTEGER PRIMARY KEY AUTOINCREMENT,-- 自增主键
+                name TEXT NOT NULL,-- 打卡地点名称
+                latitude REAL NOT NULL,-- 打卡地点纬度
+                longitude REAL NOT NULL,-- 打卡地点经度
+                radius REAL NOT NULL,-- 打卡半径
+                enabled INTEGER DEFAULT 1-- 是否启用，1表示启用，0表示禁用
             )
         ''')
-        
-        # 检查并创建punch_location表（兼容已存在的数据库）
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='punch_location'")
-        if not cursor.fetchone():
-            print("创建punch_location表")
-            cursor.execute('''
-                CREATE TABLE punch_location (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    latitude REAL NOT NULL,
-                    longitude REAL NOT NULL,
-                    radius REAL NOT NULL,
-                    enabled INTEGER DEFAULT 1
-                )
-            ''')
             
         # 创建必要的索引
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_date ON punch_records(user_id, punch_date)')
         
-        # 插入示例用户数据（如果不存在）
-        # 注意：这些是示例用户，首次部署时请修改为安全的默认密码
-        # 顺序：user_id(主键), username, password, role, class
-        # 密码已使用SHA-256+盐值哈希存储
-        sample_users = [
-            ('admin001', '管理员', hash_password('admin123'), 'admin', ''),
-            ('2024001', '张三', hash_password('123456'), 'student', '计算机1班'),
-            ('2024002', '李四', hash_password('123456'), 'student', '计算机1班'),
-            ('2024003', '王五', hash_password('123456'), 'monitor', '计算机1班'),
-            ('t001', '张老师', hash_password('123456'), 'teacher', '计算机1班'),
-            ('2024004', '赵六', hash_password('123456'), 'student', '计算机2班'),
-            ('2024005', '钱七', hash_password('123456'), 'student', '计算机2班'),
-            ('2024006', '孙八', hash_password('123456'), 'monitor', '计算机2班'),
-            ('t002', '李老师', hash_password('123456'), 'teacher', '计算机2班')
-        ]
-        
-        cursor.executemany(
-            "INSERT OR IGNORE INTO users VALUES (?, ?, ?, ?, ?)",
-            sample_users
-        )
+        if INSERT_TEST_DATA:
+            # 插入示例用户数据
+            sample_users = [
+                ('admin001', '管理员', hash_password('admin123'), 'admin', ''),
+                ('2024001', '张三', hash_password('123456'), 'student', '计算机1班'),
+                ('2024002', '李四', hash_password('123456'), 'student', '计算机1班'),
+                ('2024003', '王五', hash_password('123456'), 'monitor', '计算机1班'),
+                ('t001', '张老师', hash_password('123456'), 'teacher', '计算机1班'),
+                ('2024004', '赵六', hash_password('123456'), 'student', '计算机2班'),
+                ('2024005', '钱七', hash_password('123456'), 'student', '计算机2班'),
+                ('2024006', '孙八', hash_password('123456'), 'monitor', '计算机2班'),
+                ('t002', '李老师', hash_password('123456'), 'teacher', '计算机2班')
+            ]
+            
+            cursor.executemany(
+                "INSERT OR IGNORE INTO users VALUES (?, ?, ?, ?, ?)",
+                sample_users
+            )
         
         conn.commit()
         print("数据库初始化完成")
@@ -149,7 +140,7 @@ def execute_query(sql, params=()):
         params: 参数元组
     返回: 查询结果列表
     """
-    conn = get_db_connection()
+    conn = _get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(sql, params)
@@ -170,7 +161,7 @@ def execute_query_one(sql, params=()):
         params: 参数元组
     返回: 单条查询结果
     """
-    conn = get_db_connection()
+    conn = _get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(sql, params)
@@ -191,7 +182,7 @@ def execute_update(sql, params=()):
         params: 参数元组
     返回: 受影响的行数
     """
-    conn = get_db_connection()
+    conn = _get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(sql, params)
@@ -202,6 +193,8 @@ def execute_update(sql, params=()):
         raise e
     finally:
         conn.close()
+
+
 
 # 应用启动时自动初始化数据库
 if __name__ == '__main__':
