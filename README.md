@@ -52,6 +52,13 @@ class-checkin-wxapp/
 │   │   ├── punch_record_dao.py  # punch_records 表 CRUD
 │   │   ├── leave_dao.py          # 请假记录 CRUD
 │   │   └── location_dao.py       # punch_location 表 CRUD
+│   ├── services/                  # 业务服务层
+│   │   ├── __init__.py
+│   │   ├── auth_service.py       # 登录认证、JWT 生成
+│   │   ├── punch_service.py      # 打卡业务（位置校验、记录打卡）
+│   │   ├── leave_service.py      # 请假申请、审批业务
+│   │   ├── teacher_service.py    # 班委管理、班级列表
+│   │   └── admin_service.py      # 管理员：用户管理、考勤管理、位置配置
 │   └── utils/                    # 工具模块
 │       ├── __init__.py
 │       ├── auth.py               # JWT认证模块
