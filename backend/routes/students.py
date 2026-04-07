@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 from utils.geo import calculate_distance
 from utils.auth import token_required, role_required
+from config import Config
 
 student_function = Blueprint('student', __name__, url_prefix='/api/students')
 
@@ -101,7 +102,7 @@ def get_punch_records():
 
     try:
         records = execute_query(
-            "SELECT pr.*, u.username FROM punch_records pr LEFT JOIN users u ON pr.user_id = u.user_id WHERE pr.user_id = ? ORDER BY pr.punch_date DESC LIMIT 30",
+            f"SELECT pr.*, u.username FROM punch_records pr LEFT JOIN users u ON pr.user_id = u.user_id WHERE pr.user_id = ? ORDER BY pr.punch_date DESC LIMIT {Config.PUNCH_RECORDS_LIMIT}",
             (user_id,)
         )
 

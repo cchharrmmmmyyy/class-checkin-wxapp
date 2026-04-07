@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, send_from_directory
 from routes import admin_bp, student_function, teacher_function, login_function
 from database import check_and_init_database
+from config import Config
 
 
 app = Flask(__name__)
@@ -26,5 +27,5 @@ def health_check():
 
 if __name__ == '__main__':
     check_and_init_database()
-    print("后端服务启动在 http://localhost:5000")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    print(f"后端服务启动在 http://{Config.FLASK_HOST}:{Config.FLASK_PORT}")
+    app.run(host=Config.FLASK_HOST, port=Config.FLASK_PORT, debug=Config.FLASK_DEBUG)

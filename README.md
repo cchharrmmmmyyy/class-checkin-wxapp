@@ -28,15 +28,23 @@
 ```
 class-checkin-wxapp/
 ├── backend/                      # Flask后端服务
-│   ├── app.py                    # 应用入口、登录接口
+│   ├── config.py                 # 配置文件（环境变量读取）
+│   ├── app.py                    # 应用入口
 │   ├── database.py               # 数据库初始化和操作
-│   ├── student.py                # 学生相关API（打卡、请假）
-│   ├── teacher.py                # 教师相关API（班委管理、请假审批）
-│   ├── admin.py                  # 管理员API（用户管理、位置配置）
+│   ├── login.html                # 登录页面
 │   ├── admin.html                # 管理员Web管理界面
-│   ├── user.db                   # SQLite数据库文件
+│   ├── .env.example              # 环境变量示例文件
 │   ├── requirements.txt          # Python依赖
-│   └── docs/                     # 后端文档
+│   ├── routes/                   # API路由
+│   │   ├── __init__.py
+│   │   ├── login.py              # 登录接口
+│   │   ├── students.py           # 学生相关API（打卡、请假）
+│   │   ├── teachers.py           # 教师相关API（班委管理、请假审批）
+│   │   └── admin.py              # 管理员API（用户管理、位置配置）
+│   └── utils/                    # 工具模块
+│       ├── __init__.py
+│       ├── auth.py               # JWT认证模块
+│       └── geo.py                # 地理计算模块
 ├── miniprogram/                   # 微信小程序前端
 │   ├── config/
 │   │   └── api.js                # API接口配置
@@ -53,13 +61,40 @@ class-checkin-wxapp/
 │   │   │   ├── student.js        # 打卡主页面（含地图）
 │   │   │   ├── student.wxml
 │   │   │   ├── student.wxss
+│   │   │   ├── student.json
 │   │   │   ├── student-detail.js  # 打卡记录查询
+│   │   │   ├── student-detail.json
+│   │   │   ├── student-detail.wxml
+│   │   │   ├── student-detail.wxss
 │   │   │   ├── leave-apply.js     # 请假申请
-│   │   │   └── leave-records.js  # 请假记录
+│   │   │   ├── leave-apply.json
+│   │   │   ├── leave-apply.wxml
+│   │   │   ├── leave-apply.wxss
+│   │   │   ├── leave-records.js  # 请假记录
+│   │   │   ├── leave-records.json
+│   │   │   ├── leave-records.wxml
+│   │   │   ├── leave-records.wxss
+│   │   │   ├── class-records.js  # 班级打卡记录
+│   │   │   ├── class-records.json
+│   │   │   ├── class-records.wxml
+│   │   │   └── class-records.wxss
 │   │   └── teacher/              # 教师页面
-│   │       ├── teacher.js        # 班级管理
+│   │       ├── teacher.js        # 教师主页面
 │   │       ├── teacher.wxml
-│   │       └── teacher.wxss
+│   │       ├── teacher.wxss
+│   │       ├── teacher.json
+│   │       ├── monitor-manage.js # 班委管理
+│   │       ├── monitor-manage.wxml
+│   │       ├── monitor-manage.wxss
+│   │       ├── monitor-manage.json
+│   │       ├── leave-approval.js # 请假审批
+│   │       ├── leave-approval.wxml
+│   │       ├── leave-approval.wxss
+│   │       └── leave-approval.json
+│   ├── components/               # 组件
+│   │   ├── navbar/               # 导航栏组件
+│   │   ├── student-tabbar/       # 学生底部导航
+│   │   └── teacher-tabbar/       # 教师底部导航
 │   ├── utils/
 │   │   ├── auth.js               # 认证工具
 │   │   ├── theme.js              # 主题管理
@@ -67,11 +102,48 @@ class-checkin-wxapp/
 │   ├── styles/
 │   │   ├── base.wxss             # 基础样式
 │   │   └── theme.wxss            # 主题样式
-│   ├── app.js                   # 小程序入口
-│   ├── app.json                 # 小程序配置
-│   └── app.wxss                 # 全局样式
+│   ├── .cloudbase/               # 云开发配置
+│   ├── app.js                    # 小程序入口
+│   ├── app.json                  # 小程序配置
+│   ├── app.wxss                  # 全局样式
+│   ├── project.config.json       # 项目配置
+│   └── sitemap.json              # 站点地图
+├── .gitignore                    # Git忽略文件
 ├── README.md                     # 项目说明文档
 └── requirements.txt              # 项目依赖
+```
+
+## 环境变量配置
+
+后端使用环境变量进行配置，所有配置项都有合理的默认值。
+
+### 配置项说明
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| `JWT_SECRET_KEY` | 必填 | JWT密钥，生产环境必须设置（使用 `openssl rand -hex 32` 生成） |
+| `TOKEN_EXPIRE_HOURS` | 24 | Token过期时间（小时） |
+| `DATABASE_FILE` | user.db | 数据库文件路径 |
+| `INSERT_TEST_DATA` | True | 是否插入测试数据（True/False） |
+| `FLASK_HOST` | 0.0.0.0 | Flask服务器主机地址 |
+| `FLASK_PORT` | 5000 | Flask服务器端口 |
+| `FLASK_DEBUG` | True | Flask调试模式（开发环境设为True，生产环境必须设为False） |
+| `RANDOM_PASSWORD_LENGTH` | 8 | 重置密码时的随机密码长度 |
+| `PUNCH_RECORDS_LIMIT` | 30 | 打卡记录查询限制条数 |
+
+### 配置方法
+
+1. 复制 `.env.example` 为 `.env`：
+```bash
+cd backend
+cp .env.example .env
+```
+
+2. 编辑 `.env` 文件，根据需要修改配置项：
+```bash
+# 生产环境必须修改以下配置
+JWT_SECRET_KEY=your-strong-random-secret-key-here
+FLASK_DEBUG=False
 ```
 
 ## 功能列表
@@ -194,6 +266,10 @@ cd backend
 # 安装依赖
 pip install -r requirements.txt
 
+# 配置环境变量（可选，使用默认值可跳过）
+cp .env.example .env
+# 编辑 .env 文件修改配置
+
 # 启动服务
 python app.py
 ```
@@ -202,7 +278,27 @@ python app.py
 - API服务：http://localhost:5000/api
 - 管理后台：http://localhost:5000/admin
 
-### 3. 前端配置
+### 3. 环境变量配置（推荐）
+
+首次部署建议配置以下环境变量：
+
+**开发环境：**
+- 使用默认配置即可，`.env` 不是必须的
+
+**生产环境：**
+```bash
+# 必须配置
+JWT_SECRET_KEY=your-strong-random-secret-key-here  # 使用 openssl rand -hex 32 生成
+FLASK_DEBUG=False                                      # 生产环境必须关闭调试模式
+
+# 可选配置
+FLASK_HOST=0.0.0.0                                     # 监听地址
+FLASK_PORT=5000                                        # 监听端口
+DATABASE_FILE=user.db                                  # 数据库文件路径
+INSERT_TEST_DATA=False                                 # 不插入测试数据
+```
+
+### 4. 前端配置
 
 1. 使用微信开发者工具打开 `miniprogram` 目录
 2. 修改 `miniprogram/config/api.js` 中的 `baseUrl` 为后端地址
@@ -210,14 +306,14 @@ python app.py
 4. 在微信开发者工具中启用"不校验合法域名"
 5. 编译运行小程序
 
-### 4. 首次部署检查清单
+### 5. 首次部署检查清单
 
 - [ ] 修改 `miniprogram/config/api.js` 中的 `baseUrl` 为实际服务器IP
 - [ ] 修改 `miniprogram/project.config.json` 中的 `appid` 为您的小程序AppID
 - [ ] 修改 `backend/database.py` 中的默认密码为安全密码
 - [ ] 删除 `backend/user.db` 让系统重新初始化数据库
 
-### 5. 测试账户
+### 6. 测试账户
 
 | 角色 | 用户ID | 用户名 | 密码 |
 |------|--------|--------|------|

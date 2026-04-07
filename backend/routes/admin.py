@@ -1,12 +1,15 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from database import execute_query, execute_query_one, execute_update, hash_password
 from utils.auth import token_required, role_required
+from config import Config
 import random
 import string
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
 
-def generate_random_password(length=8):
+def generate_random_password(length=None):
+    if length is None:
+        length = Config.RANDOM_PASSWORD_LENGTH
     chars = string.ascii_letters + string.digits
     return ''.join(random.choice(chars) for _ in range(length))
 
