@@ -31,10 +31,11 @@ class-checkin-wxapp/
 │   ├── config.py                 # 配置文件（环境变量读取）
 │   ├── app.py                    # 应用入口
 │   ├── database.py               # 数据库初始化和操作
-│   ├── login.html                # 登录页面
-│   ├── admin.html                # 管理员Web管理界面
 │   ├── .env.example              # 环境变量示例文件
 │   ├── requirements.txt          # Python依赖
+│   ├── templates/                # HTML模板
+│   │   ├── login.html            # 登录页面
+│   │   └── admin.html            # 管理员Web管理界面
 │   ├── routes/                   # API路由
 │   │   ├── __init__.py
 │   │   ├── login.py              # 登录接口

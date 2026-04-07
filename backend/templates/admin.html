@@ -240,10 +240,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>管理员管理系统 <span class="user-info" id="userInfo"></span></h1>
 
         <div class="admin-section">
             <div class="tab-navigation">
+                <span id="userInfo" style="float: right; color: #666; margin-right: 15px;"></span>
                 <button class="btn tab-btn active" onclick="switchTab('user')">用户管理</button>
                 <button class="btn tab-btn" onclick="switchTab('attendance')">考勤记录管理</button>
                 <button class="btn tab-btn" onclick="switchTab('location')">打卡位置管理</button>
@@ -463,7 +463,11 @@
 
     <script>
         function getToken() {
-            return localStorage.getItem('adminToken') || '';
+            // 先从 Cookie 读取，如果没有则尝试 localStorage（兼容旧版本）
+            const cookieValue = document.cookie.split('; ')
+                .find(row => row.startsWith('adminToken='))
+                ?.split('=')[1];
+            return cookieValue || localStorage.getItem('adminToken') || '';
         }
 
         function getUser() {
@@ -482,7 +486,8 @@
             }
             return fetch(url, {
                 ...options,
-                headers
+                headers,
+                credentials: 'same-origin'
             });
         }
 
@@ -490,24 +495,21 @@
             const token = getToken();
             const user = getUser();
             if (!token || !user) {
-                window.location.href = '/login.html';
+                window.location.href = '/login';
                 return false;
             }
-            if (user.role !== 'admin') {
-                showMessage('您没有管理员权限', 'error');
-                setTimeout(() => {
-                    logout();
-                }, 2000);
-                return false;
+            const userInfoEl = document.getElementById('userInfo');
+            if (userInfoEl) {
+                userInfoEl.textContent = `${user.username} (${user.user_id})`;
             }
-            document.getElementById('userInfo').textContent = `${user.username} (${user.user_id})`;
             return true;
         }
 
         function logout() {
-            localStorage.removeItem('adminToken');
+            // 清除 Cookie
+            document.cookie = 'adminToken=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
             localStorage.removeItem('adminUser');
-            window.location.href = '/login.html';
+            window.location.href = '/login';
         }
 
         function loadUsers() {

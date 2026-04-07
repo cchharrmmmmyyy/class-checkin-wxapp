@@ -2,6 +2,7 @@ from flask import Flask, jsonify, send_from_directory
 from routes import admin_bp, student_function, teacher_function, login_function
 from database import check_and_init_database
 from config import Config
+from utils.auth import  role_required, web_token_required
 
 
 app = Flask(__name__)
@@ -13,12 +14,15 @@ app.register_blueprint(login_function)
 
 
 @app.route('/admin')
+@web_token_required
+@role_required('admin')
 def admin_page():
-    return send_from_directory('.', 'admin.html')
+    return send_from_directory('templates', 'admin.html')
+
 
 @app.route('/login')
 def login_page():
-    return send_from_directory('.', 'login.html')
+    return send_from_directory('templates', 'login.html')
 
 
 @app.route('/api/health', methods=['GET'])

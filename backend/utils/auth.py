@@ -87,3 +87,33 @@ def role_required(*allowed_roles):
             return f(*args, **kwargs)
         return decorated
     return decorator
+
+def web_token_required(f):
+    """
+    装饰器：验证JWT令牌（网页端专用，支持从Cookie获取token）
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+
+        if 'Authorization' in request.headers:
+            auth_header = request.headers['Authorization']
+            try:
+                token = auth_header.split(' ')[1]
+            except IndexError:
+                return jsonify({'success': False, 'message': '令牌格式错误'}), 401
+
+        if not token and 'adminToken' in request.cookies:
+            token = request.cookies.get('adminToken')
+
+        if not token:
+            return jsonify({'success': False, 'message': '缺少令牌'}), 401
+
+        payload = decode_token(token)
+        if not payload:
+            return jsonify({'success': False, 'message': '令牌无效或已过期'}), 401
+
+        request.user_info = payload
+        return f(*args, **kwargs)
+
+    return decorated

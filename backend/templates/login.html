@@ -140,7 +140,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    localStorage.setItem('adminToken', data.token);
+                    const expires = new Date();
+                    expires.setHours(expires.getHours() + 24);
+                    document.cookie = `adminToken=${data.token};expires=${expires.toUTCString()};path=/`;
                     localStorage.setItem('adminUser', JSON.stringify(data.user));
                     showMessage('登录成功！', 'success');
                     setTimeout(() => {
