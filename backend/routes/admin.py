@@ -6,12 +6,10 @@ import string
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
 
-# 随机密码生成工具函数
 def generate_random_password(length=8):
     chars = string.ascii_letters + string.digits
     return ''.join(random.choice(chars) for _ in range(length))
 
-# 获取所有用户列表接口
 @admin_bp.route('/users', methods=['GET'])
 @token_required
 @role_required('admin')
@@ -305,10 +303,6 @@ def delete_attendance_record(record_id):
             'success': False,
             'message': f'删除考勤记录失败: {str(e)}'
         }), 500
-
-@admin_bp.route('/admin.html')
-def admin_page():
-    return send_from_directory('.', 'admin.html')
 
 @admin_bp.route('/punch-location', methods=['GET'])
 @token_required

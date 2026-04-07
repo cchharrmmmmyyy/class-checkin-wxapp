@@ -5,12 +5,10 @@ from utils.auth import token_required, role_required
 
 teacher_function = Blueprint('teachers', __name__, url_prefix='/api/teachers')
 
-# 任命班委接口
 @teacher_function.route('/monitors', methods=['POST'])
 @token_required
 @role_required('teacher')
 def appoint_monitor():
-    """任命班委"""
     try:
         teacher = request.user_info
         data = request.get_json()
@@ -67,12 +65,11 @@ def appoint_monitor():
             'success': False,
             'message': f'任命班委失败: {str(e)}'
         }), 500
-# 获取当前教师班级的班委信息接口
+
 @teacher_function.route('/monitors', methods=['GET'])
 @token_required
 @role_required('teacher')
 def get_class_monitors():
-    """获取当前教师班级的班委信息"""
     try:
         teacher = request.user_info
         monitors = execute_query(
@@ -96,7 +93,6 @@ def get_class_monitors():
 @token_required
 @role_required('teacher')
 def get_class_students():
-    """获取当前教师班级的学生列表"""
     try:
         teacher = request.user_info
         students = execute_query(
@@ -115,12 +111,11 @@ def get_class_students():
             'success': False,
             'message': f'查询学生列表失败: {str(e)}'
         }), 500
-# 获取所有班级列表接口
+
 @teacher_function.route('/classes', methods=['GET'])
 @token_required
 @role_required('teacher')
 def get_class_list():
-    """获取所有班级列表"""
     try:
         classes = execute_query(
             "SELECT DISTINCT class FROM users WHERE role = 'student' AND class != '' ORDER BY class"
@@ -142,7 +137,6 @@ def get_class_list():
 @token_required
 @role_required('teacher')
 def remove_monitor(student_id):
-    """移除班委"""
     try:
         teacher = request.user_info
 
@@ -195,7 +189,6 @@ def remove_monitor(student_id):
 @token_required
 @role_required('teacher')
 def get_leave_applications():
-    """获取当前教师班级的待审批请假申请"""
     try:
         teacher = request.user_info
         applications = execute_query(
@@ -226,7 +219,6 @@ def get_leave_applications():
 @token_required
 @role_required('teacher')
 def approve_leave(leave_id):
-    """审批请假申请"""
     try:
         teacher = request.user_info
         data = request.get_json()
