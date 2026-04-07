@@ -61,6 +61,8 @@ def login():
                 redirect_url = '/pages/teacher/teacher'
             elif user_role == 'monitor':
                 redirect_url = '/pages/student/student'  # 班委也重定向到学生页面
+            elif user_role == 'admin':
+                redirect_url = '/admin'
             else:
                 # 遇到未知角色，抛出异常
                 raise ValueError(f'未知的用户角色: {user_role}')

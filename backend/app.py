@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, send_from_directory
 from students import student_function
-from teacher import teacher_function
+from teachers import teacher_function
 from admin import admin_bp
 from database import check_and_init_database
 from login import login_function
@@ -20,6 +20,11 @@ app.register_blueprint(login_function)
 def admin_page():
     """管理员页面"""
     return send_from_directory('.', 'admin.html')
+
+@app.route('/login')
+def login_page():
+    """管理员登录页面"""
+    return send_from_directory('.', 'login.html')
 
 
 @app.route('/api/health', methods=['GET'])

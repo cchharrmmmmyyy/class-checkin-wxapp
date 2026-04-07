@@ -10,55 +10,42 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
             color: #333;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         h1 {
             text-align: center;
             margin-bottom: 30px;
             color: #2c3e50;
         }
-        
-        /* 登录区域 */
-        .login-section {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 30px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* 管理区域 */
+
         .admin-section {
-            display: none;
             background-color: white;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        /* 表单样式 */
+
         .form-group {
             margin-bottom: 15px;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
         }
-        
+
         .form-group input,
         .form-group select {
             width: 100%;
@@ -66,8 +53,7 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-        
-        /* 按钮样式 */
+
         .btn {
             padding: 10px 20px;
             background-color: #3498db;
@@ -78,59 +64,57 @@
             font-size: 14px;
             margin-right: 10px;
         }
-        
+
         .btn:hover {
             background-color: #2980b9;
         }
-        
+
         .btn-danger {
             background-color: #e74c3c;
         }
-        
+
         .btn-danger:hover {
             background-color: #c0392b;
         }
-        
+
         .btn-warning {
             background-color: #f39c12;
             color: white;
         }
-        
+
         .btn-warning:hover {
             background-color: #d68910;
         }
-        
+
         .btn-success {
             background-color: #2ecc71;
         }
-        
+
         .btn-success:hover {
             background-color: #27ae60;
         }
-        
-        /* 表格样式 */
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
         }
-        
+
         th, td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-        
+
         th {
             background-color: #f2f2f2;
             font-weight: bold;
         }
-        
+
         tr:hover {
             background-color: #f5f5f5;
         }
-        
-        /* 模态框样式 */
+
         .modal {
             display: none;
             position: fixed;
@@ -141,7 +125,7 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
         }
-        
+
         .modal-content {
             background-color: white;
             margin: 15% auto;
@@ -150,7 +134,7 @@
             width: 80%;
             max-width: 500px;
         }
-        
+
         .close {
             color: #aaa;
             float: right;
@@ -158,60 +142,56 @@
             font-weight: bold;
             cursor: pointer;
         }
-        
+
         .close:hover {
             color: black;
         }
-        
-        /* 消息提示 */
+
         .message {
             padding: 10px;
             margin: 10px 0;
             border-radius: 4px;
         }
-        
+
         .message.success {
             background-color: #d4edda;
             color: #155724;
         }
-        
+
         .message.error {
             background-color: #f8d7da;
             color: #721c24;
         }
-        
-        /* 操作按钮组 */
+
         .action-buttons {
             margin-bottom: 20px;
         }
-        
-        /* 标签页样式 */
+
         .tab-navigation {
             margin-bottom: 20px;
         }
-        
+
         .tab-btn {
             background-color: #f0f0f0;
             color: #333;
             border: 1px solid #ddd;
             margin-right: 5px;
         }
-        
+
         .tab-btn.active {
             background-color: #3498db;
             color: white;
             border-color: #3498db;
         }
-        
+
         .tab-content {
             display: none;
         }
-        
+
         .tab-content.active {
             display: block;
         }
-        
-        /* 筛选区域样式 */
+
         .filter-section {
             background-color: #f9f9f9;
             padding: 15px;
@@ -219,34 +199,39 @@
             margin-bottom: 20px;
             border: 1px solid #ddd;
         }
-        
-        /* 响应式设计 */
+
+        .user-info {
+            float: right;
+            color: #666;
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             table {
                 font-size: 12px;
             }
-            
+
             th, td {
                 padding: 8px;
             }
-            
+
             .btn {
                 padding: 8px 12px;
                 font-size: 12px;
             }
-            
+
             .filter-section .form-group {
                 display: block !important;
                 width: 100% !important;
                 margin-right: 0 !important;
                 margin-bottom: 10px !important;
             }
-            
+
             .filter-section label {
                 display: inline-block !important;
                 width: 100px !important;
             }
-            
+
             .filter-section input, .filter-section select {
                 width: calc(100% - 110px) !important;
             }
@@ -255,45 +240,24 @@
 </head>
 <body>
     <div class="container">
-        <h1>管理员管理系统</h1>
-        
-        <!-- 登录区域 -->
-        <div class="login-section" id="loginSection">
-            <h2 style="text-align: center; margin-bottom: 20px;">管理员登录</h2>
-            <div id="loginMessage" class="message" style="display: none;"></div>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="username">用户ID</label>
-                    <input type="text" id="username" name="user_id" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">密码</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit" class="btn">登录</button>
-            </form>
-        </div>
-        
-        <!-- 管理员管理区域 -->
-        <div class="admin-section" id="adminSection">
-            <!-- 标签页导航 -->
+        <h1>管理员管理系统 <span class="user-info" id="userInfo"></span></h1>
+
+        <div class="admin-section">
             <div class="tab-navigation">
                 <button class="btn tab-btn active" onclick="switchTab('user')">用户管理</button>
                 <button class="btn tab-btn" onclick="switchTab('attendance')">考勤记录管理</button>
                 <button class="btn tab-btn" onclick="switchTab('location')">打卡位置管理</button>
-                <button class="btn" style="float: right;" onclick="logout()">退出登录</button>
+                <button class="btn" onclick="logout()">退出登录</button>
             </div>
-            
+
             <div id="message" class="message" style="display: none;"></div>
-            
-            <!-- 用户管理标签页 -->
+
             <div id="userTab" class="tab-content active">
                 <div class="action-buttons">
                     <h2>用户管理</h2>
                     <button class="btn btn-success" onclick="openAddModal()">添加用户</button>
                 </div>
-                
-                <!-- 用户列表表格 -->
+
                 <table id="userTable">
                     <thead>
                         <tr>
@@ -306,19 +270,16 @@
                         </tr>
                     </thead>
                     <tbody id="userTableBody">
-                        <!-- 用户数据将通过JavaScript动态加载 -->
                     </tbody>
                 </table>
             </div>
-            
-            <!-- 考勤记录管理标签页 -->
+
             <div id="attendanceTab" class="tab-content">
                 <div class="action-buttons">
                     <h2>考勤记录管理</h2>
                     <button class="btn btn-success" onclick="openAddAttendanceModal()">添加考勤记录</button>
                 </div>
-                
-                <!-- 筛选条件 -->
+
                 <div class="filter-section">
                     <div class="form-group" style="display: inline-block; width: 18%; margin-right: 1%;">
                         <label for="filterUsername" style="display: inline-block; margin-right: 5px;">用户名：</label>
@@ -348,8 +309,7 @@
                     <button class="btn" onclick="searchAttendanceRecords()">查询</button>
                     <button class="btn" onclick="resetFilters()">重置</button>
                 </div>
-                
-                <!-- 考勤记录列表表格 -->
+
                 <table id="attendanceTable">
                     <thead>
                         <tr>
@@ -364,17 +324,15 @@
                         </tr>
                     </thead>
                     <tbody id="attendanceTableBody">
-                        <!-- 考勤记录数据将通过JavaScript动态加载 -->
                     </tbody>
                 </table>
             </div>
-            
-            <!-- 打卡位置管理标签页 -->
+
             <div id="locationTab" class="tab-content">
                 <div class="action-buttons">
                     <h2>打卡位置管理</h2>
                 </div>
-                
+
                 <div class="filter-section">
                     <div class="form-group">
                         <label for="locationName">位置名称</label>
@@ -400,7 +358,7 @@
                     <button class="btn btn-success" onclick="savePunchLocation()">保存</button>
                     <button class="btn" onclick="loadPunchLocation()">刷新</button>
                 </div>
-                
+
                 <div id="locationInfo" style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 4px; display: none;">
                     <h3>当前打卡位置设置</h3>
                     <p><strong>位置名称：</strong><span id="currentLocationName">-</span></p>
@@ -412,30 +370,29 @@
             </div>
         </div>
     </div>
-    
-    <!-- 添加/编辑用户模态框 -->
+
     <div id="userModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <h3 id="modalTitle">添加用户</h3>
             <form id="userForm">
                 <input type="hidden" id="editUserId">
-                
+
                 <div class="form-group">
                     <label for="userName">用户名</label>
                     <input type="text" id="userName" name="username" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="userId">用户ID</label>
                     <input type="text" id="userId" name="user_id" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="userPassword">密码</label>
                     <input type="text" id="userPassword" name="password" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="userRole">角色</label>
                     <select id="userRole" name="role" required>
@@ -445,51 +402,50 @@
                         <option value="admin">管理员</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="userClass">班级</label>
                     <input type="text" id="userClass" name="class">
                 </div>
-                
+
                 <button type="submit" class="btn btn-success">保存</button>
                 <button type="button" class="btn" onclick="closeModal()">取消</button>
             </form>
         </div>
     </div>
-    
-    <!-- 添加/编辑考勤记录模态框 -->
+
     <div id="attendanceModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeAttendanceModal()">&times;</span>
             <h3 id="attendanceModalTitle">添加考勤记录</h3>
             <form id="attendanceForm">
                 <input type="hidden" id="editRecordId">
-                
+
                 <div class="form-group">
                     <label for="attendanceUsername">用户名</label>
                     <input type="text" id="attendanceUsername" name="username" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="attendanceUserId">用户ID</label>
                     <input type="text" id="attendanceUserId" name="user_id" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="attendancePunchDate">打卡日期</label>
                     <input type="date" id="attendancePunchDate" name="punch_date" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="attendanceLeaveStart">请假开始日期</label>
                     <input type="date" id="attendanceLeaveStart" name="leave_start_date">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="attendanceLeaveEnd">请假结束日期</label>
                     <input type="date" id="attendanceLeaveEnd" name="leave_end_date">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="attendanceLeaveStatus">请假状态</label>
                     <select id="attendanceLeaveStatus" name="leave_status" required>
@@ -498,63 +454,23 @@
                         <option value="rejected">已拒绝</option>
                     </select>
                 </div>
-                
+
                 <button type="submit" class="btn btn-success">保存</button>
                 <button type="button" class="btn" onclick="closeAttendanceModal()">取消</button>
             </form>
         </div>
     </div>
-    
+
     <script>
-        // 全局变量
-        let currentAdmin = null;
-        
-        // 登录表单提交
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const user_id = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            login(user_id, password);
-        });
-        
-        // 登录函数
-        function login(user_id, password) {
-            fetch('/api/admin/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ user_id, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    currentAdmin = data.admin;
-                    localStorage.setItem('adminToken', data.token);
-                    showMessage('登录成功！', 'success', 'loginMessage');
-                    setTimeout(() => {
-                        document.getElementById('loginSection').style.display = 'none';
-                        document.getElementById('adminSection').style.display = 'block';
-                        loadUsers();
-                    }, 1000);
-                } else {
-                    showMessage(data.message, 'error', 'loginMessage');
-                }
-            })
-            .catch(error => {
-                showMessage('登录失败，请重试！', 'error', 'loginMessage');
-                console.error('Login error:', error);
-            });
-        }
-        
-        // 获取 token 的辅助函数
         function getToken() {
             return localStorage.getItem('adminToken') || '';
         }
-        
-        // 带 token 的 fetch 封装
+
+        function getUser() {
+            const userStr = localStorage.getItem('adminUser');
+            return userStr ? JSON.parse(userStr) : null;
+        }
+
         function fetchWithAuth(url, options = {}) {
             const token = getToken();
             const headers = {
@@ -569,8 +485,31 @@
                 headers
             });
         }
-        
-        // 加载用户列表
+
+        function checkAuth() {
+            const token = getToken();
+            const user = getUser();
+            if (!token || !user) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            if (user.role !== 'admin') {
+                showMessage('您没有管理员权限', 'error');
+                setTimeout(() => {
+                    logout();
+                }, 2000);
+                return false;
+            }
+            document.getElementById('userInfo').textContent = `${user.username} (${user.user_id})`;
+            return true;
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            window.location.href = '/login.html';
+        }
+
         function loadUsers() {
             fetchWithAuth('/api/admin/users')
             .then(response => response.json())
@@ -578,7 +517,7 @@
                 if (data.success) {
                     renderUserTable(data.data);
                 } else {
-                    showMessage('获取用户列表失败！', 'error');
+                    showMessage(data.message || '获取用户列表失败！', 'error');
                 }
             })
             .catch(error => {
@@ -586,12 +525,11 @@
                 console.error('Load users error:', error);
             });
         }
-        
-        // 渲染用户表格
+
         function renderUserTable(users) {
             const tbody = document.getElementById('userTableBody');
             tbody.innerHTML = '';
-            
+
             users.forEach(user => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -599,7 +537,7 @@
                     <td>${user.user_id}</td>
                     <td>******</td>
                     <td>${user.role}</td>
-                    <td>${user.class}</td>
+                    <td>${user.class || '-'}</td>
                     <td>
                         <button class="btn" onclick="editUser('${user.user_id}')">编辑</button>
                         <button class="btn btn-warning" onclick="resetUserPassword('${user.user_id}')">重置密码</button>
@@ -609,8 +547,7 @@
                 tbody.appendChild(row);
             });
         }
-        
-        // 打开添加用户模态框
+
         function openAddModal() {
             document.getElementById('modalTitle').textContent = '添加用户';
             document.getElementById('editUserId').value = '';
@@ -618,8 +555,7 @@
             document.getElementById('userId').readOnly = false;
             document.getElementById('userModal').style.display = 'block';
         }
-        
-        // 编辑用户
+
         function editUser(userId) {
             fetchWithAuth('/api/admin/users')
             .then(response => response.json())
@@ -634,29 +570,27 @@
                         document.getElementById('userId').readOnly = true;
                         document.getElementById('userPassword').value = user.password;
                         document.getElementById('userRole').value = user.role;
-                        document.getElementById('userClass').value = user.class;
+                        document.getElementById('userClass').value = user.class || '';
                         document.getElementById('userModal').style.display = 'block';
                     }
                 }
             });
         }
-        
-        // 关闭模态框
+
         function closeModal() {
             document.getElementById('userModal').style.display = 'none';
         }
-        
-        // 用户表单提交
+
         document.getElementById('userForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const editUserId = document.getElementById('editUserId').value;
             const username = document.getElementById('userName').value;
             const user_id = document.getElementById('userId').value;
             const password = document.getElementById('userPassword').value;
             const role = document.getElementById('userRole').value;
             const class_name = document.getElementById('userClass').value;
-            
+
             saveUser({
                 username,
                 user_id,
@@ -665,8 +599,7 @@
                 class: class_name
             });
         });
-        
-        // 保存用户
+
         function saveUser(userData) {
             fetchWithAuth('/api/admin/users', {
                 method: 'POST',
@@ -690,8 +623,7 @@
                 console.error('Save user error:', error);
             });
         }
-        
-        // 删除用户
+
         function deleteUser(userId) {
             if (confirm('确定要删除这个用户吗？')) {
                 fetchWithAuth(`/api/admin/users/${userId}`, {
@@ -715,8 +647,7 @@
                 });
             }
         }
-        
-        // 重置用户密码
+
         function resetUserPassword(userId) {
             if (confirm('确定要重置这个用户的密码吗？新密码将显示在下方。')) {
                 fetchWithAuth('/api/admin/reset-password', {
@@ -741,79 +672,62 @@
                 });
             }
         }
-        
-        // 退出登录
-        function logout() {
-            currentAdmin = null;
-            document.getElementById('adminSection').style.display = 'none';
-            document.getElementById('loginSection').style.display = 'block';
-            document.getElementById('loginForm').reset();
-            document.getElementById('loginMessage').style.display = 'none';
-        }
-        
-        // 显示消息
-        function showMessage(text, type, elementId = 'message') {
-            const messageDiv = document.getElementById(elementId);
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
             messageDiv.textContent = text;
             messageDiv.className = `message ${type}`;
             messageDiv.style.display = 'block';
-            
+
             setTimeout(() => {
                 messageDiv.style.display = 'none';
             }, 3000);
         }
-        
-        // 点击模态框外部关闭
+
         window.onclick = function(event) {
-            const modal = document.getElementById('userModal');
-            if (event.target == modal) {
-                modal.style.display = 'none';
+            const userModal = document.getElementById('userModal');
+            const attendanceModal = document.getElementById('attendanceModal');
+            if (event.target == userModal) {
+                userModal.style.display = 'none';
+            } else if (event.target == attendanceModal) {
+                attendanceModal.style.display = 'none';
             }
         }
-        
-        // 初始加载
+
         window.onload = function() {
-            // 可以在这里添加一些初始化逻辑
+            if (!checkAuth()) return;
+            loadUsers();
         }
-        
-        // 标签页切换功能
+
         function switchTab(tabName) {
-            // 隐藏所有标签页内容
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(content => {
                 content.classList.remove('active');
             });
-            
-            // 移除所有标签按钮的激活状态
+
             const tabButtons = document.querySelectorAll('.tab-btn');
             tabButtons.forEach(button => {
                 button.classList.remove('active');
             });
-            
-            // 显示选中的标签页内容
+
             document.getElementById(tabName + 'Tab').classList.add('active');
-            
-            // 激活对应的标签按钮
             event.target.classList.add('active');
-            
-            // 如果切换到考勤记录标签，加载考勤记录
+
             if (tabName === 'attendance') {
                 loadAttendanceRecords();
             } else if (tabName === 'location') {
                 loadPunchLocation();
             }
         }
-        
-        // 加载考勤记录列表
+
         function loadAttendanceRecords(filters = {}) {
-            // 构建查询参数
             let queryParams = new URLSearchParams();
             if (filters.username) queryParams.append('username', filters.username);
             if (filters.user_id) queryParams.append('user_id', filters.user_id);
             if (filters.start_date) queryParams.append('start_date', filters.start_date);
             if (filters.end_date) queryParams.append('end_date', filters.end_date);
             if (filters.leave_status) queryParams.append('leave_status', filters.leave_status);
-            
+
             fetchWithAuth(`/api/admin/attendance-records?${queryParams.toString()}`)
             .then(response => response.json())
             .then(data => {
@@ -828,12 +742,11 @@
                 console.error('Load attendance records error:', error);
             });
         }
-        
-        // 渲染考勤记录表格
+
         function renderAttendanceTable(records) {
             const tbody = document.getElementById('attendanceTableBody');
             tbody.innerHTML = '';
-            
+
             records.forEach(record => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -852,8 +765,7 @@
                 tbody.appendChild(row);
             });
         }
-        
-        // 获取状态文本
+
         function getStatusText(status) {
             switch (status) {
                 case 'pending': return '待审批';
@@ -862,18 +774,16 @@
                 default: return '未知';
             }
         }
-        
-        // 打开添加考勤记录模态框
+
         function openAddAttendanceModal() {
             document.getElementById('attendanceModalTitle').textContent = '添加考勤记录';
             document.getElementById('editRecordId').value = '';
             document.getElementById('attendanceForm').reset();
             document.getElementById('attendanceModal').style.display = 'block';
         }
-        
-        // 编辑考勤记录
+
         function editAttendanceRecord(recordId) {
-            fetchWithAuth(`/api/admin/attendance-records`)
+            fetchWithAuth('/api/admin/attendance-records')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -892,16 +802,14 @@
                 }
             });
         }
-        
-        // 关闭考勤记录模态框
+
         function closeAttendanceModal() {
             document.getElementById('attendanceModal').style.display = 'none';
         }
-        
-        // 考勤记录表单提交
+
         document.getElementById('attendanceForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const recordId = document.getElementById('editRecordId').value;
             const username = document.getElementById('attendanceUsername').value;
             const user_id = document.getElementById('attendanceUserId').value;
@@ -909,7 +817,7 @@
             const leave_start_date = document.getElementById('attendanceLeaveStart').value;
             const leave_end_date = document.getElementById('attendanceLeaveEnd').value;
             const leave_status = document.getElementById('attendanceLeaveStatus').value;
-            
+
             saveAttendanceRecord({
                 id: recordId,
                 username,
@@ -920,8 +828,7 @@
                 leave_status
             });
         });
-        
-        // 保存考勤记录
+
         function saveAttendanceRecord(recordData) {
             fetchWithAuth('/api/admin/attendance-records', {
                 method: 'POST',
@@ -945,8 +852,7 @@
                 console.error('Save attendance record error:', error);
             });
         }
-        
-        // 删除考勤记录
+
         function deleteAttendanceRecord(recordId) {
             if (confirm('确定要删除这条考勤记录吗？')) {
                 fetchWithAuth(`/api/admin/attendance-records/${recordId}`, {
@@ -970,8 +876,7 @@
                 });
             }
         }
-        
-        // 搜索考勤记录
+
         function searchAttendanceRecords() {
             const filters = {
                 username: document.getElementById('filterUsername').value.trim(),
@@ -982,8 +887,7 @@
             };
             loadAttendanceRecords(filters);
         }
-        
-        // 重置筛选条件
+
         function resetFilters() {
             document.getElementById('filterUsername').value = '';
             document.getElementById('filterUserId').value = '';
@@ -992,19 +896,7 @@
             document.getElementById('filterLeaveStatus').value = '';
             loadAttendanceRecords();
         }
-        
-        // 点击考勤记录模态框外部关闭
-        window.onclick = function(event) {
-            const userModal = document.getElementById('userModal');
-            const attendanceModal = document.getElementById('attendanceModal');
-            if (event.target == userModal) {
-                userModal.style.display = 'none';
-            } else if (event.target == attendanceModal) {
-                attendanceModal.style.display = 'none';
-            }
-        }
-        
-        // 加载打卡位置配置
+
         function loadPunchLocation() {
             fetchWithAuth('/api/admin/punch-location')
             .then(response => response.json())
@@ -1017,13 +909,13 @@
                         document.getElementById('locationLongitude').value = data.data.longitude || '';
                         document.getElementById('locationRadius').value = data.data.radius || '';
                         document.getElementById('locationEnabled').checked = data.data.enabled === 1;
-                        
+
                         document.getElementById('currentLocationName').textContent = data.data.name || '-';
                         document.getElementById('currentLocationLat').textContent = data.data.latitude || '-';
                         document.getElementById('currentLocationLng').textContent = data.data.longitude || '-';
                         document.getElementById('currentLocationRadius').textContent = data.data.radius || '-';
                         document.getElementById('currentLocationStatus').textContent = data.data.enabled === 1 ? '已启用' : '已禁用';
-                        
+
                         locationInfo.style.display = 'block';
                     } else {
                         document.getElementById('locationName').value = '';
@@ -1040,20 +932,19 @@
                 console.error('Load punch location error:', error);
             });
         }
-        
-        // 保存打卡位置配置
+
         function savePunchLocation() {
             const name = document.getElementById('locationName').value.trim();
             const latitude = parseFloat(document.getElementById('locationLatitude').value);
             const longitude = parseFloat(document.getElementById('locationLongitude').value);
             const radius = parseFloat(document.getElementById('locationRadius').value);
             const enabled = document.getElementById('locationEnabled').checked ? 1 : 0;
-            
+
             if (!name || isNaN(latitude) || isNaN(longitude) || isNaN(radius)) {
                 showMessage('请填写完整的打卡位置信息！', 'error');
                 return;
             }
-            
+
             fetchWithAuth('/api/admin/punch-location', {
                 method: 'POST',
                 headers: {

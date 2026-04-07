@@ -6,7 +6,10 @@
 import sqlite3
 import hashlib
 import secrets
-from config import DATABASE_FILE, INSERT_TEST_DATA
+from config import Config
+
+DATABASE_FILE = Config.DATABASE_FILE
+INSERT_TEST_DATA = Config.INSERT_TEST_DATA
 
 
 # 检查并初始化数据库，只在需要时初始化
