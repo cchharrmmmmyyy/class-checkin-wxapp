@@ -1,8 +1,10 @@
 from flask import Blueprint, jsonify, request
-from database import execute_query_one, verify_password
+from db_connection import verify_password
+from dao import user_dao
 from utils.auth import generate_token
 
 login_function = Blueprint('login', __name__, url_prefix='/api')
+
 
 @login_function.route('/login', methods=['POST'])
 def login():
@@ -29,8 +31,7 @@ def login():
                 'message': '账户/密码错误'
             }), 400
 
-        sql = "SELECT username, user_id, password, role, class FROM users WHERE user_id = ?"
-        user = execute_query_one(sql, (user_id,))
+        user = user_dao.get_user_by_id(user_id)
 
         if user and verify_password(password, user['password']):
             user_role = user['role']

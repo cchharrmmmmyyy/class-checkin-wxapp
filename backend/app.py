@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, send_from_directory
 from routes import admin_bp, student_function, teacher_function, login_function
-from database import check_and_init_database
+from init_db import check_and_init_database
 from config import Config
 from utils.auth import  role_required, web_token_required
 

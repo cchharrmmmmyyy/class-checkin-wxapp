@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
-from database import execute_query, execute_query_one, execute_update
+from dao import user_dao, leave_dao
 from utils.auth import token_required, role_required
 
 teacher_function = Blueprint('teachers', __name__, url_prefix='/api/teachers')
+
 
 @teacher_function.route('/monitors', methods=['POST'])
 @token_required
@@ -21,10 +22,7 @@ def appoint_monitor():
                 'message': '学生学号不能为空'
             }), 400
 
-        student = execute_query_one(
-            "SELECT username, user_id, role, class FROM users WHERE user_id = ?",
-            (student_id,)
-        )
+        student = user_dao.get_user_by_id(student_id)
 
         if not student:
             return jsonify({
@@ -44,10 +42,7 @@ def appoint_monitor():
                 'message': '只有学生才能被任命为班委'
             }), 400
 
-        execute_update(
-            "UPDATE users SET role = 'monitor' WHERE user_id = ?",
-            (student_id,)
-        )
+        user_dao.update_user_role(student_id, 'monitor')
 
         return jsonify({
             'success': True,
@@ -66,16 +61,14 @@ def appoint_monitor():
             'message': f'任命班委失败: {str(e)}'
         }), 500
 
+
 @teacher_function.route('/monitors', methods=['GET'])
 @token_required
 @role_required('teacher')
 def get_class_monitors():
     try:
         teacher = request.user_info
-        monitors = execute_query(
-            "SELECT username, user_id FROM users WHERE class = ? AND role = 'monitor'",
-            (teacher['class'],)
-        )
+        monitors = user_dao.get_monitors_by_class(teacher['class'])
 
         return jsonify({
             'success': True,
@@ -89,16 +82,14 @@ def get_class_monitors():
             'message': f'查询班委信息失败: {str(e)}'
         }), 500
 
+
 @teacher_function.route('/students', methods=['GET'])
 @token_required
 @role_required('teacher')
 def get_class_students():
     try:
         teacher = request.user_info
-        students = execute_query(
-            "SELECT username, user_id, role FROM users WHERE class = ? AND role IN ('student', 'monitor')",
-            (teacher['class'],)
-        )
+        students = user_dao.get_users_by_class(teacher['class'])
 
         return jsonify({
             'success': True,
@@ -112,19 +103,18 @@ def get_class_students():
             'message': f'查询学生列表失败: {str(e)}'
         }), 500
 
+
 @teacher_function.route('/classes', methods=['GET'])
 @token_required
 @role_required('teacher')
 def get_class_list():
     try:
-        classes = execute_query(
-            "SELECT DISTINCT class FROM users WHERE role = 'student' AND class != '' ORDER BY class"
-        )
+        classes = user_dao.get_all_classes()
 
         return jsonify({
             'success': True,
             'message': '查询成功',
-            'data': [c['class'] for c in classes]
+            'data': classes
         }), 200
 
     except Exception as e:
@@ -133,6 +123,7 @@ def get_class_list():
             'message': f'获取班级列表失败: {str(e)}'
         }), 500
 
+
 @teacher_function.route('/monitors/<student_id>', methods=['DELETE'])
 @token_required
 @role_required('teacher')
@@ -140,10 +131,7 @@ def remove_monitor(student_id):
     try:
         teacher = request.user_info
 
-        student = execute_query_one(
-            "SELECT username, user_id, role, class FROM users WHERE user_id = ?",
-            (student_id,)
-        )
+        student = user_dao.get_user_by_id(student_id)
 
         if not student:
             return jsonify({
@@ -163,10 +151,7 @@ def remove_monitor(student_id):
                 'message': '该学生不是班委'
             }), 400
 
-        execute_update(
-            "UPDATE users SET role = 'student' WHERE user_id = ?",
-            (student_id,)
-        )
+        user_dao.update_user_role(student_id, 'student')
 
         return jsonify({
             'success': True,
@@ -185,16 +170,14 @@ def remove_monitor(student_id):
             'message': f'移除班委失败: {str(e)}'
         }), 500
 
+
 @teacher_function.route('/leave-applications', methods=['GET'])
 @token_required
 @role_required('teacher')
 def get_leave_applications():
     try:
         teacher = request.user_info
-        applications = execute_query(
-            "SELECT pr.*, u.username FROM punch_records pr JOIN users u ON pr.user_id = u.user_id WHERE pr.leave_status = 'pending' AND pr.leave_start_date IS NOT NULL AND pr.leave_end_date IS NOT NULL AND u.class = ? ORDER BY pr.id DESC",
-            (teacher['class'],)
-        )
+        applications = leave_dao.get_pending_leave_applications_by_class(teacher['class'])
 
         return jsonify({
             'success': True,
@@ -214,6 +197,7 @@ def get_leave_applications():
             'success': False,
             'message': f'查询失败: {str(e)}'
         }), 500
+
 
 @teacher_function.route('/leave-applications/<int:leave_id>/approve', methods=['POST'])
 @token_required
@@ -237,10 +221,7 @@ def approve_leave(leave_id):
                 'message': '审批状态只能是approved或rejected'
             }), 400
 
-        leave_application = execute_query_one(
-            "SELECT * FROM punch_records WHERE id = ? AND user_id IN (SELECT user_id FROM users WHERE class = ?)",
-            (leave_id, teacher['class'])
-        )
+        leave_application = leave_dao.get_leave_record_by_id_and_class(leave_id, teacher['class'])
 
         if not leave_application:
             return jsonify({
@@ -254,10 +235,7 @@ def approve_leave(leave_id):
                 'message': f'该请假申请已处于{leave_application["leave_status"]}状态，无法重复审批'
             }), 400
 
-        execute_update(
-            "UPDATE punch_records SET leave_status = ? WHERE id = ?",
-            (status, leave_id)
-        )
+        leave_dao.update_leave_status(leave_id, status)
 
         return jsonify({
             'success': True,

@@ -56,3 +56,6 @@ miniprogram/project.private.config.json
 
 # Backend data
 backend/user.db
+
+# Documentation
+docs/*

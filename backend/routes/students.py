@@ -1,11 +1,12 @@
-from database import execute_query, execute_query_one, execute_update
 from flask import Blueprint, request, jsonify
 from datetime import datetime
+from dao import user_dao, punch_record_dao, location_dao, leave_dao
 from utils.geo import calculate_distance
 from utils.auth import token_required, role_required
 from config import Config
 
 student_function = Blueprint('student', __name__, url_prefix='/api/students')
+
 
 @student_function.route('/profile', methods=['GET'])
 @token_required
@@ -21,6 +22,7 @@ def get_profile():
         }
     })
 
+
 @student_function.route('/punch', methods=['POST'])
 @token_required
 @role_required('student', 'monitor')
@@ -35,8 +37,8 @@ def submit_punch():
         longitude = data.get('longitude')
         print(f"用户信息: user_id={user_id}, role={role}, class={class_name}, lat={latitude}, lng={longitude}")
 
-        punch_location = execute_query_one("SELECT * FROM punch_location")
-        if punch_location and punch_location['enabled'] and latitude is not None and longitude is not None:
+        punch_location = location_dao.get_enabled_punch_location()
+        if punch_location and latitude is not None and longitude is not None:
             target_lat = punch_location['latitude']
             target_lng = punch_location['longitude']
             radius = punch_location['radius']
@@ -62,10 +64,7 @@ def submit_punch():
         today = now.strftime('%Y-%m-%d')
         print(f"当前日期: {today}")
 
-        existing_record = execute_query_one(
-            "SELECT id FROM punch_records WHERE user_id = ? AND punch_date = ?",
-            (user_id, today)
-        )
+        existing_record = punch_record_dao.get_punch_record_by_user_and_date(user_id, today)
 
         if existing_record:
             print(f"用户 {user_id} 今日已打卡")
@@ -75,10 +74,7 @@ def submit_punch():
                 'already_punched': True
             }), 400
 
-        execute_update(
-            "INSERT INTO punch_records (user_id, punch_date) VALUES (?, ?)",
-            (user_id, today)
-        )
+        punch_record_dao.create_punch_record(user_id, today)
         print(f"用户 {user_id} 打卡成功")
         return jsonify({
             'success': True,
@@ -95,16 +91,14 @@ def submit_punch():
             'message': f'打卡失败: {str(e)}'
         }), 500
 
+
 @student_function.route('/records', methods=['GET'])
 @token_required
 def get_punch_records():
     user_id = request.user_info.get('user_id')
 
     try:
-        records = execute_query(
-            f"SELECT pr.*, u.username FROM punch_records pr LEFT JOIN users u ON pr.user_id = u.user_id WHERE pr.user_id = ? ORDER BY pr.punch_date DESC LIMIT {Config.PUNCH_RECORDS_LIMIT}",
-            (user_id,)
-        )
+        records = punch_record_dao.get_punch_records_by_user(user_id, Config.PUNCH_RECORDS_LIMIT)
 
         records_list = []
         for record in records:
@@ -126,6 +120,7 @@ def get_punch_records():
             'success': False,
             'message': f'查询失败: {str(e)}'
         }), 500
+
 
 @student_function.route('/apply-leave', methods=['POST'])
 @token_required
@@ -159,10 +154,7 @@ def apply_leave():
                 'message': '请假结束日期不能早于开始日期'
             }), 400
 
-        execute_update(
-            "INSERT INTO punch_records (user_id, punch_date, leave_start_date, leave_end_date, leave_status) VALUES (?, ?, ?, ?, 'pending')",
-            (user_id, None, leave_start_date, leave_end_date)
-        )
+        leave_dao.create_leave_record(user_id, leave_start_date, leave_end_date)
 
         print(f"用户 {user_id} 请假申请成功")
         return jsonify({
@@ -181,16 +173,14 @@ def apply_leave():
             'message': f'请假申请失败: {str(e)}'
         }), 500
 
+
 @student_function.route('/leave-records', methods=['GET'])
 @token_required
 def get_leave_records():
     user_id = request.user_info.get('user_id')
 
     try:
-        records = execute_query(
-            "SELECT pr.*, u.username FROM punch_records pr LEFT JOIN users u ON pr.user_id = u.user_id WHERE pr.user_id = ? AND pr.leave_start_date IS NOT NULL ORDER BY pr.leave_start_date DESC",
-            (user_id,)
-        )
+        records = leave_dao.get_leave_records_by_user(user_id)
 
         records_list = []
         for record in records:
@@ -215,6 +205,7 @@ def get_leave_records():
             'message': f'查询失败: {str(e)}'
         }), 500
 
+
 @student_function.route('/class-records/<class_name>', methods=['GET'])
 @token_required
 @role_required('monitor', 'teacher')
@@ -222,23 +213,12 @@ def get_class_punch_records(class_name):
     try:
         today = datetime.now().strftime('%Y-%m-%d')
 
-        students = execute_query("SELECT username, user_id, role FROM users WHERE class = ? AND role IN ('student', 'monitor')", (class_name,))
+        students = user_dao.get_users_by_class(class_name)
         student_ids = [s['user_id'] for s in students]
 
         if student_ids:
-            placeholders = ','.join('?' * len(student_ids))
-
-            punched_records = execute_query(
-                f"SELECT user_id FROM punch_records WHERE user_id IN ({placeholders}) AND punch_date = ?",
-                student_ids + [today]
-            )
-            punched_user_ids = [r['user_id'] for r in punched_records]
-
-            leave_records = execute_query(
-                f"SELECT user_id FROM punch_records WHERE user_id IN ({placeholders}) AND ? BETWEEN leave_start_date AND leave_end_date AND leave_status = 'approved'",
-                student_ids + [today]
-            )
-            leave_user_ids = [r['user_id'] for r in leave_records]
+            punched_user_ids = punch_record_dao.get_punch_user_ids_for_date(student_ids, today)
+            leave_user_ids = punch_record_dao.get_leave_user_ids_for_date(student_ids, today)
         else:
             punched_user_ids = []
             leave_user_ids = []

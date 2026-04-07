@@ -9,10 +9,12 @@
 ### 核心特点
 
 - **多角色支持**：学生、教师、班委、管理员四种角色
+- **JWT认证**：安全的Token认证机制，支持基于角色的权限控制
 - **位置打卡**：支持设置打卡位置范围，学生必须在范围内才能打卡成功
 - **请假审批**：完整的请假申请和审批流程
 - **主题切换**：支持多主题切换，适配不同用户偏好
 - **Web管理后台**：管理员可通过浏览器管理用户和考勤记录
+- **密码安全**：密码使用SHA-256+盐值哈希存储
 
 ## 技术架构
 
@@ -30,7 +32,9 @@ class-checkin-wxapp/
 ├── backend/                      # Flask后端服务
 │   ├── config.py                 # 配置文件（环境变量读取）
 │   ├── app.py                    # 应用入口
-│   ├── database.py               # 数据库初始化和操作
+│   ├── database.py               # 数据库初始化和操作（已废弃）
+│   ├── db_connection.py          # 数据库连接管理 + 密码工具函数
+│   ├── init_db.py                 # 数据库建表与初始化
 │   ├── .env.example              # 环境变量示例文件
 │   ├── requirements.txt          # Python依赖
 │   ├── templates/                # HTML模板
@@ -42,6 +46,12 @@ class-checkin-wxapp/
 │   │   ├── students.py           # 学生相关API（打卡、请假）
 │   │   ├── teachers.py           # 教师相关API（班委管理、请假审批）
 │   │   └── admin.py              # 管理员API（用户管理、位置配置）
+│   ├── dao/                      # 数据访问层
+│   │   ├── __init__.py
+│   │   ├── user_dao.py           # users 表 CRUD
+│   │   ├── punch_record_dao.py  # punch_records 表 CRUD
+│   │   ├── leave_dao.py          # 请假记录 CRUD
+│   │   └── location_dao.py       # punch_location 表 CRUD
 │   └── utils/                    # 工具模块
 │       ├── __init__.py
 │       ├── auth.py               # JWT认证模块
@@ -147,12 +157,26 @@ JWT_SECRET_KEY=your-strong-random-secret-key-here
 FLASK_DEBUG=False
 ```
 
+### 配置类设计
+
+后端使用 `Config` 类统一管理配置：
+
+```python
+from config import Config
+
+# 使用配置
+secret_key = Config.SECRET_KEY
+db_file = Config.DATABASE_FILE
+```
+
 ## 功能列表
 
 ### 1. 登录认证
 - 支持学生、教师、班委、管理员四种角色
 - 学号/工号 + 密码登录
-- 登录成功后自动存储用户信息
+- 登录成功后自动存储用户信息和JWT令牌
+- 登录输入长度验证（账户6-12位，密码6-20位）
+- 错误信息模糊化处理，防止信息泄露
 
 ### 2. 学生功能
 - **打卡签到**：一键打卡，自动获取当前位置
@@ -184,18 +208,17 @@ FLASK_DEBUG=False
 ### users 表 - 用户信息
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| username | TEXT | 用户名（主键） |
-| password | TEXT | 密码 |
+| user_id | TEXT | 学号/工号（主键） |
+| username | TEXT | 用户名 |
+| password | TEXT | 密码（SHA-256+盐值哈希存储） |
 | role | TEXT | 角色：student/teacher/monitor/admin |
 | class | TEXT | 班级 |
-| user_id | TEXT | 学号/工号（唯一） |
 
 ### punch_records 表 - 打卡记录
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | id | INTEGER | 自增主键 |
-| username | TEXT | 用户名 |
-| user_id | TEXT | 学号/工号 |
+| user_id | TEXT | 学号/工号（外键） |
 | punch_date | DATE | 打卡日期 |
 | leave_start_date | DATE | 请假开始日期 |
 | leave_end_date | DATE | 请假结束日期 |
@@ -211,6 +234,40 @@ FLASK_DEBUG=False
 | radius | REAL | 允许打卡半径（米） |
 | enabled | INTEGER | 是否启用：0/1 |
 
+### 数据库操作封装
+
+后端采用 DAO 模式封装数据库操作，每个表对应一个 DAO 文件：
+
+```python
+from dao import user_dao, punch_record_dao, leave_dao, location_dao
+
+# 用户 CRUD
+user = user_dao.get_user_by_id(user_id)
+users = user_dao.get_all_users()
+user_dao.create_user(username, user_id, password, role, class_name)
+user_dao.update_user(username, user_id, password, role, class_name)
+user_dao.delete_user(user_id)
+
+# 打卡记录 CRUD
+records = punch_record_dao.get_punch_records_by_user(user_id)
+punch_record_dao.create_punch_record(user_id, punch_date)
+
+# 请假记录 CRUD
+records = leave_dao.get_leave_records_by_user(user_id)
+leave_dao.create_leave_record(user_id, leave_start_date, leave_end_date)
+leave_dao.update_leave_status(leave_id, status)
+
+# 打卡位置 CRUD
+location = location_dao.get_punch_location()
+location_dao.upsert_punch_location(name, latitude, longitude, radius, enabled)
+```
+
+db_connection.py 提供底层连接和密码工具函数：
+
+```python
+from db_connection import get_connection, hash_password, verify_password
+```
+
 ## API接口
 
 ### 认证接口
@@ -221,21 +278,22 @@ FLASK_DEBUG=False
 ### 学生接口
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | /api/student/punch | 提交打卡 |
-| GET | /api/student/records/<user_id> | 获取个人打卡记录 |
-| GET | /api/student/class-records/<class_name> | 获取班级打卡记录 |
-| POST | /api/student/apply-leave | 提交请假申请 |
-| GET | /api/student/leave-records | 获取个人请假记录 |
+| POST | /api/students/punch | 提交打卡 |
+| GET | /api/students/records/<user_id> | 获取个人打卡记录 |
+| GET | /api/students/class-records/<class_name> | 获取班级打卡记录 |
+| POST | /api/students/apply-leave | 提交请假申请 |
+| GET | /api/students/leave-records | 获取个人请假记录 |
 
 ### 教师接口
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /api/teacher/class-list | 获取班级列表 |
-| GET | /api/teacher/leave-applications | 获取请假申请列表 |
-| POST | /api/teacher/approve-leave | 审批请假申请 |
-| POST | /api/teacher/appoint-monitor | 任命班委 |
-| POST | /api/teacher/remove-monitor | 移除班委 |
-| GET | /api/teacher/class-monitor/<class_name> | 获取班级班委 |
+| GET | /api/teachers/classes | 获取班级列表 |
+| GET | /api/teachers/students | 获取班级学生列表 |
+| GET | /api/teachers/leave-applications | 获取请假申请列表 |
+| POST | /api/teachers/leave-applications/:id/approve | 审批请假申请 |
+| POST | /api/teachers/monitors | 任命班委 |
+| DELETE | /api/teachers/monitors/<user_id> | 移除班委 |
+| GET | /api/teachers/monitors | 获取班级班委 |
 
 ### 管理员接口
 | 方法 | 路径 | 说明 |
@@ -311,7 +369,7 @@ INSERT_TEST_DATA=False                                 # 不插入测试数据
 
 - [ ] 修改 `miniprogram/config/api.js` 中的 `baseUrl` 为实际服务器IP
 - [ ] 修改 `miniprogram/project.config.json` 中的 `appid` 为您的小程序AppID
-- [ ] 修改 `backend/database.py` 中的默认密码为安全密码
+- [ ] 修改 `backend/init_db.py` 中的默认测试用户密码为安全密码
 - [ ] 删除 `backend/user.db` 让系统重新初始化数据库
 
 ### 6. 测试账户
@@ -328,8 +386,8 @@ INSERT_TEST_DATA=False                                 # 不插入测试数据
 
 管理员可通过管理后台配置打卡位置：
 
-1. 访问 http://localhost:5000/admin
-2. 登录管理员账户
+1. 访问 http://localhost:5000/login 登录管理员账户
+2. 登录成功后自动跳转到 http://localhost:5000/admin
 3. 切换到"打卡位置管理"标签
 4. 填写位置信息：
    - 位置名称：如"教学楼A"
@@ -372,12 +430,23 @@ INSERT_TEST_DATA=False                                 # 不插入测试数据
    - 排除 Python 缓存 (`__pycache__/`)
    - 排除 IDE 配置 (`.vscode/`, `.idea/`)
    - 排除私有配置文件
+   - 排除 `.env` 文件
 
 3. **安全建议**：
    - 首次部署请修改默认密码
    - 生产环境建议使用 HTTPS
+   - 生产环境必须设置强 JWT_SECRET_KEY
    - 考虑添加密码哈希存储
    - 配置防火墙规则限制访问
+
+## 安全特性
+
+1. **JWT认证**：所有敏感API都需要携带有效的JWT Token
+2. **角色权限控制**：使用 `@token_required` 和 `@role_required` 装饰器进行权限验证
+3. **密码安全存储**：密码使用SHA-256+盐值哈希存储
+4. **输入验证**：登录输入长度限制（账户6-12位，密码6-20位）
+5. **错误信息模糊化**：防止通过错误信息推断用户存在性
+6. **管理员保护**：防止删除最后一个管理员账户
 
 ## 许可证
 
