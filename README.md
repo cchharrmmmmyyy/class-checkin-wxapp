@@ -32,9 +32,8 @@ class-checkin-wxapp/
 ├── backend/                      # Flask后端服务
 │   ├── config.py                 # 配置文件（环境变量读取）
 │   ├── app.py                    # 应用入口
-│   ├── database.py               # 数据库初始化和操作（已废弃）
 │   ├── db_connection.py          # 数据库连接管理 + 密码工具函数
-│   ├── init_db.py                 # 数据库建表与初始化
+│   ├── init_db.py                # 数据库建表与初始化
 │   ├── .env.example              # 环境变量示例文件
 │   ├── requirements.txt          # Python依赖
 │   ├── templates/                # HTML模板
@@ -62,7 +61,8 @@ class-checkin-wxapp/
 │   └── utils/                    # 工具模块
 │       ├── __init__.py
 │       ├── auth.py               # JWT认证模块
-│       └── geo.py                # 地理计算模块
+│       ├── geo.py                # 地理计算模块
+│       └── exceptions.py         # 统一业务异常类
 ├── miniprogram/                   # 微信小程序前端
 │   ├── config/
 │   │   └── api.js                # API接口配置
@@ -241,33 +241,46 @@ db_file = Config.DATABASE_FILE
 | radius | REAL | 允许打卡半径（米） |
 | enabled | INTEGER | 是否启用：0/1 |
 
-### 数据库操作封装
+### 数据访问层（DAO）
 
-后端采用 DAO 模式封装数据库操作，每个表对应一个 DAO 文件：
+每个表对应一个 DAO 文件，封装单表 CRUD 操作：
 
 ```python
 from dao import user_dao, punch_record_dao, leave_dao, location_dao
 
-# 用户 CRUD
 user = user_dao.get_user_by_id(user_id)
-users = user_dao.get_all_users()
 user_dao.create_user(username, user_id, password, role, class_name)
-user_dao.update_user(username, user_id, password, role, class_name)
-user_dao.delete_user(user_id)
-
-# 打卡记录 CRUD
-records = punch_record_dao.get_punch_records_by_user(user_id)
 punch_record_dao.create_punch_record(user_id, punch_date)
-
-# 请假记录 CRUD
-records = leave_dao.get_leave_records_by_user(user_id)
-leave_dao.create_leave_record(user_id, leave_start_date, leave_end_date)
 leave_dao.update_leave_status(leave_id, status)
-
-# 打卡位置 CRUD
-location = location_dao.get_punch_location()
 location_dao.upsert_punch_location(name, latitude, longitude, radius, enabled)
 ```
+
+### 业务服务层（Service）
+
+每个业务域对应一个 Service 类，组合 DAO 操作并包含业务逻辑，通过抛出 `ServiceException` 实现统一错误处理：
+
+```python
+from services import AuthService, PunchService, LeaveService, TeacherService, AdminService
+from utils.exceptions import ServiceException
+
+result = AuthService.login(user_id, password)
+result = PunchService.punch(user_id, latitude, longitude)
+result = LeaveService.apply_leave(user_id, start_date, end_date)
+result = TeacherService.appoint_monitor(student_id, teacher_class)
+result = AdminService.save_user(username, user_id, password, role, class_name)
+```
+
+### 统一异常处理
+
+`app.py` 注册了全局异常处理器，所有 `ServiceException` 自动转为 JSON 响应：
+
+```python
+@app.errorhandler(ServiceException)
+def handle_service_exception(e):
+    return jsonify({'success': False, 'message': e.message, 'code': e.code}), e.http_status
+```
+
+错误码按业务域分配：AuthService(1001~1002)、PunchService(2001~2003)、LeaveService(3001~3006)、TeacherService(4001~4006)、AdminService(5001~5013)。
 
 db_connection.py 提供底层连接和密码工具函数：
 

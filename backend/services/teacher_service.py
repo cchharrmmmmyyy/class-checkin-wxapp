@@ -1,5 +1,6 @@
 from datetime import datetime
 from dao import user_dao
+from utils.exceptions import ServiceException
 
 
 class TeacherService:
@@ -9,22 +10,13 @@ class TeacherService:
         student = user_dao.get_user_by_id(student_id)
 
         if not student:
-            return {
-                'success': False,
-                'message': '未找到该学生'
-            }
+            raise ServiceException('未找到该学生', code=4001, http_status=404)
 
         if student['class'] != teacher_class:
-            return {
-                'success': False,
-                'message': '该学生不在您的班级中'
-            }
+            raise ServiceException('该学生不在您的班级中', code=4002, http_status=403)
 
         if student['role'] != 'student':
-            return {
-                'success': False,
-                'message': '只有学生才能被任命为班委'
-            }
+            raise ServiceException('只有学生才能被任命为班委', code=4003)
 
         user_dao.update_user_role(student_id, 'monitor')
 
@@ -44,22 +36,13 @@ class TeacherService:
         student = user_dao.get_user_by_id(student_id)
 
         if not student:
-            return {
-                'success': False,
-                'message': '未找到该学生'
-            }
+            raise ServiceException('未找到该学生', code=4004, http_status=404)
 
         if student['class'] != teacher_class:
-            return {
-                'success': False,
-                'message': '该学生不在您的班级中'
-            }
+            raise ServiceException('该学生不在您的班级中', code=4005, http_status=403)
 
         if student['role'] != 'monitor':
-            return {
-                'success': False,
-                'message': '该学生不是班委'
-            }
+            raise ServiceException('该学生不是班委', code=4006)
 
         user_dao.update_user_role(student_id, 'student')
 

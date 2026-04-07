@@ -1,5 +1,5 @@
 from dao import user_dao, punch_record_dao, location_dao
-from db_connection import hash_password
+from utils.exceptions import ServiceException
 from config import Config
 import random
 import string
@@ -31,22 +31,13 @@ class AdminService:
     def save_user(username, user_id, password, role, class_name):
         valid_roles = ('admin', 'teacher', 'student', 'monitor')
         if role not in valid_roles:
-            return {
-                'success': False,
-                'message': f'角色必须是 {", ".join(valid_roles)} 之一'
-            }
+            raise ServiceException(f'角色必须是 {", ".join(valid_roles)} 之一', code=5001)
 
         if role == 'admin':
             if class_name:
-                return {
-                    'success': False,
-                    'message': '管理员不应设置班级'
-                }
+                raise ServiceException('管理员不应设置班级', code=5002)
         elif not class_name:
-            return {
-                'success': False,
-                'message': '老师、学生、班委必须设置班级'
-            }
+            raise ServiceException('老师、学生、班委必须设置班级', code=5003)
 
         existing_user = user_dao.get_user_by_id(user_id)
 
@@ -64,16 +55,16 @@ class AdminService:
         target = user_dao.get_user_by_id(user_id)
 
         if not target:
-            return {'success': False, 'message': '用户不存在'}
+            raise ServiceException('用户不存在', code=5004, http_status=404)
 
         if target['role'] == 'admin':
             if user_dao.count_admins() <= 1:
-                return {'success': False, 'message': '不能删除最后一个管理员账户'}
+                raise ServiceException('不能删除最后一个管理员账户', code=5005, http_status=403)
 
         rowcount = user_dao.delete_user(user_id)
 
         if rowcount == 0:
-            return {'success': False, 'message': '用户不存在'}
+            raise ServiceException('用户不存在', code=5006, http_status=404)
 
         return {'success': True, 'message': '用户删除成功'}
 
@@ -82,10 +73,10 @@ class AdminService:
         target_user = user_dao.get_user_by_id(user_id)
 
         if not target_user:
-            return {'success': False, 'message': '用户不存在'}
+            raise ServiceException('用户不存在', code=5007, http_status=404)
 
         if target_user['role'] == 'admin':
-            return {'success': False, 'message': '不允许重置管理员账户密码'}
+            raise ServiceException('不允许重置管理员账户密码', code=5008, http_status=403)
 
         new_password = _generate_random_password()
         user_dao.reset_password(user_id, new_password)
@@ -124,18 +115,15 @@ class AdminService:
         has_leave = bool(leave_start_date and leave_end_date)
 
         if not has_punch and not has_leave:
-            return {'success': False, 'message': '打卡日期和请假日期不能同时为空'}
+            raise ServiceException('打卡日期和请假日期不能同时为空', code=5009)
 
         if has_punch and has_leave:
-            return {'success': False, 'message': '打卡记录和请假记录不能同时存在'}
+            raise ServiceException('打卡记录和请假记录不能同时存在', code=5010)
 
         if has_leave:
             valid_statuses = ('pending', 'approved', 'rejected')
             if leave_status not in valid_statuses:
-                return {
-                    'success': False,
-                    'message': f'请假状态必须是 {", ".join(valid_statuses)} 之一'
-                }
+                raise ServiceException(f'请假状态必须是 {", ".join(valid_statuses)} 之一', code=5011)
 
         if record_id:
             punch_record_dao.update_punch_record(
@@ -157,7 +145,7 @@ class AdminService:
         rowcount = punch_record_dao.delete_punch_record(record_id)
 
         if rowcount == 0:
-            return {'success': False, 'message': '考勤记录不存在'}
+            raise ServiceException('考勤记录不存在', code=5012, http_status=404)
 
         return {'success': True, 'message': '考勤记录删除成功'}
 
@@ -183,7 +171,7 @@ class AdminService:
     @staticmethod
     def save_punch_location(name, latitude, longitude, radius, enabled=1):
         if not name or latitude is None or longitude is None or radius is None:
-            return {'success': False, 'message': '位置名称、经纬度半径不能为空'}
+            raise ServiceException('位置名称、经纬度半径不能为空', code=5013)
 
         location_dao.upsert_punch_location(name, latitude, longitude, radius, enabled)
 

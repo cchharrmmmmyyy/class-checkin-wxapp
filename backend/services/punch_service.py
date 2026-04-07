@@ -1,6 +1,7 @@
 from datetime import datetime
 from dao import user_dao, punch_record_dao, location_dao
 from utils.geo import calculate_distance
+from utils.exceptions import ServiceException
 from config import Config
 
 
@@ -17,28 +18,22 @@ class PunchService:
                 punch_location['longitude']
             )
             if distance > punch_location['radius']:
-                return {
-                    'success': False,
-                    'message': f'不在打卡范围内，距离打卡点 {int(distance)} 米',
-                    'out_of_range': True
-                }
+                raise ServiceException(
+                    f'不在打卡范围内，距离打卡点 {int(distance)} 米',
+                    code=2001
+                )
 
         if punch_location and punch_location['enabled'] and (latitude is None or longitude is None):
-            return {
-                'success': False,
-                'message': '无法获取您的位置，请确保定位服务已开启',
-                'no_location': True
-            }
+            raise ServiceException(
+                '无法获取您的位置，请确保定位服务已开启',
+                code=2002
+            )
 
         today = datetime.now().strftime('%Y-%m-%d')
 
         existing = punch_record_dao.get_punch_record_by_user_and_date(user_id, today)
         if existing:
-            return {
-                'success': False,
-                'message': '今日已打卡',
-                'already_punched': True
-            }
+            raise ServiceException('今日已打卡', code=2003)
 
         punch_record_dao.create_punch_record(user_id, today)
 

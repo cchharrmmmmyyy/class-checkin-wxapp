@@ -1,7 +1,7 @@
-from datetime import datetime
 from db_connection import verify_password
 from dao import user_dao
 from utils.auth import generate_token
+from utils.exceptions import ServiceException
 
 
 class AuthService:
@@ -10,7 +10,7 @@ class AuthService:
     def login(user_id, password):
         user = user_dao.get_user_by_id(user_id)
         if not user or not verify_password(password, user['password']):
-            return None
+            raise ServiceException('学号/工号或密码错误', code=1001, http_status=401)
 
         user_role = user['role']
         user_class = user['class']
@@ -27,7 +27,7 @@ class AuthService:
         elif user_role == 'admin':
             redirect_url = '/admin'
         else:
-            raise ValueError(f'未知的用户角色: {user_role}')
+            raise ServiceException(f'未知的用户角色: {user_role}', code=1002)
 
         return {
             'token': token,

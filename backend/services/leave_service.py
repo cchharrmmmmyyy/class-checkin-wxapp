@@ -1,24 +1,25 @@
 from datetime import datetime
 from dao import leave_dao
+from utils.exceptions import ServiceException
 
 
 class LeaveService:
 
     @staticmethod
     def apply_leave(user_id, leave_start_date, leave_end_date):
+        if not leave_start_date or not leave_end_date:
+            raise ServiceException('请假开始和结束日期不能为空', code=3001)
+
+        if leave_start_date in ('null', 'undefined') or leave_end_date in ('null', 'undefined'):
+            raise ServiceException('请假开始和结束日期不能为空', code=3001)
+
         today = datetime.now().strftime('%Y-%m-%d')
 
         if leave_start_date < today:
-            return {
-                'success': False,
-                'message': '请假开始日期不能是过去日期'
-            }
+            raise ServiceException('请假开始日期不能是过去日期', code=3002)
 
         if leave_end_date < leave_start_date:
-            return {
-                'success': False,
-                'message': '请假结束日期不能早于开始日期'
-            }
+            raise ServiceException('请假结束日期不能早于开始日期', code=3003)
 
         leave_dao.create_leave_record(user_id, leave_start_date, leave_end_date)
 
@@ -64,24 +65,22 @@ class LeaveService:
     @staticmethod
     def approve_leave(leave_id, class_name, status):
         if status not in ('approved', 'rejected'):
-            return {
-                'success': False,
-                'message': '审批状态只能是approved或rejected'
-            }
+            raise ServiceException('审批状态只能是approved或rejected', code=3004)
 
         leave_application = leave_dao.get_leave_record_by_id_and_class(leave_id, class_name)
 
         if not leave_application:
-            return {
-                'success': False,
-                'message': '未找到该请假申请或该申请不属于您的班级'
-            }
+            raise ServiceException(
+                '未找到该请假申请或该申请不属于您的班级',
+                code=3005,
+                http_status=404
+            )
 
         if leave_application['leave_status'] != 'pending':
-            return {
-                'success': False,
-                'message': f'该请假申请已处于{leave_application["leave_status"]}状态，无法重复审批'
-            }
+            raise ServiceException(
+                f'该请假申请已处于{leave_application["leave_status"]}状态，无法重复审批',
+                code=3006
+            )
 
         leave_dao.update_leave_status(leave_id, status)
 
