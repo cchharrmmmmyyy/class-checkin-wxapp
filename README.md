@@ -1,4 +1,4 @@
-# 微信小程序班级打卡系统
+# 微信小程序班级考勤系统
 
 基于微信小程序的班级考勤打卡系统，支持学生打卡、教师管理、班委统计、请假审批以及位置范围打卡功能。
 
@@ -14,7 +14,325 @@
 - **请假审批**：完整的请假申请和审批流程
 - **主题切换**：支持多主题切换，适配不同用户偏好
 - **Web管理后台**：管理员可通过浏览器管理用户和考勤记录
-- **密码安全**：密码使用SHA-256+盐值哈希存储
+- **密码安全**：密码使用bcrypt哈希存储
+
+---
+
+## 系统架构
+
+### 架构概览
+
+```mermaid
+flowchart TB
+    subgraph Frontend["微信小程序前端"]
+        Login["登录页面"]
+        StudentPages["学生页面"]
+        TeacherPages["教师页面"]
+        AdminWeb["管理员Web界面"]
+    end
+
+    subgraph Backend["Flask后端"]
+        Routes["API Routes"]
+        Services["Service Layer"]
+        DAO["DAO Layer"]
+        Utils["Utils"]
+    end
+
+    subgraph Database["SQLite数据库"]
+        Users["users表"]
+        Punches["punches表"]
+        Leaves["leaves表"]
+        Rules["punch_rules表"]
+        Geofences["punch_geofences表"]
+        TimeSlots["punch_time_slots表"]
+        Logs["operation_logs表"]
+        Notifications["notifications表"]
+    end
+
+    Frontend -->|HTTP/JWT| Routes
+    Routes --> Services
+    Services --> DAO
+    DAO --> Database
+
+    AdminWeb -->|HTTP| Routes
+```
+
+### 数据流处理
+
+```mermaid
+sequenceDiagram
+    participant Student as 学生
+    participant MiniApp as 微信小程序
+    participant API as Flask API
+    participant Service as Service Layer
+    participant DAO as DAO Layer
+    participant DB as SQLite
+
+    Student->>MiniApp: 点击打卡按钮
+    MiniApp->>MiniApp: 获取GPS位置
+    MiniApp->>API: POST /api/punch<br/>{user_id, lat, lng}
+    API->>Service: PunchService.punch()
+    Service->>Service: 验证打卡配置
+    Service->>DAO: 查询打卡规则
+    DAO->>DB: SELECT punch_rules...
+    DB->>DAO: 返回规则列表
+    DAO->>Service: 返回规则
+    Service->>Service: 验证位置/时间
+    Service->>DAO: 创建打卡记录
+    DAO->>DB: INSERT punches
+    DB->>DAO: 返回ID
+    DAO->>Service: 返回打卡ID
+    Service->>API: 返回结果
+    API->>MiniApp: JSON响应
+    MiniApp->>Student: 显示打卡成功
+```
+
+---
+
+## 项目结构
+
+```mermaid
+graph TD
+    Root["class-checkin-wxapp/"]
+    Backend["backend/"]
+    Frontend["miniprogram/"]
+
+    Root --> Backend
+    Root --> Frontend
+
+    Backend --> Config["config.py"]
+    Backend --> App["app.py"]
+    Backend --> DBConn["db_connection.py"]
+    Backend --> InitDB["init_db.py"]
+
+    Backend --> Routes["routes/"]
+    Routes --> LoginR["login.py"]
+    Routes --> StudentR["students.py"]
+    Routes --> TeacherR["teachers.py"]
+    Routes --> AdminR["admin.py"]
+
+    Backend --> Services["services/"]
+    Services --> AuthSvc["auth_service.py"]
+    Services --> PunchSvc["punch_service.py"]
+    Services --> LeaveSvc["leave_service.py"]
+    Services --> TeacherSvc["teacher_service.py"]
+    Services --> AdminSvc["admin_service.py"]
+    Services --> LogSvc["log_service.py"]:::completed
+    Services --> NotifSvc["notification_service.py"]:::completed
+
+    Backend --> DAO["dao/"]
+    DAO --> BaseDAO["base_dao.py"]
+    DAO --> UserDAO["user_dao.py"]
+    DAO --> PunchDAO["punch_dao.py"]
+    DAO --> LeaveDAO["leave_dao.py"]
+    DAO --> RuleDAO["punch_rule_dao.py"]
+    DAO --> GeofenceDAO["punch_geofence_dao.py"]
+    DAO --> TimeSlotDAO["punch_time_slot_dao.py"]
+    DAO --> OpLogDAO["operation_log_dao.py"]
+    DAO --> NotifDAO["notification_dao.py"]
+    DAO --> ConfigDAO["punch_config_dao.py"]
+
+    Backend --> Utils["utils/"]
+    Utils --> Auth["auth.py"]
+    Utils --> Geo["geo.py"]
+    Utils --> Exceptions["exceptions.py"]
+
+    Backend --> Models["models/"]
+    Models --> UserM["user.py"]
+    Models --> PunchM["punch.py"]
+    Models --> LeaveM["leave.py"]
+    Models --> RuleM["punch_rule.py"]
+    Models --> GeofenceM["punch_geofence.py"]
+    Models --> NotifM["notification.py"]
+
+    Backend --> DB["db/"]
+    DB --> Schema["schema/"]
+    DB --> Init["init_db.py"]
+
+    Frontend --> Pages["pages/"]
+    Frontend --> Components["components/"]
+    Frontend --> ConfigF["config/"]
+
+    classDef completed fill:#90EE90
+```
+
+---
+
+## 数据库模型
+
+### 数据表关系
+
+```mermaid
+erDiagram
+    users ||--o{ punches : "每天打卡"
+    users ||--o{ leaves : "提交请假"
+    users ||--o{ operation_logs : "操作记录"
+    users ||--o{ notifications : "接收通知"
+    users {
+        string user_id PK
+        string username UK
+        string role
+        string class_name FK
+        string student_id UK
+    }
+
+    classes ||--o{ users : "拥有学生"
+    classes ||--o{ class_teachers : "分配教师"
+    classes {
+        string class_name PK
+        int grade_id FK
+    }
+
+    grades ||--o{ classes : "包含班级"
+    grades {
+        int id PK
+        int major_id FK
+    }
+
+    majors ||--o{ grades : "包含年级"
+    majors {
+        int id PK
+        int department_id FK
+    }
+
+    departments ||--o{ majors : "包含专业"
+    departments {
+        int id PK
+        int campus_id FK
+    }
+
+    campuses ||--o{ departments : "包含院系"
+    campuses {
+        int id PK
+    }
+
+    class_teachers ||--|| classes : "教授班级"
+    class_teachers ||--|| users : "任课教师"
+    class_teachers {
+        string class_name PK,FK
+        string teacher_id PK,FK
+        string semester
+    }
+
+    punch_time_slots ||--o{ punch_rules : "定义时段规则"
+    punch_time_slots {
+        int id PK
+        string name
+        time start_time
+        time end_time
+    }
+
+    punch_geofences ||--o{ punch_rules : "关联围栏规则"
+    punch_geofences {
+        int id PK
+        string name
+        string fence_type
+        float latitude
+        float longitude
+        int radius
+    }
+
+    punch_rules ||--o| punches : "匹配打卡"
+    punch_rules {
+        int id PK
+        int time_slot_id FK
+        int geofence_id FK
+        int priority
+    }
+
+    punches ||--o| operation_logs : "记录日志"
+    punches {
+        int id PK
+        string user_id FK
+        date punch_date
+        time punch_time
+        float latitude
+        float longitude
+    }
+
+    leaves ||--o| operation_logs : "审批日志"
+    leaves {
+        int id PK
+        string user_id FK
+        date leave_start_date
+        date leave_end_date
+        string leave_status
+    }
+
+    makeup_requests ||--|| users : "申请人"
+    makeup_requests ||--|| punches : "补录打卡"
+    makeup_requests {
+        int id PK
+        string user_id FK
+        int punch_id FK
+        string status
+    }
+
+    punch_config ||--o| punch_rules : "全局配置"
+    punch_config {
+        int id PK
+        int global_time_check
+        int global_location_check
+    }
+
+    operation_logs ||--o{ notifications : "触发通知"
+    operation_logs {
+        int id PK
+        string operator_id FK
+        string operation_type
+    }
+
+    notifications {
+        int id PK
+        string receiver_id FK
+        string title
+        string content
+        int is_read
+    }
+```
+
+### 核心数据表
+
+#### users - 用户表
+
+```mermaid
+erDiagram
+    users {
+        string user_id PK "学号/工号"
+        string username UK "登录账号"
+        string password "密码哈希"
+        string real_name "真实姓名"
+        string role "角色：admin/teacher/monitor/student"
+        string class_name FK "所属班级"
+        string student_id UK "学号"
+        string phone "联系电话"
+        string email "邮箱"
+        int is_first_login "首次登录标志"
+        timestamp last_punch_time "最后打卡时间"
+        int login_fail_count "登录失败次数"
+        timestamp lock_until "账户锁定截止"
+    }
+```
+
+#### punches - 打卡记录表
+
+```mermaid
+erDiagram
+    punches {
+        int id PK "自增主键"
+        string user_id FK "用户ID"
+        date punch_date "打卡日期"
+        time punch_time "打卡时间"
+        float latitude "纬度"
+        float longitude "经度"
+        int matched_rule_id FK "匹配规则"
+        int is_makeup "是否补卡"
+        string device_id "设备ID"
+        timestamp created_at "创建时间"
+    }
+```
+
+---
 
 ## 技术架构
 
@@ -25,156 +343,110 @@
 | 数据库 | SQLite | 轻量级关系型数据库 |
 | 管理后台 | HTML + JavaScript | 管理员Web界面 |
 
-## 项目结构
-
-```
-class-checkin-wxapp/
-├── backend/                      # Flask后端服务
-│   ├── config.py                 # 配置文件（环境变量读取）
-│   ├── app.py                    # 应用入口
-│   ├── db_connection.py          # 数据库连接管理 + 密码工具函数
-│   ├── init_db.py                # 数据库建表与初始化
-│   ├── .env.example              # 环境变量示例文件
-│   ├── requirements.txt          # Python依赖
-│   ├── templates/                # HTML模板
-│   │   ├── login.html            # 登录页面
-│   │   └── admin.html            # 管理员Web管理界面
-│   ├── routes/                   # API路由
-│   │   ├── __init__.py
-│   │   ├── login.py              # 登录接口
-│   │   ├── students.py           # 学生相关API（打卡、请假）
-│   │   ├── teachers.py           # 教师相关API（班委管理、请假审批）
-│   │   └── admin.py              # 管理员API（用户管理、位置配置）
-│   ├── dao/                      # 数据访问层
-│   │   ├── __init__.py
-│   │   ├── user_dao.py           # users 表 CRUD
-│   │   ├── punch_record_dao.py  # punch_records 表 CRUD
-│   │   ├── leave_dao.py          # 请假记录 CRUD
-│   │   └── location_dao.py       # punch_location 表 CRUD
-│   ├── services/                  # 业务服务层
-│   │   ├── __init__.py
-│   │   ├── auth_service.py       # 登录认证、JWT 生成
-│   │   ├── punch_service.py      # 打卡业务（位置校验、记录打卡）
-│   │   ├── leave_service.py      # 请假申请、审批业务
-│   │   ├── teacher_service.py    # 班委管理、班级列表
-│   │   └── admin_service.py      # 管理员：用户管理、考勤管理、位置配置
-│   └── utils/                    # 工具模块
-│       ├── __init__.py
-│       ├── auth.py               # JWT认证模块
-│       ├── geo.py                # 地理计算模块
-│       └── exceptions.py         # 统一业务异常类
-├── miniprogram/                   # 微信小程序前端
-│   ├── config/
-│   │   └── api.js                # API接口配置
-│   ├── network/
-│   │   ├── api.js                # API调用封装
-│   │   └── request.js            # 网络请求封装
-│   ├── pages/
-│   │   ├── login/                # 登录页面
-│   │   │   ├── login.js
-│   │   │   ├── login.wxml
-│   │   │   ├── login.wxss
-│   │   │   └── login.json
-│   │   ├── student/              # 学生页面
-│   │   │   ├── student.js        # 打卡主页面（含地图）
-│   │   │   ├── student.wxml
-│   │   │   ├── student.wxss
-│   │   │   ├── student.json
-│   │   │   ├── student-detail.js  # 打卡记录查询
-│   │   │   ├── student-detail.json
-│   │   │   ├── student-detail.wxml
-│   │   │   ├── student-detail.wxss
-│   │   │   ├── leave-apply.js     # 请假申请
-│   │   │   ├── leave-apply.json
-│   │   │   ├── leave-apply.wxml
-│   │   │   ├── leave-apply.wxss
-│   │   │   ├── leave-records.js  # 请假记录
-│   │   │   ├── leave-records.json
-│   │   │   ├── leave-records.wxml
-│   │   │   ├── leave-records.wxss
-│   │   │   ├── class-records.js  # 班级打卡记录
-│   │   │   ├── class-records.json
-│   │   │   ├── class-records.wxml
-│   │   │   └── class-records.wxss
-│   │   └── teacher/              # 教师页面
-│   │       ├── teacher.js        # 教师主页面
-│   │       ├── teacher.wxml
-│   │       ├── teacher.wxss
-│   │       ├── teacher.json
-│   │       ├── monitor-manage.js # 班委管理
-│   │       ├── monitor-manage.wxml
-│   │       ├── monitor-manage.wxss
-│   │       ├── monitor-manage.json
-│   │       ├── leave-approval.js # 请假审批
-│   │       ├── leave-approval.wxml
-│   │       ├── leave-approval.wxss
-│   │       └── leave-approval.json
-│   ├── components/               # 组件
-│   │   ├── navbar/               # 导航栏组件
-│   │   ├── student-tabbar/       # 学生底部导航
-│   │   └── teacher-tabbar/       # 教师底部导航
-│   ├── utils/
-│   │   ├── auth.js               # 认证工具
-│   │   ├── theme.js              # 主题管理
-│   │   └── utils.js              # 通用工具
-│   ├── styles/
-│   │   ├── base.wxss             # 基础样式
-│   │   └── theme.wxss            # 主题样式
-│   ├── .cloudbase/               # 云开发配置
-│   ├── app.js                    # 小程序入口
-│   ├── app.json                  # 小程序配置
-│   ├── app.wxss                  # 全局样式
-│   ├── project.config.json       # 项目配置
-│   └── sitemap.json              # 站点地图
-├── .gitignore                    # Git忽略文件
-├── README.md                     # 项目说明文档
-└── requirements.txt              # 项目依赖
-```
+---
 
 ## 环境变量配置
 
-后端使用环境变量进行配置，所有配置项都有合理的默认值。
-
-### 配置项说明
-
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| `JWT_SECRET_KEY` | 必填 | JWT密钥，生产环境必须设置（使用 `openssl rand -hex 32` 生成） |
+| `JWT_SECRET_KEY` | 必填 | JWT密钥，生产环境必须设置 |
 | `TOKEN_EXPIRE_HOURS` | 24 | Token过期时间（小时） |
 | `DATABASE_FILE` | user.db | 数据库文件路径 |
-| `INSERT_TEST_DATA` | True | 是否插入测试数据（True/False） |
+| `INSERT_TEST_DATA` | True | 是否插入测试数据 |
 | `FLASK_HOST` | 0.0.0.0 | Flask服务器主机地址 |
 | `FLASK_PORT` | 5000 | Flask服务器端口 |
-| `FLASK_DEBUG` | True | Flask调试模式（开发环境设为True，生产环境必须设为False） |
-| `RANDOM_PASSWORD_LENGTH` | 8 | 重置密码时的随机密码长度 |
-| `PUNCH_RECORDS_LIMIT` | 30 | 打卡记录查询限制条数 |
+| `FLASK_DEBUG` | True | Flask调试模式 |
+| `RANDOM_PASSWORD_LENGTH` | 8 | 重置密码长度 |
+| `PUNCH_RECORDS_LIMIT` | 30 | 打卡记录查询限制 |
 
-### 配置方法
+---
 
-1. 复制 `.env.example` 为 `.env`：
-```bash
-cd backend
-cp .env.example .env
+## 重构进度
+
+### 重构概览
+
+```mermaid
+gantt
+    title 服务层重构进度
+    dateFormat YYYY-MM-DD
+    section Phase 1
+    LogService完成          :done, 2024-01-01, 2024-01-07
+    NotificationService完成  :done, 2024-01-01, 2024-01-07
+    DAO层事务支持           :done, 2024-01-05, 2024-01-10
+    section Phase 2
+    AuthService增强         :todo, 2024-01-15, 2024-01-21
+    ConfigService          :todo, 2024-01-15, 2024-01-21
+    section Phase 3
+    PunchService           :todo, 2024-01-22, 2024-02-01
+    LeaveService           :todo, 2024-01-22, 2024-02-01
+    MakeupService          :todo, 2024-02-01, 2024-02-10
+    section Phase 4
+    AdminService           :todo, 2024-02-10, 2024-02-15
+    TeacherService          :todo, 2024-02-10, 2024-02-15
+    MonitorService         :todo, 2024-02-15, 2024-02-20
+    section Phase 5
+    StatisticsService      :todo, 2024-02-20, 2024-02-28
 ```
 
-2. 编辑 `.env` 文件，根据需要修改配置项：
-```bash
-# 生产环境必须修改以下配置
-JWT_SECRET_KEY=your-strong-random-secret-key-here
-FLASK_DEBUG=False
+### 当前状态
+
+| 模块 | 状态 | 说明 |
+|------|-------|------|
+| **LogService** | ✅ 已完成 | 操作日志记录和查询 |
+| **NotificationService** | ✅ 已完成 | 消息通知发送和管理 |
+| **BaseDAO** | ✅ 已重构 | 支持可选事务连接参数 |
+| **DAO事务支持** | ✅ 已完成 | OperationLogDAO, NotificationDAO |
+| AuthService | 🔄 待增强 | 需添加登录锁定、首次登录处理 |
+| ConfigService | ⏳ 待开发 | 打卡规则配置服务 |
+| PunchService | ⏳ 待开发 | 需重构实现完整业务逻辑 |
+| LeaveService | ⏳ 待开发 | 请假申请和审批 |
+| MakeupService | ⏳ 待开发 | 补卡申请和审批 |
+| AdminService | ⏳ 待开发 | 组织架构和用户管理 |
+| TeacherService | ⏳ 待开发 | 班级管理和审批 |
+| MonitorService | ⏳ 待开发 | 班委功能 |
+| StatisticsService | ⏳ 待开发 | 考勤统计和预警 |
+
+### ✅ 已完成功能详情
+
+#### LogService
+
+**文件**: `services/log_service.py`
+
+```mermaid
+graph LR
+    A["log_operation()"] --> B["记录操作日志"]
+    A --> C["支持事务"]
+    D["get_operation_logs()"] --> E["多条件查询"]
+    F["get_user_operation_logs()"] --> G["用户日志查询"]
+    H["get_target_logs()"] --> I["目标对象日志"]
 ```
 
-### 配置类设计
+#### NotificationService
 
-后端使用 `Config` 类统一管理配置：
+**文件**: `services/notification_service.py`
 
-```python
-from config import Config
-
-# 使用配置
-secret_key = Config.SECRET_KEY
-db_file = Config.DATABASE_FILE
+```mermaid
+graph LR
+    A["send_notification()"] --> B["发送通知"]
+    C["send_batch_notifications()"] --> D["批量发送"]
+    E["get_user_notifications()"] --> F["获取通知列表"]
+    G["get_unread_count()"] --> H["未读数量"]
+    I["mark_as_read()"] --> J["标记已读"]
+    K["mark_all_as_read()"] --> L["全部已读"]
+    M["delete_notification()"] --> N["删除通知"]
 ```
+
+#### BaseDAO 重构
+
+**改进内容**:
+
+1. **移除硬编码**: `sqlite3.connect('class_checkin.db')` → `db_connection.get_connection()`
+2. **SQL注入防护**:
+   - 表名白名单验证
+   - 列名正则验证
+   - order_by参数安全验证
+
+---
 
 ## 功能列表
 
@@ -210,123 +482,7 @@ db_file = Config.DATABASE_FILE
 - 支持多主题颜色切换
 - 主题状态全局保存
 
-## 数据库表结构
-
-### users 表 - 用户信息
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| user_id | TEXT | 学号/工号（主键） |
-| username | TEXT | 用户名 |
-| password | TEXT | 密码（SHA-256+盐值哈希存储） |
-| role | TEXT | 角色：student/teacher/monitor/admin |
-| class | TEXT | 班级 |
-
-### punch_records 表 - 打卡记录
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | INTEGER | 自增主键 |
-| user_id | TEXT | 学号/工号（外键） |
-| punch_date | DATE | 打卡日期 |
-| leave_start_date | DATE | 请假开始日期 |
-| leave_end_date | DATE | 请假结束日期 |
-| leave_status | TEXT | 请假状态：pending/approved/rejected |
-
-### punch_location 表 - 打卡位置配置
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| id | INTEGER | 自增主键 |
-| name | TEXT | 位置名称 |
-| latitude | REAL | 纬度 |
-| longitude | REAL | 经度 |
-| radius | REAL | 允许打卡半径（米） |
-| enabled | INTEGER | 是否启用：0/1 |
-
-### 数据访问层（DAO）
-
-每个表对应一个 DAO 文件，封装单表 CRUD 操作：
-
-```python
-from dao import user_dao, punch_record_dao, leave_dao, location_dao
-
-user = user_dao.get_user_by_id(user_id)
-user_dao.create_user(username, user_id, password, role, class_name)
-punch_record_dao.create_punch_record(user_id, punch_date)
-leave_dao.update_leave_status(leave_id, status)
-location_dao.upsert_punch_location(name, latitude, longitude, radius, enabled)
-```
-
-### 业务服务层（Service）
-
-每个业务域对应一个 Service 类，组合 DAO 操作并包含业务逻辑，通过抛出 `ServiceException` 实现统一错误处理：
-
-```python
-from services import AuthService, PunchService, LeaveService, TeacherService, AdminService
-from utils.exceptions import ServiceException
-
-result = AuthService.login(user_id, password)
-result = PunchService.punch(user_id, latitude, longitude)
-result = LeaveService.apply_leave(user_id, start_date, end_date)
-result = TeacherService.appoint_monitor(student_id, teacher_class)
-result = AdminService.save_user(username, user_id, password, role, class_name)
-```
-
-### 统一异常处理
-
-`app.py` 注册了全局异常处理器，所有 `ServiceException` 自动转为 JSON 响应：
-
-```python
-@app.errorhandler(ServiceException)
-def handle_service_exception(e):
-    return jsonify({'success': False, 'message': e.message, 'code': e.code}), e.http_status
-```
-
-错误码按业务域分配：AuthService(1001~1002)、PunchService(2001~2003)、LeaveService(3001~3006)、TeacherService(4001~4006)、AdminService(5001~5013)。
-
-db_connection.py 提供底层连接和密码工具函数：
-
-```python
-from db_connection import get_connection, hash_password, verify_password
-```
-
-## API接口
-
-### 认证接口
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | /api/login | 用户登录 |
-
-### 学生接口
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | /api/students/punch | 提交打卡 |
-| GET | /api/students/records/<user_id> | 获取个人打卡记录 |
-| GET | /api/students/class-records/<class_name> | 获取班级打卡记录 |
-| POST | /api/students/apply-leave | 提交请假申请 |
-| GET | /api/students/leave-records | 获取个人请假记录 |
-
-### 教师接口
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /api/teachers/classes | 获取班级列表 |
-| GET | /api/teachers/students | 获取班级学生列表 |
-| GET | /api/teachers/leave-applications | 获取请假申请列表 |
-| POST | /api/teachers/leave-applications/:id/approve | 审批请假申请 |
-| POST | /api/teachers/monitors | 任命班委 |
-| DELETE | /api/teachers/monitors/<user_id> | 移除班委 |
-| GET | /api/teachers/monitors | 获取班级班委 |
-
-### 管理员接口
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | /api/admin/login | 管理员登录 |
-| GET | /api/admin/users | 获取用户列表 |
-| POST | /api/admin/users | 添加/修改用户 |
-| DELETE | /api/admin/users/<user_id> | 删除用户 |
-| GET | /api/admin/attendance-records | 获取考勤记录 |
-| POST | /api/admin/attendance-records | 添加/修改考勤记录 |
-| DELETE | /api/admin/attendance-records/<id> | 删除考勤记录 |
-| GET | /api/admin/punch-location | 获取打卡位置配置 |
-| POST | /api/admin/punch-location | 设置打卡位置 |
+---
 
 ## 快速开始
 
@@ -357,42 +513,7 @@ python app.py
 - API服务：http://localhost:5000/api
 - 管理后台：http://localhost:5000/admin
 
-### 3. 环境变量配置（推荐）
-
-首次部署建议配置以下环境变量：
-
-**开发环境：**
-- 使用默认配置即可，`.env` 不是必须的
-
-**生产环境：**
-```bash
-# 必须配置
-JWT_SECRET_KEY=your-strong-random-secret-key-here  # 使用 openssl rand -hex 32 生成
-FLASK_DEBUG=False                                      # 生产环境必须关闭调试模式
-
-# 可选配置
-FLASK_HOST=0.0.0.0                                     # 监听地址
-FLASK_PORT=5000                                        # 监听端口
-DATABASE_FILE=user.db                                  # 数据库文件路径
-INSERT_TEST_DATA=False                                 # 不插入测试数据
-```
-
-### 4. 前端配置
-
-1. 使用微信开发者工具打开 `miniprogram` 目录
-2. 修改 `miniprogram/config/api.js` 中的 `baseUrl` 为后端地址
-3. 修改 `miniprogram/project.config.json` 中的 `appid` 为您的小程序AppID
-4. 在微信开发者工具中启用"不校验合法域名"
-5. 编译运行小程序
-
-### 5. 首次部署检查清单
-
-- [ ] 修改 `miniprogram/config/api.js` 中的 `baseUrl` 为实际服务器IP
-- [ ] 修改 `miniprogram/project.config.json` 中的 `appid` 为您的小程序AppID
-- [ ] 修改 `backend/init_db.py` 中的默认测试用户密码为安全密码
-- [ ] 删除 `backend/user.db` 让系统重新初始化数据库
-
-### 6. 测试账户
+### 3. 测试账户
 
 | 角色 | 用户ID | 用户名 | 密码 |
 |------|--------|--------|------|
@@ -402,62 +523,7 @@ INSERT_TEST_DATA=False                                 # 不插入测试数据
 | 班委 | 2024003 | 王五 | 123456 |
 | 教师 | t001 | 张老师 | 123456 |
 
-## 打卡位置配置
-
-管理员可通过管理后台配置打卡位置：
-
-1. 访问 http://localhost:5000/login 登录管理员账户
-2. 登录成功后自动跳转到 http://localhost:5000/admin
-3. 切换到"打卡位置管理"标签
-4. 填写位置信息：
-   - 位置名称：如"教学楼A"
-   - 纬度：如 39.908823
-   - 经度：如 116.397470
-   - 半径（米）：如 100
-5. 启用位置验证
-
-学生打卡时，系统会：
-1. 获取学生当前位置
-2. 使用Haversine公式计算与设置位置的距离
-3. 如果距离超过设置半径，返回打卡失败
-4. 成功记录打卡，不保存学生位置信息
-
-## 主题切换
-
-学生页面支持主题切换：
-1. 点击页面中的"切换主题"按钮
-2. 选择喜欢的主题颜色
-3. 主题设置会自动保存
-
-## 注意事项
-
-1. 首次启动后端会自动创建数据库和表
-2. 如果修改了数据库结构，需要删除 `user.db` 重启服务
-3. 微信小程序需要在 `app.json` 中配置定位权限
-4. 位置打卡使用gcj02坐标系（微信坐标系）
-
-## GitHub 部署注意事项
-
-本项目已为 GitHub 开源做了以下处理：
-
-1. **移除敏感信息**：
-   - AppID 已替换为占位符 `YOUR_APPID_HERE`
-   - 服务器地址已替换为占位符 `YOUR_SERVER_IP`
-   - 管理员默认密码已改为普通密码 `admin123`
-
-2. **.gitignore 文件**：
-   - 排除数据库文件 (`*.db`)
-   - 排除 Python 缓存 (`__pycache__/`)
-   - 排除 IDE 配置 (`.vscode/`, `.idea/`)
-   - 排除私有配置文件
-   - 排除 `.env` 文件
-
-3. **安全建议**：
-   - 首次部署请修改默认密码
-   - 生产环境建议使用 HTTPS
-   - 生产环境必须设置强 JWT_SECRET_KEY
-   - 考虑添加密码哈希存储
-   - 配置防火墙规则限制访问
+---
 
 ## 安全特性
 
@@ -467,6 +533,9 @@ INSERT_TEST_DATA=False                                 # 不插入测试数据
 4. **输入验证**：登录输入长度限制（账户6-12位，密码6-20位）
 5. **错误信息模糊化**：防止通过错误信息推断用户存在性
 6. **管理员保护**：防止删除最后一个管理员账户
+7. **SQL注入防护**：BaseDAO层实现表名白名单和参数验证
+
+---
 
 ## 许可证
 
@@ -474,4 +543,4 @@ MIT License
 
 ---
 
-欢迎使用微信小程序班级打卡系统！🎉
+欢迎使用微信小程序班级考勤系统！🎉

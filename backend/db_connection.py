@@ -1,6 +1,5 @@
 import sqlite3
-import hashlib
-import secrets
+import bcrypt
 from config import Config
 
 DATABASE_FILE = Config.DATABASE_FILE
@@ -13,15 +12,12 @@ def get_connection():
 
 
 def hash_password(password):
-    salt = secrets.token_hex(16)
-    password_hash = hashlib.sha256((password + salt).encode()).hexdigest()
-    return salt + ':' + password_hash
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 
 def verify_password(password, stored_hash):
     try:
-        salt, password_hash = stored_hash.split(':')
-        return password_hash == hashlib.sha256((password + salt).encode()).hexdigest()
+        return bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
     except:
         return False
 

@@ -1,8 +1,8 @@
 from typing import List, Optional
-from models.leave import Leave
+from models.campus import Campus
 
 
-class LeaveDAO:
+class CampusDAO:
     def __init__(self):
         from db_connection import get_connection
         self.get_connection = get_connection
@@ -10,36 +10,29 @@ class LeaveDAO:
     def _row_to_model(self, row):
         if row is None:
             return None
-        return Leave(
+        return Campus(
             id=row['id'],
-            user_id=row['user_id'],
-            leave_start_date=row['leave_start_date'],
-            leave_end_date=row['leave_end_date'],
-            leave_type=row['leave_type'],
-            leave_reason=row['leave_reason'],
-            leave_status=row['leave_status'],
-            approved_by=row['approved_by'],
-            approved_at=row['approved_at'],
-            created_at=row['created_at'],
-            deleted_at=row['deleted_at']
+            name=row['name'],
+            address=row['address'],
+            created_at=row['created_at']
         )
 
-    def get_by_id(self, id: int) -> Optional[Leave]:
+    def get_by_id(self, id: int) -> Optional[Campus]:
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM leaves WHERE id = ?", (id,))
+            cursor.execute("SELECT * FROM campuses WHERE id = ?", (id,))
             row = cursor.fetchone()
             return self._row_to_model(row)
         finally:
             conn.close()
 
-    def get_list(self, where: str = None, params: tuple = (), order_by: str = "id DESC",
-                 limit: int = None, offset: int = 0) -> List[Leave]:
+    def get_list(self, where: str = None, params: tuple = (), order_by: str = "id ASC",
+                 limit: int = None, offset: int = 0) -> List[Campus]:
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
-            sql = "SELECT * FROM leaves"
+            sql = "SELECT * FROM campuses"
             if where:
                 sql += f" WHERE {where}"
             sql += f" ORDER BY {order_by}"
@@ -56,10 +49,8 @@ class LeaveDAO:
         try:
             cursor = conn.cursor()
             cursor.execute(
-                """INSERT INTO leaves (user_id, leave_start_date, leave_end_date, leave_type, leave_reason)
-                   VALUES (?, ?, ?, ?, ?)""",
-                (data['user_id'], data['leave_start_date'], data['leave_end_date'],
-                 data['leave_type'], data.get('leave_reason'))
+                "INSERT INTO campuses (name, address) VALUES (?, ?)",
+                (data['name'], data.get('address'))
             )
             conn.commit()
             return cursor.lastrowid
@@ -71,9 +62,8 @@ class LeaveDAO:
         try:
             cursor = conn.cursor()
             cursor.execute(
-                """UPDATE leaves SET leave_status = ?, approved_by = ?, approved_at = CURRENT_TIMESTAMP
-                   WHERE id = ?""",
-                (data['leave_status'], data.get('approved_by'), id)
+                "UPDATE campuses SET name = ?, address = ? WHERE id = ?",
+                (data['name'], data.get('address'), id)
             )
             conn.commit()
             return cursor.rowcount > 0
@@ -84,10 +74,7 @@ class LeaveDAO:
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute(
-                "UPDATE leaves SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?",
-                (id,)
-            )
+            cursor.execute("DELETE FROM campuses WHERE id = ?", (id,))
             conn.commit()
             return cursor.rowcount > 0
         finally:

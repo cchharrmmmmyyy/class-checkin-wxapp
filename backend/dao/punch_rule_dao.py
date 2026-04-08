@@ -1,8 +1,8 @@
 from typing import List, Optional
-from models.leave import Leave
+from models.punch_rule import PunchRule
 
 
-class LeaveDAO:
+class PunchRuleDAO:
     def __init__(self):
         from db_connection import get_connection
         self.get_connection = get_connection
@@ -10,36 +10,34 @@ class LeaveDAO:
     def _row_to_model(self, row):
         if row is None:
             return None
-        return Leave(
+        return PunchRule(
             id=row['id'],
-            user_id=row['user_id'],
-            leave_start_date=row['leave_start_date'],
-            leave_end_date=row['leave_end_date'],
-            leave_type=row['leave_type'],
-            leave_reason=row['leave_reason'],
-            leave_status=row['leave_status'],
-            approved_by=row['approved_by'],
-            approved_at=row['approved_at'],
+            time_slot_id=row['time_slot_id'],
+            geofence_id=row['geofence_id'],
+            priority=row['priority'],
+            time_enabled=row['time_enabled'],
+            location_enabled=row['location_enabled'],
+            enabled=row['enabled'],
             created_at=row['created_at'],
             deleted_at=row['deleted_at']
         )
 
-    def get_by_id(self, id: int) -> Optional[Leave]:
+    def get_by_id(self, id: int) -> Optional[PunchRule]:
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM leaves WHERE id = ?", (id,))
+            cursor.execute("SELECT * FROM punch_rules WHERE id = ?", (id,))
             row = cursor.fetchone()
             return self._row_to_model(row)
         finally:
             conn.close()
 
-    def get_list(self, where: str = None, params: tuple = (), order_by: str = "id DESC",
-                 limit: int = None, offset: int = 0) -> List[Leave]:
+    def get_list(self, where: str = None, params: tuple = (), order_by: str = "priority ASC",
+                 limit: int = None, offset: int = 0) -> List[PunchRule]:
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
-            sql = "SELECT * FROM leaves"
+            sql = "SELECT * FROM punch_rules"
             if where:
                 sql += f" WHERE {where}"
             sql += f" ORDER BY {order_by}"
@@ -56,10 +54,10 @@ class LeaveDAO:
         try:
             cursor = conn.cursor()
             cursor.execute(
-                """INSERT INTO leaves (user_id, leave_start_date, leave_end_date, leave_type, leave_reason)
-                   VALUES (?, ?, ?, ?, ?)""",
-                (data['user_id'], data['leave_start_date'], data['leave_end_date'],
-                 data['leave_type'], data.get('leave_reason'))
+                """INSERT INTO punch_rules (time_slot_id, geofence_id, priority, time_enabled, location_enabled, enabled)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (data['time_slot_id'], data['geofence_id'], data.get('priority', 100),
+                 data.get('time_enabled', 1), data.get('location_enabled', 1), data.get('enabled', 1))
             )
             conn.commit()
             return cursor.lastrowid
@@ -71,9 +69,10 @@ class LeaveDAO:
         try:
             cursor = conn.cursor()
             cursor.execute(
-                """UPDATE leaves SET leave_status = ?, approved_by = ?, approved_at = CURRENT_TIMESTAMP
-                   WHERE id = ?""",
-                (data['leave_status'], data.get('approved_by'), id)
+                """UPDATE punch_rules SET time_slot_id = ?, geofence_id = ?, priority = ?,
+                   time_enabled = ?, location_enabled = ?, enabled = ? WHERE id = ?""",
+                (data['time_slot_id'], data['geofence_id'], data.get('priority', 100),
+                 data.get('time_enabled', 1), data.get('location_enabled', 1), data.get('enabled', 1), id)
             )
             conn.commit()
             return cursor.rowcount > 0
@@ -85,7 +84,7 @@ class LeaveDAO:
         try:
             cursor = conn.cursor()
             cursor.execute(
-                "UPDATE leaves SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?",
+                "UPDATE punch_rules SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?",
                 (id,)
             )
             conn.commit()
