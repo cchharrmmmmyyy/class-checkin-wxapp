@@ -1,0 +1,63 @@
+<view class="container">
+  <view class="header">
+    <view class="class-name">班级：{{className}}</view>
+    <view class="date-picker">
+      <text class="date-label">日期：</text>
+      <picker mode="date" value="{{currentDate}}" bindchange="onDateChange">
+        <view class="date-value">{{currentDate}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="summary-card">
+    <view class="card-title">📊 今日打卡概览</view>
+    <view class="summary-stats">
+      <view class="stat-item">
+        <text class="stat-value">{{summary.total_count || 0}}</text>
+        <text class="stat-label">总人数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{summary.punched_count || 0}}</text>
+        <text class="stat-label">已打卡</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{summary.leave_count || 0}}</text>
+        <text class="stat-label">请假</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{summary.unpunched_count || 0}}</text>
+        <text class="stat-label">未打卡</text>
+      </view>
+    </view>
+    <view class="attendance-rate">
+      出勤率：{{summary.attendance_rate || 0}}%
+    </view>
+  </view>
+
+  <view class="unpunched-section" wx:if="{{unpunchedStudents.length > 0}}">
+    <view class="section-title">⚠️ 未打卡学生 ({{unpunchedStudents.length}}人)</view>
+    <view class="student-list">
+      <view class="student-item" wx:for="{{unpunchedStudents}}" wx:key="user_id">
+        <view class="student-info">
+          <text class="student-name">{{item.username}}</text>
+          <text class="student-id">{{item.user_id}}</text>
+        </view>
+        <button class="remind-btn" bindtap="onRemindStudent" data-student="{{item}}">提醒</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="pending-section">
+    <view class="section-title">📋 待教师审批</view>
+
+    <view class="pending-item" bindtap="goToPendingLeave">
+      <text class="pending-text">请假待审批：{{pendingLeave.length}} 条</text>
+      <text class="pending-arrow">></text>
+    </view>
+
+    <view class="pending-item" bindtap="goToPendingMakeup">
+      <text class="pending-text">补卡待审批：{{pendingMakeup.length}} 条</text>
+      <text class="pending-arrow">></text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,77 @@
+.container {
+  min-height: 100vh;
+  background-color: var(--bg-color);
+}
+
+.class-selector {
+  background-color: #fff;
+  padding: 24rpx 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.selector-value {
+  font-size: 28rpx;
+  color: var(--text-color);
+}
+
+.student-list {
+  padding: 0 var(--padding-base);
+}
+
+.student-card {
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  padding: 24rpx 32rpx;
+  margin-bottom: 16rpx;
+  display: flex;
+  align-items: center;
+}
+
+.student-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.student-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-bottom: 8rpx;
+}
+
+.student-id {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.monitor-tag {
+  padding: 8rpx 24rpx;
+  background-color: rgba(7, 193, 96, 0.1);
+  color: var(--primary-color);
+  border-radius: 4rpx;
+  font-size: 24rpx;
+  margin-right: 24rpx;
+}
+
+.action-btn {
+  font-size: 24rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 4rpx;
+}
+
+.action-btn.appoint {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.action-btn.remove {
+  background-color: rgba(238, 10, 36, 0.1);
+  color: var(--danger-color);
+}
+
+.no-data {
+  text-align: center;
+  padding: 100rpx;
+  color: var(--text-secondary);
+}

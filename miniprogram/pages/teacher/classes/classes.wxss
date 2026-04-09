@@ -1,0 +1,71 @@
+.container {
+  min-height: 100vh;
+  background-color: var(--bg-color);
+}
+
+.header {
+  background-color: #fff;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.header-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.class-list {
+  padding: 0 var(--padding-base);
+}
+
+.class-card {
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.class-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.class-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-bottom: 12rpx;
+}
+
+.student-count,
+.attendance-rate {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  margin-bottom: 8rpx;
+}
+
+.pending-badge {
+  min-width: 40rpx;
+  height: 40rpx;
+  background-color: var(--danger-color);
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12rpx;
+}
+
+.badge-text {
+  font-size: 24rpx;
+  color: #fff;
+}
+
+.no-data {
+  text-align: center;
+  padding: 100rpx;
+  color: var(--text-secondary);
+}

@@ -1,0 +1,104 @@
+.container {
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  padding-bottom: 120rpx;
+}
+
+.tabs {
+  display: flex;
+  background-color: #fff;
+  padding: 0 32rpx;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  position: relative;
+}
+
+.tab-item.active {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48rpx;
+  height: 4rpx;
+  background-color: var(--primary-color);
+  border-radius: 2rpx;
+}
+
+.records-list {
+  padding: var(--padding-base);
+}
+
+.record-card {
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.record-header {
+  margin-bottom: 16rpx;
+}
+
+.record-date {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.record-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.record-time,
+.record-location,
+.record-type,
+.record-reason {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+}
+
+.record-status {
+  font-size: 26rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 4rpx;
+}
+
+.record-status.status-pending {
+  color: var(--warning-color);
+  background-color: rgba(255, 151, 106, 0.1);
+}
+
+.record-status.status-approved {
+  color: var(--primary-color);
+  background-color: rgba(7, 193, 96, 0.1);
+}
+
+.record-status.status-rejected {
+  color: var(--danger-color);
+  background-color: rgba(238, 10, 36, 0.1);
+}
+
+.no-more,
+.no-data {
+  text-align: center;
+  padding: 48rpx;
+  color: var(--text-secondary);
+  font-size: 26rpx;
+}

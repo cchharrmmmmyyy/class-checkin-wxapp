@@ -1,0 +1,19 @@
+<view class="container">
+  <view class="form">
+    <view class="form-item">
+      <text class="label">补卡日期</text>
+      <picker mode="date" value="{{targetDate}}" bindchange="onTargetDateChange" end="{{maxDate}}">
+        <view class="picker-value {{targetDate ? '' : 'placeholder'}}">
+          {{targetDate || '请选择补卡日期（限近3天内）'}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="label">补卡原因</text>
+      <textarea class="textarea" placeholder="请输入补卡原因" bindinput="onReasonInput" value="{{reason}}" maxlength="200"></textarea>
+    </view>
+
+    <button class="submit-btn" bindtap="onSubmit">提交申请</button>
+  </view>
+</view>

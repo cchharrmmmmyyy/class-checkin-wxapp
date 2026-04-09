@@ -1,0 +1,55 @@
+<view class="container">
+  <view class="tabs">
+    <view class="tab-item {{activeTab === 0 ? 'active' : ''}}" bindtap="onTabChange" data-index="0">
+      <text>请假审批</text>
+    </view>
+    <view class="tab-item {{activeTab === 1 ? 'active' : ''}}" bindtap="onTabChange" data-index="1">
+      <text>补卡审批</text>
+    </view>
+  </view>
+
+  <view class="approval-list">
+    <view wx:if="{{activeTab === 0}}">
+      <view class="approval-card" wx:for="{{leaveList}}" wx:key="id">
+        <view class="card-header">
+          <text class="student-name">{{item.username}}</text>
+          <text class="student-id">{{item.user_id}}</text>
+        </view>
+        <view class="card-body">
+          <text class="date-range">{{item.start_date}} ~ {{item.end_date}}</text>
+          <text class="leave-type">类型：{{item.leave_type}}</text>
+          <text class="reason">事由：{{item.reason}}</text>
+        </view>
+        <view class="card-actions">
+          <button class="action-btn reject" bindtap="onReject" data-id="{{item.id}}" data-type="leave">拒绝</button>
+          <button class="action-btn approve" bindtap="onApprove" data-id="{{item.id}}" data-type="leave">通过</button>
+        </view>
+      </view>
+
+      <view class="no-data" wx:if="{{leaveList.length === 0}}">
+        <text>暂无待审批请假</text>
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 1}}">
+      <view class="approval-card" wx:for="{{makeupList}}" wx:key="id">
+        <view class="card-header">
+          <text class="student-name">{{item.username}}</text>
+          <text class="student-id">{{item.user_id}}</text>
+        </view>
+        <view class="card-body">
+          <text class="target-date">补卡日期：{{item.target_date}}</text>
+          <text class="reason">原因：{{item.reason}}</text>
+        </view>
+        <view class="card-actions">
+          <button class="action-btn reject" bindtap="onReject" data-id="{{item.id}}" data-type="makeup">拒绝</button>
+          <button class="action-btn approve" bindtap="onApprove" data-id="{{item.id}}" data-type="makeup">通过</button>
+        </view>
+      </view>
+
+      <view class="no-data" wx:if="{{makeupList.length === 0}}">
+        <text>暂无待审批补卡</text>
+      </view>
+    </view>
+  </view>
+</view>

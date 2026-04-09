@@ -1,0 +1,165 @@
+.container {
+  padding: var(--padding-base);
+  min-height: 100vh;
+  background-color: var(--bg-color);
+}
+
+.header {
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  padding: 24rpx 32rpx;
+  margin-bottom: 24rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.class-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.date-picker {
+  display: flex;
+  align-items: center;
+}
+
+.date-label {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+}
+
+.date-value {
+  font-size: 26rpx;
+  color: var(--primary-color);
+}
+
+.summary-card {
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.card-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-bottom: 24rpx;
+}
+
+.summary-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 40rpx;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.attendance-rate {
+  text-align: center;
+  font-size: 28rpx;
+  color: var(--text-color);
+  padding-top: 16rpx;
+  border-top: 1rpx solid var(--border-color);
+}
+
+.unpunched-section {
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-bottom: 24rpx;
+}
+
+.student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.student-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.student-item:last-child {
+  border-bottom: none;
+}
+
+.student-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.student-name {
+  font-size: 28rpx;
+  color: var(--text-color);
+}
+
+.student-id {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.remind-btn {
+  font-size: 24rpx;
+  color: #fff;
+  background-color: var(--warning-color);
+  padding: 8rpx 24rpx;
+  border-radius: 4rpx;
+}
+
+.pending-section {
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  padding: 32rpx;
+}
+
+.pending-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.pending-item:last-child {
+  border-bottom: none;
+}
+
+.pending-text {
+  font-size: 28rpx;
+  color: var(--text-color);
+}
+
+.pending-arrow {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+}

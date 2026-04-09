@@ -1,19 +1,26 @@
-/**app.wxss**/
-@import "styles/theme.wxss";
-@import "styles/base.wxss";
-
-/* 全局基础设置 */
 page {
-  font-family: 'HarmonyOS Sans SC', 'MiSans', 'PingFang SC', -apple-system, 
-    BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'Segoe UI', Arial, 
-    Roboto, 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
-  background-color: var(--background-color);
+  --primary-color: #07c160;
+  --danger-color: #ee0a24;
+  --warning-color: #ff976a;
+  --text-color: #323233;
+  --text-secondary: #969799;
+  --bg-color: #f7f8fa;
+  --border-color: #ebedf0;
+  --border-radius: 8rpx;
+  --padding-base: 24rpx;
+
+  background-color: var(--bg-color);
   color: var(--text-color);
   font-size: 28rpx;
+}
+
+page {
+  font-family: 'HarmonyOS Sans SC', 'MiSans', 'PingFang SC', -apple-system,
+    BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'Segoe UI', Arial,
+    Roboto, 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
   line-height: 1.5;
 }
 
-/* 统一滚动条隐藏 */
 ::-webkit-scrollbar {
   display: none;
   width: 0;

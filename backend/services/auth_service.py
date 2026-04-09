@@ -54,11 +54,11 @@ class AuthService:
         token = generate_token(user_id, username, user_role, user_class)
 
         if user_role == 'student':
-            redirect_url = '/pages/student/student'
+            redirect_url = '/pages/student/index/index'
         elif user_role == 'teacher':
-            redirect_url = '/pages/teacher/teacher'
+            redirect_url = '/pages/teacher/classes/classes'
         elif user_role == 'monitor':
-            redirect_url = '/pages/student/student'
+            redirect_url = '/pages/student/index/index'
         elif user_role == 'admin':
             redirect_url = '/admin'
         else:
@@ -70,7 +70,7 @@ class AuthService:
                 'username': username,
                 'user_id': user_id,
                 'role': user_role,
-                'class': user_class,
+                'class_name': user_class,
                 'is_first_login': user.is_first_login
             },
             'redirect_url': redirect_url

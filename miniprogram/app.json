@@ -1,19 +1,23 @@
 {
   "pages": [
     "pages/login/login",
-    "pages/student/student",
-    "pages/student/student-detail",
-    "pages/student/leave-apply",
-    "pages/student/leave-records",
-    "pages/student/class-records",
-    "pages/teacher/teacher",
-    "pages/teacher/leave-approval",
-    "pages/teacher/monitor-manage"
+    "pages/student/index/index",
+    "pages/student/records/records",
+    "pages/student/leave/apply",
+    "pages/student/makeup/apply",
+    "pages/student/notifications/notifications",
+    "pages/student/profile/profile",
+    "pages/student/monitor/dashboard",
+    "pages/teacher/classes/classes",
+    "pages/teacher/class-detail/detail",
+    "pages/teacher/approvals/approvals",
+    "pages/teacher/monitor/manage",
+    "pages/teacher/profile/profile"
   ],
   "window": {
     "navigationBarBackgroundColor": "#FFFFFF",
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "校园打卡",
+    "navigationBarTitleText": "班级考勤",
     "backgroundColor": "#F7F8FA"
   },
   "networkTimeout": {
@@ -28,5 +32,7 @@
     "getLocation"
   ],
   "style": "v2",
-  "usingComponents": {}
+  "usingComponents": {
+    "custom-tabbar": "/components/custom-tabbar/custom-tabbar"
+  }
 }

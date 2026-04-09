@@ -1,0 +1,20 @@
+<view class="container">
+  <view class="header-bar" wx:if="{{notifications.length > 0}}">
+    <button class="mark-all-btn" bindtap="onMarkAllRead">全部标记已读</button>
+  </view>
+
+  <view class="notification-list">
+    <view class="notification-item {{item.is_read ? 'read' : 'unread'}}" wx:for="{{notifications}}" wx:key="id" bindtap="onNotificationTap" data-index="{{index}}">
+      <view class="notification-content">
+        <text class="notification-title">{{item.title}}</text>
+        <text class="notification-desc">{{item.content}}</text>
+        <text class="notification-time">{{item.created_at}}</text>
+      </view>
+      <view class="unread-dot" wx:if="{{!item.is_read}}"></view>
+    </view>
+
+    <view class="no-data" wx:if="{{notifications.length === 0}}">
+      <text>暂无通知</text>
+    </view>
+  </view>
+</view>

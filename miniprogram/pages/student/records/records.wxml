@@ -1,0 +1,61 @@
+<view class="container">
+  <view class="tabs">
+    <view class="tab-item {{activeTab === 0 ? 'active' : ''}}" bindtap="onTabChange" data-index="0">
+      <text>打卡记录</text>
+    </view>
+    <view class="tab-item {{activeTab === 1 ? 'active' : ''}}" bindtap="onTabChange" data-index="1">
+      <text>请假记录</text>
+    </view>
+    <view class="tab-item {{activeTab === 2 ? 'active' : ''}}" bindtap="onTabChange" data-index="2">
+      <text>补卡记录</text>
+    </view>
+  </view>
+
+  <view class="records-list">
+    <view wx:if="{{activeTab === 0}}">
+      <view class="record-card" wx:for="{{punchRecords}}" wx:key="id">
+        <view class="record-header">
+          <text class="record-date">日期：{{item.date}}</text>
+        </view>
+        <view class="record-body">
+          <text class="record-time">时间：{{item.time}}</text>
+          <text class="record-location">地点：{{item.location || '未知地点'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 1}}">
+      <view class="record-card" wx:for="{{leaveRecords}}" wx:key="id">
+        <view class="record-header">
+          <text class="record-date">{{item.start_date}} ~ {{item.end_date}}</text>
+        </view>
+        <view class="record-body">
+          <text class="record-type">类型：{{item.leave_type}}</text>
+          <text class="record-status status-{{item.status === '待审批' ? 'pending' : (item.status === '已通过' ? 'approved' : 'rejected')}}">{{item.status}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 2}}">
+      <view class="record-card" wx:for="{{makeupRecords}}" wx:key="id">
+        <view class="record-header">
+          <text class="record-date">补卡日期：{{item.target_date}}</text>
+        </view>
+        <view class="record-body">
+          <text class="record-reason">原因：{{item.reason}}</text>
+          <text class="record-status status-{{item.status === '待审批' ? 'pending' : (item.status === '已通过' ? 'approved' : 'rejected')}}">{{item.status}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="no-more" wx:if="{{!hasMore && records.length > 0}}">
+      <text>没有更多了</text>
+    </view>
+
+    <view class="no-data" wx:if="{{(activeTab === 0 && punchRecords.length === 0) || (activeTab === 1 && leaveRecords.length === 0) || (activeTab === 2 && makeupRecords.length === 0)}}">
+      <text>暂无记录</text>
+    </view>
+  </view>
+
+  <custom-tabbar current="1" />
+</view>

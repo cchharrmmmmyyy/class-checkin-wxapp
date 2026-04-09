@@ -1,0 +1,14 @@
+<view class="tabbar">
+  <view class="tabbar-item {{selected === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">
+    <text class="tabbar-icon">{{selected === 0 ? '🏠' : '🏡'}}</text>
+    <text class="tabbar-text">首页</text>
+  </view>
+  <view class="tabbar-item {{selected === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">
+    <text class="tabbar-icon">📋</text>
+    <text class="tabbar-text">记录</text>
+  </view>
+  <view class="tabbar-item {{selected === 2 ? 'active' : ''}}" bindtap="switchTab" data-index="2">
+    <text class="tabbar-icon">👤</text>
+    <text class="tabbar-text">我的</text>
+  </view>
+</view>

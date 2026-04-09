@@ -1,0 +1,22 @@
+<view class="container">
+  <view class="header">
+    <text class="header-title">我的班级</text>
+  </view>
+
+  <view class="class-list">
+    <view class="class-card" wx:for="{{classes}}" wx:key="class_name" bindtap="goToClassDetail" data-classname="{{item.class_name}}">
+      <view class="class-info">
+        <text class="class-name">{{item.class_name}}</text>
+        <text class="student-count">学生总数：{{item.student_count}}</text>
+        <text class="attendance-rate">今日出勤率：{{item.attendance_rate}}%</text>
+      </view>
+      <view class="pending-badge" wx:if="{{item.pending_count > 0}}">
+        <text class="badge-text">{{item.pending_count}}</text>
+      </view>
+    </view>
+
+    <view class="no-data" wx:if="{{classes.length === 0 && !loading}}">
+      <text>暂无班级数据</text>
+    </view>
+  </view>
+</view>

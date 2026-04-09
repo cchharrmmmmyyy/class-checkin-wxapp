@@ -1,0 +1,37 @@
+<view class="container">
+  <view class="form">
+    <view class="form-item">
+      <text class="label">开始日期</text>
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="picker-value {{startDate ? '' : 'placeholder'}}">
+          {{startDate || '请选择开始日期'}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="label">结束日期</text>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="picker-value {{endDate ? '' : 'placeholder'}}">
+          {{endDate || '请选择结束日期'}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="label">请假类型</text>
+      <picker mode="selector" range="{{leaveTypes}}" bindchange="onLeaveTypeChange">
+        <view class="picker-value">
+          {{leaveType}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="label">请假事由</text>
+      <textarea class="textarea" placeholder="请输入请假事由" bindinput="onReasonInput" value="{{reason}}" maxlength="200"></textarea>
+    </view>
+
+    <button class="submit-btn" bindtap="onSubmit">提交申请</button>
+  </view>
+</view>
