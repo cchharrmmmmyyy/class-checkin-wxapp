@@ -68,12 +68,25 @@ class PunchGeofenceDAO:
     def update(self, id: int, data: dict) -> bool:
         conn = self.get_connection()
         try:
+            # 先获取当前记录
+            current = self.get_by_id(id)
+            if not current:
+                return False
+            
+            # 使用当前值作为默认值
+            name = data.get('name', current.name)
+            fence_type = data.get('fence_type', current.fence_type)
+            latitude = data.get('latitude', current.latitude)
+            longitude = data.get('longitude', current.longitude)
+            radius = data.get('radius', current.radius)
+            polygon_coords = data.get('polygon_coords', current.polygon_coords)
+            enabled = data.get('enabled', current.enabled)
+            
             cursor = conn.cursor()
             cursor.execute(
                 """UPDATE punch_geofences SET name = ?, fence_type = ?, latitude = ?, longitude = ?,
                    radius = ?, polygon_coords = ?, enabled = ? WHERE id = ?""",
-                (data['name'], data['fence_type'], data.get('latitude'), data.get('longitude'),
-                 data.get('radius'), data.get('polygon_coords'), data.get('enabled', 1), id)
+                (name, fence_type, latitude, longitude, radius, polygon_coords, enabled, id)
             )
             conn.commit()
             return cursor.rowcount > 0
