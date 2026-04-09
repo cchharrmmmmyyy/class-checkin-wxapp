@@ -10,7 +10,7 @@ from functools import wraps
 from flask import request, jsonify
 from config import Config
 
-SECRET_KEY = Config.JWT_SECRET_KEY
+SECRET_KEY = Config.SECRET_KEY
 TOKEN_EXPIRE_HOURS = Config.TOKEN_EXPIRE_HOURS
 
 def generate_token(user_id, username, role, user_class=''):
@@ -53,34 +53,38 @@ def token_required(f):
             try:
                 token = auth_header.split(' ')[1]
             except IndexError:
-                return jsonify({'success': False, 'message': '令牌格式错误'}), 401
+                return jsonify({'code': 401, 'message': '令牌格式错误'}), 401
 
         if not token:
-            return jsonify({'success': False, 'message': '缺少令牌'}), 401
+            return jsonify({'code': 401, 'message': '缺少令牌'}), 401
 
         payload = decode_token(token)
         if not payload:
-            return jsonify({'success': False, 'message': '令牌无效或已过期'}), 401
+            return jsonify({'code': 401, 'message': '令牌无效或已过期'}), 401
 
-        request.user_info = payload
+        request.current_user = payload
         return f(*args, **kwargs)
 
     return decorated
 
-def role_required(*allowed_roles):
+def role_required(allowed_roles):
     """
     装饰器：验证用户角色权限
+    allowed_roles: 可以是单个角色字符串或角色列表
     """
+    if isinstance(allowed_roles, str):
+        allowed_roles = [allowed_roles]
+
     def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-            if not hasattr(request, 'user_info'):
-                return jsonify({'success': False, 'message': '请先登录'}), 401
+            if not hasattr(request, 'current_user'):
+                return jsonify({'code': 401, 'message': '请先登录'}), 401
 
-            user_role = request.user_info.get('role')
+            user_role = request.current_user.get('role')
             if user_role not in allowed_roles:
                 return jsonify({
-                    'success': False,
+                    'code': 403,
                     'message': f'权限不足，需要角色: {", ".join(allowed_roles)}'
                 }), 403
 
@@ -101,19 +105,19 @@ def web_token_required(f):
             try:
                 token = auth_header.split(' ')[1]
             except IndexError:
-                return jsonify({'success': False, 'message': '令牌格式错误'}), 401
+                return jsonify({'code': 401, 'message': '令牌格式错误'}), 401
 
         if not token and 'adminToken' in request.cookies:
             token = request.cookies.get('adminToken')
 
         if not token:
-            return jsonify({'success': False, 'message': '缺少令牌'}), 401
+            return jsonify({'code': 401, 'message': '缺少令牌'}), 401
 
         payload = decode_token(token)
         if not payload:
-            return jsonify({'success': False, 'message': '令牌无效或已过期'}), 401
+            return jsonify({'code': 401, 'message': '令牌无效或已过期'}), 401
 
-        request.user_info = payload
+        request.current_user = payload
         return f(*args, **kwargs)
 
     return decorated

@@ -1,6 +1,11 @@
+"""
+路由模块
+注册所有蓝图
+"""
+from .auth import auth_bp
+from .student import student_bp
+from .teacher import teacher_bp
 from .admin import admin_bp
-from .students import student_function
-from .teachers import teacher_function
-from .login import login_function
+from .common import common_bp
 
-__all__ = ['admin_bp', 'student_function', 'teacher_function', 'login_function']
+__all__ = ['auth_bp', 'student_bp', 'teacher_bp', 'admin_bp', 'common_bp']

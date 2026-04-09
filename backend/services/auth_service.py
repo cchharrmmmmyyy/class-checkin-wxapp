@@ -85,3 +85,25 @@ class AuthService:
             (hash_password(new_password), user_id)
         )
         return result > 0
+
+    @staticmethod
+    def change_password(user_id, old_password, new_password):
+        """修改密码"""
+        from db_connection import verify_password, hash_password
+
+        user = user_dao.get_by_id(user_id)
+        if not user:
+            raise ServiceException('用户不存在', code=1004, http_status=404)
+
+        if not verify_password(old_password, user.password):
+            raise ServiceException('原密码错误', code=1005, http_status=401)
+
+        if len(new_password) < 6 or len(new_password) > 20:
+            raise ServiceException('新密码长度必须在6-20个字符之间', code=1006)
+
+        execute_update(
+            "UPDATE users SET password = ?, is_first_login = 0 WHERE user_id = ?",
+            (hash_password(new_password), user_id)
+        )
+
+        return {'success': True, 'message': '密码修改成功'}
