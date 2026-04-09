@@ -385,7 +385,7 @@ gantt
     TeacherService          :done, 2024-02-10, 2024-02-15
     MonitorService         :done, 2024-02-15, 2024-02-20
     section Phase 5
-    StatisticsService      :todo, 2024-02-20, 2024-02-28
+    StatisticsService      :done, 2024-02-20, 2024-02-28
 ```
 
 ### 当前状态
@@ -404,7 +404,7 @@ gantt
 | **AdminService** | ✅ 已完成 | 组织架构和用户管理 |
 | **TeacherService** | ✅ 已完成 | 班级管理和审批 |
 | **MonitorService** | ✅ 已完成 | 班委功能 |
-| StatisticsService | ⏳ 待开发 | 考勤统计和预警 |
+| **StatisticsService** | ✅ 已完成 | 考勤统计和预警 |
 
 ### ✅ 已完成功能详情
 
@@ -552,6 +552,19 @@ graph LR
     C["get_class_leave_applications()"] --> D["班级请假申请"]
     E["get_class_punch_records()"] --> F["班级打卡记录"]
     G["get_attendance_summary()"] --> H["考勤汇总"]
+```
+
+#### StatisticsService
+
+**文件**: `services/statistics_service.py`
+
+```mermaid
+graph LR
+    A["get_class_statistics()"] --> B["班级统计数据"]
+    C["get_student_statistics()"] --> D["学生个人统计"]
+    E["get_attendance_alerts()"] --> F["考勤预警名单"]
+    G["get_attendance_trend()"] --> H["考勤趋势分析"]
+    I["get_daily_statistics()"] --> J["当日考勤统计"]
 ```
 
 ---

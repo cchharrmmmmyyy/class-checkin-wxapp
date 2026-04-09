@@ -6,3 +6,4 @@ from .admin_service import AdminService
 from .log_service import LogService
 from .notification_service import NotificationService
 from .config_service import ConfigService
+from .statistics_service import StatisticsService
