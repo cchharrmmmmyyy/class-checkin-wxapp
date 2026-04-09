@@ -92,3 +92,70 @@ class LeaveDAO:
             return cursor.rowcount > 0
         finally:
             conn.close()
+
+    def create_leave_record(self, user_id: str, leave_start_date: str, leave_end_date: str) -> int:
+        """创建请假记录"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO leaves (user_id, leave_start_date, leave_end_date, leave_type, leave_status) VALUES (?, ?, ?, 'personal', 'pending')",
+                (user_id, leave_start_date, leave_end_date)
+            )
+            conn.commit()
+            return cursor.lastrowid
+        finally:
+            conn.close()
+
+    def get_leave_records_by_user(self, user_id: str):
+        """获取用户的请假记录"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT l.*, u.username FROM leaves l JOIN users u ON l.user_id = u.user_id WHERE l.user_id = ? AND l.deleted_at IS NULL ORDER BY l.created_at DESC",
+                (user_id,)
+            )
+            return cursor.fetchall()
+        finally:
+            conn.close()
+
+    def get_pending_leave_applications_by_class(self, class_name: str):
+        """获取班级待审批的请假申请"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT l.*, u.username, u.user_id FROM leaves l JOIN users u ON l.user_id = u.user_id WHERE u.class_name = ? AND l.leave_status = 'pending' AND l.deleted_at IS NULL ORDER BY l.created_at DESC",
+                (class_name,)
+            )
+            return cursor.fetchall()
+        finally:
+            conn.close()
+
+    def get_leave_record_by_id_and_class(self, leave_id: int, class_name: str):
+        """根据ID和班级获取请假申请"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT l.* FROM leaves l JOIN users u ON l.user_id = u.user_id WHERE l.id = ? AND u.class_name = ? AND l.deleted_at IS NULL",
+                (leave_id, class_name)
+            )
+            return cursor.fetchone()
+        finally:
+            conn.close()
+
+    def update_leave_status(self, leave_id: int, status: str) -> bool:
+        """更新请假状态"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE leaves SET leave_status = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?",
+                (status, leave_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+        finally:
+            conn.close()

@@ -5,3 +5,4 @@ from .teacher_service import TeacherService
 from .admin_service import AdminService
 from .log_service import LogService
 from .notification_service import NotificationService
+from .config_service import ConfigService

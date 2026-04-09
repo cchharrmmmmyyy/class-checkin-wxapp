@@ -88,3 +88,94 @@ class MakeupRequestDAO:
             return cursor.rowcount > 0
         finally:
             conn.close()
+
+    def get_by_user_and_date(self, user_id: str, punch_date: str):
+        """根据用户ID和打卡日期获取补卡申请"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT * FROM makeup_requests WHERE user_id = ? AND target_date = ? AND deleted_at IS NULL",
+                (user_id, punch_date)
+            )
+            return cursor.fetchone()
+        finally:
+            conn.close()
+
+    def get_by_user(self, user_id: str):
+        """根据用户ID获取补卡申请"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT * FROM makeup_requests WHERE user_id = ? AND deleted_at IS NULL ORDER BY created_at DESC",
+                (user_id,)
+            )
+            return cursor.fetchall()
+        finally:
+            conn.close()
+
+    def get_pending_by_class(self, class_name: str):
+        """获取班级待审批的补卡申请"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT mr.*, u.username 
+                FROM makeup_requests mr
+                JOIN users u ON mr.user_id = u.user_id
+                WHERE u.class_name = ? AND mr.status = 'pending' AND mr.deleted_at IS NULL
+                ORDER BY mr.created_at DESC
+                """,
+                (class_name,)
+            )
+            return cursor.fetchall()
+        finally:
+            conn.close()
+
+    def get_by_id_and_class(self, request_id: int, class_name: str):
+        """根据ID和班级获取补卡申请"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT mr.*
+                FROM makeup_requests mr
+                JOIN users u ON mr.user_id = u.user_id
+                WHERE mr.id = ? AND u.class_name = ? AND mr.deleted_at IS NULL
+                """,
+                (request_id, class_name)
+            )
+            return cursor.fetchone()
+        finally:
+            conn.close()
+
+    def update_status(self, request_id: int, status: str):
+        """更新补卡申请状态"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE makeup_requests SET status = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?",
+                (status, request_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+        finally:
+            conn.close()
+
+    def create(self, user_id: str, punch_date: str, reason: str) -> int:
+        """创建补卡申请"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO makeup_requests (user_id, target_date, reason, status) VALUES (?, ?, ?, 'pending')",
+                (user_id, punch_date, reason)
+            )
+            conn.commit()
+            return cursor.lastrowid
+        finally:
+            conn.close()

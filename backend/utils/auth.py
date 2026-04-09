@@ -10,7 +10,7 @@ from functools import wraps
 from flask import request, jsonify
 from config import Config
 
-SECRET_KEY = Config.SECRET_KEY
+SECRET_KEY = Config.JWT_SECRET_KEY
 TOKEN_EXPIRE_HOURS = Config.TOKEN_EXPIRE_HOURS
 
 def generate_token(user_id, username, role, user_class=''):

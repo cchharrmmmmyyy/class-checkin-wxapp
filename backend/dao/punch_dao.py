@@ -91,3 +91,34 @@ class PunchDAO:
             return cursor.rowcount > 0
         finally:
             conn.close()
+
+    def get_punch_by_user_and_date(self, user_id: str, punch_date: str) -> Optional[Punch]:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM punches WHERE user_id = ? AND punch_date = ?", (user_id, punch_date))
+            row = cursor.fetchone()
+            return self._row_to_model(row)
+        finally:
+            conn.close()
+
+    def get_punches_by_user(self, user_id: str, limit: int = 30) -> List[Punch]:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM punches WHERE user_id = ? ORDER BY punch_date DESC LIMIT ?", (user_id, limit))
+            rows = cursor.fetchall()
+            return [self._row_to_model(row) for row in rows]
+        finally:
+            conn.close()
+
+    def create_punch(self, user_id: str, punch_date: str, punch_time: str, latitude: float, longitude: float, is_makeup: int = 0) -> int:
+        data = {
+            'user_id': user_id,
+            'punch_date': punch_date,
+            'punch_time': punch_time,
+            'latitude': latitude,
+            'longitude': longitude,
+            'is_makeup': is_makeup
+        }
+        return self.create(data)

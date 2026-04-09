@@ -1,6 +1,9 @@
 from datetime import datetime
-from dao import leave_dao
+from dao import LeaveDAO
 from utils.exceptions import ServiceException
+
+# 创建DAO实例
+leave_dao = LeaveDAO()
 
 
 class LeaveService:
@@ -15,11 +18,18 @@ class LeaveService:
 
         today = datetime.now().strftime('%Y-%m-%d')
 
+        if leave_end_date < leave_start_date:
+            raise ServiceException('请假结束日期不能早于开始日期', code=3003)
+
         if leave_start_date < today:
             raise ServiceException('请假开始日期不能是过去日期', code=3002)
 
-        if leave_end_date < leave_start_date:
-            raise ServiceException('请假结束日期不能早于开始日期', code=3003)
+        # 检查是否与现有请假记录重叠
+        existing_leaves = leave_dao.get_leave_records_by_user(user_id)
+        for leave in existing_leaves:
+            if (leave['leave_status'] in ['pending', 'approved'] and
+                not (leave['leave_end_date'] < leave_start_date or leave['leave_start_date'] > leave_end_date)):
+                raise ServiceException('该时间段内已存在请假记录', code=3004)
 
         leave_dao.create_leave_record(user_id, leave_start_date, leave_end_date)
 

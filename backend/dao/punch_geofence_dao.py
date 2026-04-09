@@ -92,3 +92,13 @@ class PunchGeofenceDAO:
             return cursor.rowcount > 0
         finally:
             conn.close()
+
+    def get_enabled_geofences(self) -> List[PunchGeofence]:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM punch_geofences WHERE enabled = 1 AND deleted_at IS NULL")
+            rows = cursor.fetchall()
+            return [self._row_to_model(row) for row in rows]
+        finally:
+            conn.close()

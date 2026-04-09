@@ -1,8 +1,13 @@
-from dao import user_dao, punch_record_dao, location_dao
+from dao import UserDAO, PunchDAO, PunchGeofenceDAO
 from utils.exceptions import ServiceException
 from config import Config
 import random
 import string
+
+# 创建DAO实例
+user_dao = UserDAO()
+punch_dao = PunchDAO()
+punch_geofence_dao = PunchGeofenceDAO()
 
 
 def _generate_random_password(length=None):

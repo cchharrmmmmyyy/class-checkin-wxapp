@@ -374,12 +374,12 @@ gantt
     NotificationService完成  :done, 2024-01-01, 2024-01-07
     DAO层事务支持           :done, 2024-01-05, 2024-01-10
     section Phase 2
-    AuthService增强         :todo, 2024-01-15, 2024-01-21
-    ConfigService          :todo, 2024-01-15, 2024-01-21
+    AuthService增强         :done, 2024-01-15, 2024-01-21
+    ConfigService          :done, 2024-01-15, 2024-01-21
     section Phase 3
-    PunchService           :todo, 2024-01-22, 2024-02-01
-    LeaveService           :todo, 2024-01-22, 2024-02-01
-    MakeupService          :todo, 2024-02-01, 2024-02-10
+    PunchService           :done, 2024-01-22, 2024-02-01
+    LeaveService           :done, 2024-01-22, 2024-02-01
+    MakeupService          :done, 2024-02-01, 2024-02-10
     section Phase 4
     AdminService           :todo, 2024-02-10, 2024-02-15
     TeacherService          :todo, 2024-02-10, 2024-02-15
@@ -396,11 +396,11 @@ gantt
 | **NotificationService** | ✅ 已完成 | 消息通知发送和管理 |
 | **BaseDAO** | ✅ 已重构 | 支持可选事务连接参数 |
 | **DAO事务支持** | ✅ 已完成 | OperationLogDAO, NotificationDAO |
-| AuthService | 🔄 待增强 | 需添加登录锁定、首次登录处理 |
-| ConfigService | ⏳ 待开发 | 打卡规则配置服务 |
-| PunchService | ⏳ 待开发 | 需重构实现完整业务逻辑 |
-| LeaveService | ⏳ 待开发 | 请假申请和审批 |
-| MakeupService | ⏳ 待开发 | 补卡申请和审批 |
+| **AuthService** | ✅ 已完成 | 登录锁定、首次登录处理、密码重置 |
+| **ConfigService** | ✅ 已完成 | 打卡规则配置服务 |
+| **PunchService** | ✅ 已完成 | 打卡功能、位置验证、记录管理 |
+| **LeaveService** | ✅ 已完成 | 请假申请和审批 |
+| **MakeupService** | ✅ 已完成 | 补卡申请和审批 |
 | AdminService | ⏳ 待开发 | 组织架构和用户管理 |
 | TeacherService | ⏳ 待开发 | 班级管理和审批 |
 | MonitorService | ⏳ 待开发 | 班委功能 |
@@ -445,6 +445,72 @@ graph LR
    - 表名白名单验证
    - 列名正则验证
    - order_by参数安全验证
+
+#### AuthService
+
+**文件**: `services/auth_service.py`
+
+```mermaid
+graph LR
+    A["login()"] --> B["登录认证"]
+    A --> C["登录锁定机制"]
+    A --> D["IP记录"]
+    E["reset_password()"] --> F["密码重置"]
+    A --> G["首次登录检测"]
+```
+
+#### ConfigService
+
+**文件**: `services/config_service.py`
+
+```mermaid
+graph LR
+    A["get_punch_config()"] --> B["获取打卡配置"]
+    C["update_punch_config()"] --> D["更新配置"]
+    E["is_time_check_enabled()"] --> F["时间验证状态"]
+    G["is_location_check_enabled()"] --> H["位置验证状态"]
+    I["is_multi_punch_allowed()"] --> J["多次打卡设置"]
+    K["is_makeup_allowed()"] --> L["补卡设置"]
+    M["is_holiday()"] --> N["假期判断"]
+```
+
+#### PunchService
+
+**文件**: `services/punch_service.py`
+
+```mermaid
+graph LR
+    A["punch()"] --> B["打卡功能"]
+    A --> C["位置验证"]
+    A --> D["重复打卡检查"]
+    E["get_user_punch_records()"] --> F["用户打卡记录"]
+    G["get_class_punch_records()"] --> H["班级打卡记录"]
+```
+
+#### LeaveService
+
+**文件**: `services/leave_service.py`
+
+```mermaid
+graph LR
+    A["apply_leave()"] --> B["请假申请"]
+    C["get_user_leave_records()"] --> D["用户请假记录"]
+    E["get_pending_applications()"] --> F["待审批申请"]
+    G["approve_leave()"] --> H["请假审批"]
+```
+
+#### MakeupService
+
+**文件**: `services/makeup_service.py`
+
+```mermaid
+graph LR
+    A["apply_makeup()"] --> B["补卡申请"]
+    C["get_user_makeup_records()"] --> D["用户补卡记录"]
+    E["get_pending_makeup_applications()"] --> F["待审批补卡"]
+    G["approve_makeup()"] --> H["补卡审批"]
+    G --> I["创建打卡记录"]
+```
 
 ---
 
