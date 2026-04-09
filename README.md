@@ -12,6 +12,7 @@
 - **JWT认证**：安全的Token认证机制，支持基于角色的权限控制
 - **位置打卡**：支持设置打卡位置范围，学生必须在范围内才能打卡成功
 - **请假审批**：完整的请假申请和审批流程
+- **补卡申请**：支持学生提交补卡申请，教师审批
 - **主题切换**：支持多主题切换，适配不同用户偏好
 - **Web管理后台**：管理员可通过浏览器管理用户和考勤记录
 - **密码安全**：密码使用bcrypt哈希存储
@@ -31,30 +32,43 @@ flowchart TB
         AdminWeb["管理员Web界面"]
     end
 
-    subgraph Backend["Flask后端"]
-        Routes["API Routes"]
-        Services["Service Layer"]
-        DAO["DAO Layer"]
-        Utils["Utils"]
+    subgraph Backend["Flask 后端 API"]
+        subgraph Routes["Routes 层"]
+            auth_bp["auth_bp<br/>/api"]
+            student_bp["student_bp<br/>/api/student"]
+            teacher_bp["teacher_bp<br/>/api/teacher"]
+            admin_bp["admin_bp<br/>/api/admin"]
+            common_bp["common_bp<br/>/api"]
+        end
+
+        subgraph Services["Service 层"]
+            Auth["AuthService"]
+            Punch["PunchService"]
+            Leave["LeaveService"]
+            Makeup["MakeupService"]
+            Teacher["TeacherService"]
+            Admin["AdminService"]
+            Log["LogService"]
+            Notification["NotificationService"]
+        end
+
+        subgraph DAO["DAO 层"]
+            UserDAO["UserDAO"]
+            PunchDAO["PunchDAO"]
+            LeaveDAO["LeaveDAO"]
+            MakeupDAO["MakeupDAO"]
+            ConfigDAO["ConfigDAO"]
+        end
     end
 
-    subgraph Database["SQLite数据库"]
-        Users["users表"]
-        Punches["punches表"]
-        Leaves["leaves表"]
-        Rules["punch_rules表"]
-        Geofences["punch_geofences表"]
-        TimeSlots["punch_time_slots表"]
-        Logs["operation_logs表"]
-        Notifications["notifications表"]
+    subgraph Database["SQLite 数据库"]
+        DB[("users<br/>punches<br/>leaves<br/>makeup_requests<br/>punch_rules<br/>...")]
     end
 
     Frontend -->|HTTP/JWT| Routes
     Routes --> Services
     Services --> DAO
     DAO --> Database
-
-    AdminWeb -->|HTTP| Routes
 ```
 
 ### 数据流处理
@@ -69,8 +83,8 @@ sequenceDiagram
     participant DB as SQLite
 
     Student->>MiniApp: 点击打卡按钮
-    MiniApp->>MiniApp: 获取GPS位置
-    MiniApp->>API: POST /api/punch<br/>{user_id, lat, lng}
+    MiniApp->>MiniApp: 获取 GPS 位置
+    MiniApp->>API: POST /api/student/punch
     API->>Service: PunchService.punch()
     Service->>Service: 验证打卡配置
     Service->>DAO: 查询打卡规则
@@ -80,10 +94,10 @@ sequenceDiagram
     Service->>Service: 验证位置/时间
     Service->>DAO: 创建打卡记录
     DAO->>DB: INSERT punches
-    DB->>DAO: 返回ID
-    DAO->>Service: 返回打卡ID
+    DB->>DAO: 返回 ID
+    DAO->>Service: 返回打卡结果
     Service->>API: 返回结果
-    API->>MiniApp: JSON响应
+    API->>MiniApp: JSON 响应
     MiniApp->>Student: 显示打卡成功
 ```
 
@@ -93,154 +107,241 @@ sequenceDiagram
 
 ```mermaid
 graph TD
-    Root["class-checkin-wxapp/"]
-    Backend["backend/"]
-    Frontend["miniprogram/"]
+    class-checkin-wxapp["class-checkin-wxapp/"]
 
-    Root --> Backend
-    Root --> Frontend
+    class-checkin-wxapp --> backend["backend/"]
+    class-checkin-wxapp --> miniprogram["miniprogram/"]
+    class-checkin-wxapp --> docs["docs/"]
 
-    Backend --> Config["config.py"]
-    Backend --> App["app.py"]
-    Backend --> DBConn["db_connection.py"]
-    Backend --> InitDB["init_db.py"]
+    backend --> app_py["app.py"]
+    backend --> config_py["config.py"]
+    backend --> db_connection_py["db_connection.py"]
 
-    Backend --> Routes["routes/"]
-    Routes --> LoginR["login.py"]
-    Routes --> StudentR["students.py"]
-    Routes --> TeacherR["teachers.py"]
-    Routes --> AdminR["admin.py"]
+    backend --> routes["routes/"]
+    routes --> routes_init["__init__.py"]
+    routes --> auth_py["auth.py"]
+    routes --> student_py["student.py"]
+    routes --> teacher_py["teacher.py"]
+    routes --> admin_py["admin.py"]
+    routes --> common_py["common.py"]
 
-    Backend --> Services["services/"]
-    Services --> AuthSvc["auth_service.py"]
-    Services --> PunchSvc["punch_service.py"]
-    Services --> LeaveSvc["leave_service.py"]
-    Services --> TeacherSvc["teacher_service.py"]
-    Services --> AdminSvc["admin_service.py"]
-    Services --> LogSvc["log_service.py"]:::completed
-    Services --> NotifSvc["notification_service.py"]:::completed
+    backend --> services["services/"]
+    services --> auth_service["auth_service.py"]
+    services --> punch_service["punch_service.py"]
+    services --> leave_service["leave_service.py"]
+    services --> makeup_service["makeup_service.py"]
+    services --> teacher_service["teacher_service.py"]
+    services --> admin_service["admin_service.py"]
+    services --> log_service["log_service.py"]
+    services --> notification_service["notification_service.py"]
+    services --> config_service["config_service.py"]
+    services --> statistics_service["statistics_service.py"]
 
-    Backend --> DAO["dao/"]
-    DAO --> BaseDAO["base_dao.py"]
-    DAO --> UserDAO["user_dao.py"]
-    DAO --> PunchDAO["punch_dao.py"]
-    DAO --> LeaveDAO["leave_dao.py"]
-    DAO --> RuleDAO["punch_rule_dao.py"]
-    DAO --> GeofenceDAO["punch_geofence_dao.py"]
-    DAO --> TimeSlotDAO["punch_time_slot_dao.py"]
-    DAO --> OpLogDAO["operation_log_dao.py"]
-    DAO --> NotifDAO["notification_dao.py"]
-    DAO --> ConfigDAO["punch_config_dao.py"]
+    backend --> dao["dao/"]
+    dao --> base_dao["base_dao.py"]
+    dao --> user_dao["user_dao.py"]
+    dao --> punch_dao["punch_dao.py"]
+    dao --> leave_dao["leave_dao.py"]
+    dao --> makeup_dao["makeup_request_dao.py"]
+    dao --> geofence_dao["punch_geofence_dao.py"]
+    dao --> config_dao["punch_config_dao.py"]
 
-    Backend --> Utils["utils/"]
-    Utils --> Auth["auth.py"]
-    Utils --> Geo["geo.py"]
-    Utils --> Exceptions["exceptions.py"]
+    backend --> models["models/"]
+    backend --> utils["utils/"]
+    utils --> auth_utils["auth.py"]
+    utils --> geo_utils["geo.py"]
+    utils --> exceptions["exceptions.py"]
 
-    Backend --> Models["models/"]
-    Models --> UserM["user.py"]
-    Models --> PunchM["punch.py"]
-    Models --> LeaveM["leave.py"]
-    Models --> RuleM["punch_rule.py"]
-    Models --> GeofenceM["punch_geofence.py"]
-    Models --> NotifM["notification.py"]
+    backend --> db["db/"]
+    db --> schema["schema/"]
 
-    Backend --> DB["db/"]
-    DB --> Schema["schema/"]
-    DB --> Init["init_db.py"]
+    miniprogram --> pages["pages/"]
+    pages --> login["login/"]
+    pages --> student["student/"]
+    pages --> teacher["teacher/"]
 
-    Frontend --> Pages["pages/"]
-    Frontend --> Components["components/"]
-    Frontend --> ConfigF["config/"]
+    docs --> api_doc["api_doc.md"]
+    docs --> routes_plan["routes_layer_plan.md"]
 
-    classDef completed fill:#90EE90
+    class routes/completed fill:#90EE90
+    class services/completed fill:#90EE90
+    class dao/completed fill:#90EE90
 ```
+
+---
+
+## 统一响应格式
+
+### 成功响应
+```json
+{
+    "code": 200,
+    "message": "success",
+    "data": { ... }
+}
+```
+
+### 错误响应
+```json
+{
+    "code": <错误码>,
+    "message": "<错误描述>"
+}
+```
+
+---
+
+## API 接口概览
+
+### 认证接口 (`/api`)
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
+| POST | /login | 用户登录 | 否 |
+| POST | /change-password | 修改密码 | 是 |
+| GET | /current-user | 获取当前用户 | 是 |
+
+### 学生接口 (`/api/student`)
+| 方法 | 路径 | 说明 | 角色 |
+|------|------|------|------|
+| POST | /punch | 打卡 | student, monitor |
+| GET | /punch-records | 打卡记录 | student, monitor |
+| POST | /leave/apply | 请假申请 | student, monitor |
+| GET | /leave/records | 请假记录 | student, monitor |
+| POST | /makeup/apply | 补卡申请 | student, monitor |
+| GET | /makeup/records | 补卡记录 | student, monitor |
+| GET | /notifications | 通知列表 | student, monitor |
+
+### 教师接口 (`/api/teacher`)
+| 方法 | 路径 | 说明 | 角色 |
+|------|------|------|------|
+| GET | /classes | 班级列表 | teacher |
+| GET | /class/students | 学生列表 | teacher |
+| GET | /class/punch-summary | 打卡汇总 | teacher |
+| GET | /leave/pending | 待审批请假 | teacher |
+| POST | /leave/approve | 审批请假 | teacher |
+| GET | /makeup/pending | 待审批补卡 | teacher |
+| POST | /makeup/approve | 审批补卡 | teacher |
+| POST | /monitor/appoint | 任命班委 | teacher |
+| DELETE | /monitor/remove | 撤销班委 | teacher |
+
+### 管理员接口 (`/api/admin`)
+| 方法 | 路径 | 说明 | 角色 |
+|------|------|------|------|
+| GET | /users | 用户列表 | admin |
+| POST | /users | 创建用户 | admin |
+| PUT | /users/<user_id> | 更新用户 | admin |
+| DELETE | /users/<user_id> | 删除用户 | admin |
+| POST | /users/reset-password | 重置密码 | admin |
+| GET | /attendance-records | 考勤记录 | admin |
+| POST | /attendance-records | 创建考勤记录 | admin |
+| GET | /punch-location | 打卡位置 | admin |
+| POST | /punch-location | 设置打卡位置 | admin |
+| GET | /config | 全局配置 | admin |
+| PUT | /config | 更新配置 | admin |
+
+### 通用接口 (`/api`)
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
+| GET | /notifications | 通知列表 | 是 |
+| POST | /notifications/mark-read | 标记已读 | 是 |
+| GET | /notifications/unread-count | 未读数量 | 是 |
+| GET | /operation-logs | 操作日志 | admin, teacher |
+
+详细 API 文档请参考 [docs/api_doc.md](docs/api_doc.md)
 
 ---
 
 ## 数据库模型
 
-### 数据表关系
+### 核心数据表
+
+| 表名 | 说明 |
+|------|------|
+| users | 用户表 |
+| punches | 打卡记录表 |
+| leaves | 请假申请表 |
+| makeup_requests | 补卡申请表 |
+| punch_geofences | 打卡围栏表 |
+| punch_time_slots | 打卡时段表 |
+| punch_rules | 打卡规则表 |
+| punch_config | 打卡配置表 |
+| operation_logs | 操作日志表 |
+| notifications | 通知表 |
+| campuses | 校区表 |
+| departments | 院系表 |
+| majors | 专业表 |
+| grades | 年级表 |
+| classes | 班级表 |
+| class_teachers | 班级教师表 |
+
+### 表关系
 
 ```mermaid
 erDiagram
+    campuses ||--o{ departments : "包含院系"
+    departments ||--o{ majors : "包含专业"
+    majors ||--o{ grades : "包含年级"
+    grades ||--o{ classes : "包含班级"
+    classes ||--o{ users : "拥有学生"
     users ||--o{ punches : "每天打卡"
     users ||--o{ leaves : "提交请假"
+    users ||--o{ makeup_requests : "申请补卡"
     users ||--o{ operation_logs : "操作记录"
     users ||--o{ notifications : "接收通知"
-    users {
-        string user_id PK
-        string username UK
-        string role
-        string class_name FK
-        string student_id UK
+    users ||--o{ class_teachers : "任课教师"
+
+    punch_time_slots ||--o{ punch_rules : "定义时段"
+    punch_geofences ||--o{ punch_rules : "定义围栏"
+    punch_rules ||--o{ punches : "匹配打卡"
+
+    campuses {
+        int id PK
+        string name
+        string address
     }
 
-    classes ||--o{ users : "拥有学生"
-    classes ||--o{ class_teachers : "分配教师"
+    departments {
+        int id PK
+        int campus_id FK
+        string name
+        string code
+    }
+
+    majors {
+        int id PK
+        int department_id FK
+        string name
+        string code
+    }
+
+    grades {
+        int id PK
+        int major_id FK
+        int year
+        string name
+    }
+
     classes {
         string class_name PK
         int grade_id FK
     }
 
-    grades ||--o{ classes : "包含班级"
-    grades {
-        int id PK
-        int major_id FK
+    users {
+        string user_id PK
+        string username UK
+        string password
+        string real_name
+        string role
+        string class_name FK
+        string student_id UK
+        string phone
+        string email
+        int is_first_login
+        timestamp last_punch_time
+        int login_fail_count
+        timestamp lock_until
     }
 
-    majors ||--o{ grades : "包含年级"
-    majors {
-        int id PK
-        int department_id FK
-    }
-
-    departments ||--o{ majors : "包含专业"
-    departments {
-        int id PK
-        int campus_id FK
-    }
-
-    campuses ||--o{ departments : "包含院系"
-    campuses {
-        int id PK
-    }
-
-    class_teachers ||--|| classes : "教授班级"
-    class_teachers ||--|| users : "任课教师"
-    class_teachers {
-        string class_name PK,FK
-        string teacher_id PK,FK
-        string semester
-    }
-
-    punch_time_slots ||--o{ punch_rules : "定义时段规则"
-    punch_time_slots {
-        int id PK
-        string name
-        time start_time
-        time end_time
-    }
-
-    punch_geofences ||--o{ punch_rules : "关联围栏规则"
-    punch_geofences {
-        int id PK
-        string name
-        string fence_type
-        float latitude
-        float longitude
-        int radius
-    }
-
-    punch_rules ||--o| punches : "匹配打卡"
-    punch_rules {
-        int id PK
-        int time_slot_id FK
-        int geofence_id FK
-        int priority
-    }
-
-    punches ||--o| operation_logs : "记录日志"
     punches {
         int id PK
         string user_id FK
@@ -248,100 +349,114 @@ erDiagram
         time punch_time
         float latitude
         float longitude
+        int matched_rule_id FK
+        int is_makeup
+        string device_id
+        timestamp created_at
     }
 
-    leaves ||--o| operation_logs : "审批日志"
     leaves {
         int id PK
         string user_id FK
         date leave_start_date
         date leave_end_date
+        string leave_type
+        string leave_reason
         string leave_status
+        timestamp created_at
+        timestamp deleted_at
     }
 
-    makeup_requests ||--|| users : "申请人"
-    makeup_requests ||--|| punches : "补录打卡"
     makeup_requests {
         int id PK
         string user_id FK
         int punch_id FK
+        date punch_date
+        string reason
         string status
+        timestamp created_at
     }
 
-    punch_config ||--o| punch_rules : "全局配置"
-    punch_config {
+    punch_time_slots {
         int id PK
-        int global_time_check
-        int global_location_check
+        string name
+        time start_time
+        time end_time
+        int enabled
     }
 
-    operation_logs ||--o{ notifications : "触发通知"
+    punch_geofences {
+        int id PK
+        string name
+        string fence_type
+        float latitude
+        float longitude
+        int radius
+        int enabled
+    }
+
+    punch_rules {
+        int id PK
+        int time_slot_id FK
+        int geofence_id FK
+        int priority
+        int time_enabled
+        int location_enabled
+        int enabled
+    }
+
     operation_logs {
         int id PK
         string operator_id FK
         string operation_type
+        string target_type
+        string target_id
+        string before_data
+        string after_data
+        string ip_address
+        timestamp created_at
     }
 
     notifications {
         int id PK
         string receiver_id FK
+        string sender_id FK
         string title
         string content
+        string type
         int is_read
+        string related_id
+        timestamp created_at
     }
-```
 
-### 核心数据表
-
-#### users - 用户表
-
-```mermaid
-erDiagram
-    users {
-        string user_id PK "学号/工号"
-        string username UK "登录账号"
-        string password "密码哈希"
-        string real_name "真实姓名"
-        string role "角色：admin/teacher/monitor/student"
-        string class_name FK "所属班级"
-        string student_id UK "学号"
-        string phone "联系电话"
-        string email "邮箱"
-        int is_first_login "首次登录标志"
-        timestamp last_punch_time "最后打卡时间"
-        int login_fail_count "登录失败次数"
-        timestamp lock_until "账户锁定截止"
+    class_teachers {
+        string class_name PK,FK
+        string teacher_id PK,FK
+        string semester
     }
-```
 
-#### punches - 打卡记录表
-
-```mermaid
-erDiagram
-    punches {
-        int id PK "自增主键"
-        string user_id FK "用户ID"
-        date punch_date "打卡日期"
-        time punch_time "打卡时间"
-        float latitude "纬度"
-        float longitude "经度"
-        int matched_rule_id FK "匹配规则"
-        int is_makeup "是否补卡"
-        string device_id "设备ID"
-        timestamp created_at "创建时间"
+    punch_config {
+        int id PK
+        int global_time_check_enabled
+        int global_location_check_enabled
+        int allow_multi_punch
+        int allow_makeup
+        string holiday_ranges
+        timestamp updated_at
     }
 ```
 
 ---
 
-## 技术架构
+## 技术栈
 
-| 模块 | 技术栈 | 说明 |
-|------|--------|------|
-| 前端 | 微信小程序原生开发 | 用户界面、打卡操作、地图展示 |
-| 后端 | Flask + Flask-CORS | RESTful API服务 |
+| 模块 | 技术 | 说明 |
+|------|------|------|
+| 前端 | 微信小程序 | 用户界面、打卡操作、地图展示 |
+| 后端 | Flask | RESTful API 服务 |
 | 数据库 | SQLite | 轻量级关系型数据库 |
-| 管理后台 | HTML + JavaScript | 管理员Web界面 |
+| 认证 | JWT | HS256 签名 |
+| 管理后台 | HTML + JavaScript | 管理员 Web 界面 |
 
 ---
 
@@ -349,223 +464,32 @@ erDiagram
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| `JWT_SECRET_KEY` | 必填 | JWT密钥，生产环境必须设置 |
-| `TOKEN_EXPIRE_HOURS` | 24 | Token过期时间（小时） |
+| `JWT_SECRET_KEY` | 必填 | JWT 密钥，生产环境必须设置 |
+| `TOKEN_EXPIRE_HOURS` | 24 | Token 过期时间（小时） |
 | `DATABASE_FILE` | user.db | 数据库文件路径 |
 | `INSERT_TEST_DATA` | True | 是否插入测试数据 |
-| `FLASK_HOST` | 0.0.0.0 | Flask服务器主机地址 |
-| `FLASK_PORT` | 5000 | Flask服务器端口 |
-| `FLASK_DEBUG` | True | Flask调试模式 |
+| `FLASK_HOST` | 0.0.0.0 | Flask 服务器主机地址 |
+| `FLASK_PORT` | 5000 | Flask 服务器端口 |
+| `FLASK_DEBUG` | True | Flask 调试模式 |
 | `RANDOM_PASSWORD_LENGTH` | 8 | 重置密码长度 |
 | `PUNCH_RECORDS_LIMIT` | 30 | 打卡记录查询限制 |
 
 ---
 
-## 重构进度
-
-### 重构概览
-
-```mermaid
-gantt
-    title 服务层重构进度
-    dateFormat YYYY-MM-DD
-    section Phase 1
-    LogService完成          :done, 2024-01-01, 2024-01-07
-    NotificationService完成  :done, 2024-01-01, 2024-01-07
-    DAO层事务支持           :done, 2024-01-05, 2024-01-10
-    section Phase 2
-    AuthService增强         :done, 2024-01-15, 2024-01-21
-    ConfigService          :done, 2024-01-15, 2024-01-21
-    section Phase 3
-    PunchService           :done, 2024-01-22, 2024-02-01
-    LeaveService           :done, 2024-01-22, 2024-02-01
-    MakeupService          :done, 2024-02-01, 2024-02-10
-    section Phase 4
-    AdminService           :done, 2024-02-10, 2024-02-15
-    TeacherService          :done, 2024-02-10, 2024-02-15
-    MonitorService         :done, 2024-02-15, 2024-02-20
-    section Phase 5
-    StatisticsService      :done, 2024-02-20, 2024-02-28
-```
-
-### 当前状态
+## Service 层完成状态
 
 | 模块 | 状态 | 说明 |
 |------|-------|------|
-| **LogService** | ✅ 已完成 | 操作日志记录和查询 |
-| **NotificationService** | ✅ 已完成 | 消息通知发送和管理 |
-| **BaseDAO** | ✅ 已重构 | 支持可选事务连接参数 |
-| **DAO事务支持** | ✅ 已完成 | OperationLogDAO, NotificationDAO |
-| **AuthService** | ✅ 已完成 | 登录锁定、首次登录处理、密码重置 |
-| **ConfigService** | ✅ 已完成 | 打卡规则配置服务 |
-| **PunchService** | ✅ 已完成 | 打卡功能、位置验证、记录管理 |
-| **LeaveService** | ✅ 已完成 | 请假申请和审批 |
-| **MakeupService** | ✅ 已完成 | 补卡申请和审批 |
-| **AdminService** | ✅ 已完成 | 组织架构和用户管理 |
-| **TeacherService** | ✅ 已完成 | 班级管理和审批 |
-| **MonitorService** | ✅ 已完成 | 班委功能 |
-| **StatisticsService** | ✅ 已完成 | 考勤统计和预警 |
-
-### ✅ 已完成功能详情
-
-#### LogService
-
-**文件**: `services/log_service.py`
-
-```mermaid
-graph LR
-    A["log_operation()"] --> B["记录操作日志"]
-    A --> C["支持事务"]
-    D["get_operation_logs()"] --> E["多条件查询"]
-    F["get_user_operation_logs()"] --> G["用户日志查询"]
-    H["get_target_logs()"] --> I["目标对象日志"]
-```
-
-#### NotificationService
-
-**文件**: `services/notification_service.py`
-
-```mermaid
-graph LR
-    A["send_notification()"] --> B["发送通知"]
-    C["send_batch_notifications()"] --> D["批量发送"]
-    E["get_user_notifications()"] --> F["获取通知列表"]
-    G["get_unread_count()"] --> H["未读数量"]
-    I["mark_as_read()"] --> J["标记已读"]
-    K["mark_all_as_read()"] --> L["全部已读"]
-    M["delete_notification()"] --> N["删除通知"]
-```
-
-#### BaseDAO 重构
-
-**改进内容**:
-
-1. **移除硬编码**: `sqlite3.connect('class_checkin.db')` → `db_connection.get_connection()`
-2. **SQL注入防护**:
-   - 表名白名单验证
-   - 列名正则验证
-   - order_by参数安全验证
-
-#### AuthService
-
-**文件**: `services/auth_service.py`
-
-```mermaid
-graph LR
-    A["login()"] --> B["登录认证"]
-    A --> C["登录锁定机制"]
-    A --> D["IP记录"]
-    E["reset_password()"] --> F["密码重置"]
-    A --> G["首次登录检测"]
-```
-
-#### ConfigService
-
-**文件**: `services/config_service.py`
-
-```mermaid
-graph LR
-    A["get_punch_config()"] --> B["获取打卡配置"]
-    C["update_punch_config()"] --> D["更新配置"]
-    E["is_time_check_enabled()"] --> F["时间验证状态"]
-    G["is_location_check_enabled()"] --> H["位置验证状态"]
-    I["is_multi_punch_allowed()"] --> J["多次打卡设置"]
-    K["is_makeup_allowed()"] --> L["补卡设置"]
-    M["is_holiday()"] --> N["假期判断"]
-```
-
-#### PunchService
-
-**文件**: `services/punch_service.py`
-
-```mermaid
-graph LR
-    A["punch()"] --> B["打卡功能"]
-    A --> C["位置验证"]
-    A --> D["重复打卡检查"]
-    E["get_user_punch_records()"] --> F["用户打卡记录"]
-    G["get_class_punch_records()"] --> H["班级打卡记录"]
-```
-
-#### LeaveService
-
-**文件**: `services/leave_service.py`
-
-```mermaid
-graph LR
-    A["apply_leave()"] --> B["请假申请"]
-    C["get_user_leave_records()"] --> D["用户请假记录"]
-    E["get_pending_applications()"] --> F["待审批申请"]
-    G["approve_leave()"] --> H["请假审批"]
-```
-
-#### MakeupService
-
-**文件**: `services/makeup_service.py`
-
-```mermaid
-graph LR
-    A["apply_makeup()"] --> B["补卡申请"]
-    C["get_user_makeup_records()"] --> D["用户补卡记录"]
-    E["get_pending_makeup_applications()"] --> F["待审批补卡"]
-    G["approve_makeup()"] --> H["补卡审批"]
-    G --> I["创建打卡记录"]
-```
-
-#### AdminService
-
-**文件**: `services/admin_service.py`
-
-```mermaid
-graph LR
-    A["list_users()"] --> B["用户列表"]
-    C["save_user()"] --> D["创建/更新用户"]
-    E["delete_user()"] --> F["删除用户"]
-    G["reset_password()"] --> H["重置密码"]
-    I["get_attendance_records()"] --> J["考勤记录查询"]
-    K["save_attendance_record()"] --> L["保存考勤记录"]
-    M["delete_attendance_record()"] --> N["删除考勤记录"]
-    O["get_punch_location()"] --> P["获取打卡位置"]
-    Q["save_punch_location()"] --> R["保存打卡位置"]
-```
-
-#### TeacherService
-
-**文件**: `services/teacher_service.py`
-
-```mermaid
-graph LR
-    A["appoint_monitor()"] --> B["任命班委"]
-    C["remove_monitor()"] --> D["移除班委"]
-    E["get_monitors()"] --> F["获取班委列表"]
-    G["get_students()"] --> H["获取班级学生"]
-    I["get_class_list()"] --> J["获取班级列表"]
-```
-
-#### MonitorService
-
-**文件**: `services/monitor_service.py`
-
-```mermaid
-graph LR
-    A["get_class_attendance()"] --> B["班级考勤情况"]
-    C["get_class_leave_applications()"] --> D["班级请假申请"]
-    E["get_class_punch_records()"] --> F["班级打卡记录"]
-    G["get_attendance_summary()"] --> H["考勤汇总"]
-```
-
-#### StatisticsService
-
-**文件**: `services/statistics_service.py`
-
-```mermaid
-graph LR
-    A["get_class_statistics()"] --> B["班级统计数据"]
-    C["get_student_statistics()"] --> D["学生个人统计"]
-    E["get_attendance_alerts()"] --> F["考勤预警名单"]
-    G["get_attendance_trend()"] --> H["考勤趋势分析"]
-    I["get_daily_statistics()"] --> J["当日考勤统计"]
-```
+| **AuthService** | ✅ 完成 | 登录认证、密码修改、账户锁定 |
+| **PunchService** | ✅ 完成 | 打卡、位置验证、记录查询（含分页） |
+| **LeaveService** | ✅ 完成 | 请假申请、审批 |
+| **MakeupService** | ✅ 完成 | 补卡申请、审批 |
+| **TeacherService** | ✅ 完成 | 班级管理、班委管理 |
+| **AdminService** | ✅ 完成 | 用户管理、考勤管理（含数据库分页） |
+| **LogService** | ✅ 完成 | 操作日志记录和查询 |
+| **NotificationService** | ✅ 完成 | 通知发送和管理 |
+| **ConfigService** | ✅ 完成 | 打卡规则配置 |
+| **StatisticsService** | ✅ 完成 | 考勤统计和预警 |
 
 ---
 
@@ -574,34 +498,39 @@ graph LR
 ### 1. 登录认证
 - 支持学生、教师、班委、管理员四种角色
 - 学号/工号 + 密码登录
-- 登录成功后自动存储用户信息和JWT令牌
-- 登录输入长度验证（账户6-12位，密码6-20位）
+- 登录成功后自动存储用户信息和 JWT 令牌
+- 登录输入长度验证（账户 6-12 位，密码 6-20 位）
 - 错误信息模糊化处理，防止信息泄露
 
 ### 2. 学生功能
 - **打卡签到**：一键打卡，自动获取当前位置
-- **地图展示**：页面显示实时位置地图
 - **位置验证**：必须在管理员设置的范围内才能打卡成功
 - **请假申请**：提交请假开始和结束日期
-- **打卡记录**：查看历史打卡记录
+- **补卡申请**：可申请近 3 天内的补卡
+- **打卡记录**：查看历史打卡记录（支持分页筛选）
 - **请假记录**：查看请假申请状态
+- **补卡记录**：查看补卡申请状态
+- **通知查看**：查看系统通知
 
 ### 3. 教师功能
-- **班级学生列表**：查看班级学生及打卡状态
+- **班级列表**：获取所教班级列表
+- **班级学生**：查看班级学生及打卡状态
+- **打卡汇总**：查看班级当日打卡汇总
 - **班委任命**：任命学生为班委
 - **班委移除**：移除学生班委职务
 - **请假审批**：查看并审批学生请假申请
-- **班级列表**：获取所有班级信息
+- **补卡审批**：查看并审批学生补卡申请
 
 ### 4. 管理员功能
-- **用户管理**：添加、修改、删除用户
+- **用户管理**：添加、修改、删除用户（支持数据库分页）
 - **考勤记录管理**：查看、添加、修改、删除考勤记录
 - **打卡位置配置**：设置打卡位置（名称、经纬度、半径）
-- **考勤筛选**：按用户名、用户ID、日期范围、请假状态筛选
+- **全局配置**：打卡开关、假期配置等
+- **考勤筛选**：按用户名、用户 ID、日期范围、请假状态筛选
 
-### 5. 主题切换
-- 支持多主题颜色切换
-- 主题状态全局保存
+### 5. 通用功能
+- **通知管理**：查看通知、标记已读、未读数量
+- **操作日志**：查看操作日志（支持多条件筛选）
 
 ---
 
@@ -611,7 +540,6 @@ graph LR
 
 - Python 3.7+
 - 微信开发者工具
-- Node.js（可选，用于代码检查）
 
 ### 2. 后端部署
 
@@ -631,30 +559,54 @@ python app.py
 ```
 
 后端服务启动后：
-- API服务：http://localhost:5000/api
+- API 服务：http://localhost:5000/api
 - 管理后台：http://localhost:5000/admin
 
 ### 3. 测试账户
 
 | 角色 | 用户ID | 用户名 | 密码 |
 |------|--------|--------|------|
-| 管理员 | admin001 | 管理员 | admin123 |
-| 学生 | 2024001 | 张三 | 123456 |
-| 学生 | 2024002 | 李四 | 123456 |
-| 班委 | 2024003 | 王五 | 123456 |
-| 教师 | t001 | 张老师 | 123456 |
+| 管理员 | admin001 | admin | admin123 |
+| 教师 | T2024001 | zhang_teacher | 123456 |
+| 教师 | T2024002 | li_teacher | 123456 |
+| 学生 | S2024001 | zhang_student | 123456 |
+| 学生 | S2024002 | li_student | 123456 |
+| 班委 | S2024003 | wang_student | 123456 |
+| 学生 | S2024004 | zhao_student | 123456 |
+| 学生 | S2024005 | qian_student | 123456 |
 
 ---
 
 ## 安全特性
 
-1. **JWT认证**：所有敏感API都需要携带有效的JWT Token
+1. **JWT 认证**：所有敏感 API 都需要携带有效的 JWT Token
 2. **角色权限控制**：使用 `@token_required` 和 `@role_required` 装饰器进行权限验证
-3. **密码安全存储**：密码使用SHA-256+盐值哈希存储
-4. **输入验证**：登录输入长度限制（账户6-12位，密码6-20位）
+3. **密码安全存储**：密码使用 bcrypt 哈希存储
+4. **输入验证**：登录输入长度限制（账户 6-12 位，密码 6-20 位）
 5. **错误信息模糊化**：防止通过错误信息推断用户存在性
 6. **管理员保护**：防止删除最后一个管理员账户
-7. **SQL注入防护**：BaseDAO层实现表名白名单和参数验证
+7. **SQL 注入防护**：BaseDAO 层实现表名白名单和参数验证
+8. **账户锁定**：连续 5 次登录失败，锁定账户 1 小时
+
+---
+
+## 项目进度
+
+### ✅ 已完成
+
+- [x] 路由层重构（Routes Layer）
+- [x] Service 层重构（Service Layer）
+- [x] DAO 层重构（DAO Layer）
+- [x] 统一响应格式
+- [x] 权限装饰器增强
+- [x] 数据库分页支持
+- [x] API 接口文档
+
+### 📋 文档
+
+- [API 接口文档](docs/api_doc.md)
+- [路由层重构计划](docs/routes_layer_plan.md)
+- [服务层重构计划](docs/service_layer_plan.md)
 
 ---
 
@@ -664,4 +616,4 @@ MIT License
 
 ---
 
-欢迎使用微信小程序班级考勤系统！🎉
+欢迎使用微信小程序班级考勤系统！
