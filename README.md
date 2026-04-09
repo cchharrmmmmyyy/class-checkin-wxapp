@@ -381,9 +381,9 @@ gantt
     LeaveService           :done, 2024-01-22, 2024-02-01
     MakeupService          :done, 2024-02-01, 2024-02-10
     section Phase 4
-    AdminService           :todo, 2024-02-10, 2024-02-15
-    TeacherService          :todo, 2024-02-10, 2024-02-15
-    MonitorService         :todo, 2024-02-15, 2024-02-20
+    AdminService           :done, 2024-02-10, 2024-02-15
+    TeacherService          :done, 2024-02-10, 2024-02-15
+    MonitorService         :done, 2024-02-15, 2024-02-20
     section Phase 5
     StatisticsService      :todo, 2024-02-20, 2024-02-28
 ```
@@ -401,9 +401,9 @@ gantt
 | **PunchService** | ✅ 已完成 | 打卡功能、位置验证、记录管理 |
 | **LeaveService** | ✅ 已完成 | 请假申请和审批 |
 | **MakeupService** | ✅ 已完成 | 补卡申请和审批 |
-| AdminService | ⏳ 待开发 | 组织架构和用户管理 |
-| TeacherService | ⏳ 待开发 | 班级管理和审批 |
-| MonitorService | ⏳ 待开发 | 班委功能 |
+| **AdminService** | ✅ 已完成 | 组织架构和用户管理 |
+| **TeacherService** | ✅ 已完成 | 班级管理和审批 |
+| **MonitorService** | ✅ 已完成 | 班委功能 |
 | StatisticsService | ⏳ 待开发 | 考勤统计和预警 |
 
 ### ✅ 已完成功能详情
@@ -510,6 +510,48 @@ graph LR
     E["get_pending_makeup_applications()"] --> F["待审批补卡"]
     G["approve_makeup()"] --> H["补卡审批"]
     G --> I["创建打卡记录"]
+```
+
+#### AdminService
+
+**文件**: `services/admin_service.py`
+
+```mermaid
+graph LR
+    A["list_users()"] --> B["用户列表"]
+    C["save_user()"] --> D["创建/更新用户"]
+    E["delete_user()"] --> F["删除用户"]
+    G["reset_password()"] --> H["重置密码"]
+    I["get_attendance_records()"] --> J["考勤记录查询"]
+    K["save_attendance_record()"] --> L["保存考勤记录"]
+    M["delete_attendance_record()"] --> N["删除考勤记录"]
+    O["get_punch_location()"] --> P["获取打卡位置"]
+    Q["save_punch_location()"] --> R["保存打卡位置"]
+```
+
+#### TeacherService
+
+**文件**: `services/teacher_service.py`
+
+```mermaid
+graph LR
+    A["appoint_monitor()"] --> B["任命班委"]
+    C["remove_monitor()"] --> D["移除班委"]
+    E["get_monitors()"] --> F["获取班委列表"]
+    G["get_students()"] --> H["获取班级学生"]
+    I["get_class_list()"] --> J["获取班级列表"]
+```
+
+#### MonitorService
+
+**文件**: `services/monitor_service.py`
+
+```mermaid
+graph LR
+    A["get_class_attendance()"] --> B["班级考勤情况"]
+    C["get_class_leave_applications()"] --> D["班级请假申请"]
+    E["get_class_punch_records()"] --> F["班级打卡记录"]
+    G["get_attendance_summary()"] --> H["考勤汇总"]
 ```
 
 ---
