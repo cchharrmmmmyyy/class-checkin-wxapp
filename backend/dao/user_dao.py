@@ -130,3 +130,15 @@ class UserDAO:
             return self._row_to_model(row)
         finally:
             conn.close()
+
+    def count(self, where: str = None, params: tuple = ()) -> int:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            sql = "SELECT COUNT(*) FROM users"
+            if where:
+                sql += f" WHERE {where}"
+            cursor.execute(sql, params)
+            return cursor.fetchone()[0]
+        finally:
+            conn.close()

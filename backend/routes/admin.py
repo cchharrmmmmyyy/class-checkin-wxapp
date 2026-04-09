@@ -17,34 +17,24 @@ def get_users():
     获取用户列表（支持分页、筛选）
     ---
     查询参数: class_name, role, page, size
-    返回: {"code": 200, "message": "success", "data": [...]}
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     class_name = request.args.get('class_name', '').strip() or None
     role = request.args.get('role', '').strip() or None
     page = request.args.get('page', 1, type=int)
     size = request.args.get('size', 50, type=int)
 
-    users = AdminService.list_users()
-
-    if class_name:
-        users = [u for u in users if u.get('class') == class_name]
-    if role:
-        users = [u for u in users if u.get('role') == role]
-
-    total = len(users)
-    start = (page - 1) * size
-    end = start + size
-    paginated_users = users[start:end]
+    result = AdminService.list_users_paginated(
+        class_name=class_name,
+        role=role,
+        page=page,
+        size=size
+    )
 
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': {
-            'users': paginated_users,
-            'total': total,
-            'page': page,
-            'size': size
-        }
+        'data': result
     }), 200
 
 

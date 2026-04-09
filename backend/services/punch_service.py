@@ -67,14 +67,31 @@ class PunchService:
         }
 
     @staticmethod
-    def get_user_punch_records(user_id):
-        records = punch_dao.get_punches_by_user(user_id, Config.PUNCH_RECORDS_LIMIT)
+    def get_user_punch_records(user_id, start_date=None, end_date=None, limit=50, offset=0):
+        conditions = ["user_id = ?"]
+        params = [user_id]
+
+        if start_date:
+            conditions.append("punch_date >= ?")
+            params.append(start_date)
+        if end_date:
+            conditions.append("punch_date <= ?")
+            params.append(end_date)
+
+        where = " AND ".join(conditions)
+        records = punch_dao.get_list(
+            where=where,
+            params=tuple(params),
+            order_by="punch_date DESC",
+            limit=limit,
+            offset=offset
+        )
         return [
             {
-                'id': r['id'],
-                'user_id': r['user_id'],
-                'punch_date': r['punch_date'],
-                'punch_time': r['punch_time']
+                'id': r.id,
+                'user_id': r.user_id,
+                'punch_date': r.punch_date,
+                'punch_time': r.punch_time
             }
             for r in records
         ]

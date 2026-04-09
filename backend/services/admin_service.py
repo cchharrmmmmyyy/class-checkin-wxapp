@@ -37,6 +37,46 @@ class AdminService:
         ]
 
     @staticmethod
+    def list_users_paginated(class_name=None, role=None, page=1, size=50):
+        conditions = ["deleted_at IS NULL"]
+        params = []
+
+        if class_name:
+            conditions.append("class_name = ?")
+            params.append(class_name)
+        if role:
+            conditions.append("role = ?")
+            params.append(role)
+
+        where = " AND ".join(conditions)
+
+        total = user_dao.count(where=where, params=tuple(params))
+
+        offset = (page - 1) * size
+        users = user_dao.get_list(
+            where=where,
+            params=tuple(params),
+            order_by="user_id ASC",
+            limit=size,
+            offset=offset
+        )
+
+        return {
+            'users': [
+                {
+                    'username': u.username,
+                    'user_id': u.user_id,
+                    'role': u.role,
+                    'class': u.class_name
+                }
+                for u in users
+            ],
+            'total': total,
+            'page': page,
+            'size': size
+        }
+
+    @staticmethod
     def save_user(username, user_id, password, role, class_name):
         valid_roles = ('admin', 'teacher', 'student', 'monitor')
         if role not in valid_roles:

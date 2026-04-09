@@ -49,7 +49,13 @@ def get_punch_records():
     limit = request.args.get('limit', 50, type=int)
     offset = request.args.get('offset', 0, type=int)
 
-    records = PunchService.get_user_punch_records(user_id)
+    records = PunchService.get_user_punch_records(
+        user_id,
+        start_date=start_date,
+        end_date=end_date,
+        limit=limit,
+        offset=offset
+    )
     return jsonify({
         'code': 200,
         'message': 'success',
