@@ -18,7 +18,7 @@ Page({
   },
 
   onTabChange(e) {
-    const index = e.detail.index;
+    const index = parseInt(e.currentTarget.dataset.index, 10);
     this.setData({ activeTab: index, page: 1, hasMore: true });
 
     if (index === 0) {

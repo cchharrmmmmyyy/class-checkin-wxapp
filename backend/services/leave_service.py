@@ -9,7 +9,7 @@ leave_dao = LeaveDAO()
 class LeaveService:
 
     @staticmethod
-    def apply_leave(user_id, leave_start_date, leave_end_date):
+    def apply_leave(user_id, leave_start_date, leave_end_date, leave_type='personal', leave_reason=None):
         if not leave_start_date or not leave_end_date:
             raise ServiceException('请假开始和结束日期不能为空', code=3001)
 
@@ -31,7 +31,7 @@ class LeaveService:
                 not (leave['leave_end_date'] < leave_start_date or leave['leave_start_date'] > leave_end_date)):
                 raise ServiceException('该时间段内已存在请假记录', code=3004)
 
-        leave_dao.create_leave_record(user_id, leave_start_date, leave_end_date)
+        leave_dao.create_leave_record(user_id, leave_start_date, leave_end_date, leave_type, leave_reason)
 
         return {
             'success': True,
@@ -52,6 +52,8 @@ class LeaveService:
                 'username': r['username'],
                 'leave_start_date': r['leave_start_date'],
                 'leave_end_date': r['leave_end_date'],
+                'leave_type': r['leave_type'],
+                'leave_reason': r['leave_reason'],
                 'leave_status': r['leave_status']
             }
             for r in records
@@ -67,6 +69,8 @@ class LeaveService:
                 'user_id': app['user_id'],
                 'leave_start_date': app['leave_start_date'],
                 'leave_end_date': app['leave_end_date'],
+                'leave_type': app['leave_type'],
+                'leave_reason': app['leave_reason'],
                 'leave_status': app['leave_status']
             }
             for app in applications

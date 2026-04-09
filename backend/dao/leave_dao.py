@@ -93,14 +93,14 @@ class LeaveDAO:
         finally:
             conn.close()
 
-    def create_leave_record(self, user_id: str, leave_start_date: str, leave_end_date: str) -> int:
+    def create_leave_record(self, user_id: str, leave_start_date: str, leave_end_date: str, leave_type: str = 'personal', leave_reason: str = None) -> int:
         """创建请假记录"""
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
             cursor.execute(
-                "INSERT INTO leaves (user_id, leave_start_date, leave_end_date, leave_type, leave_status) VALUES (?, ?, ?, 'personal', 'pending')",
-                (user_id, leave_start_date, leave_end_date)
+                "INSERT INTO leaves (user_id, leave_start_date, leave_end_date, leave_type, leave_reason, leave_status) VALUES (?, ?, ?, ?, ?, 'pending')",
+                (user_id, leave_start_date, leave_end_date, leave_type, leave_reason)
             )
             conn.commit()
             return cursor.lastrowid

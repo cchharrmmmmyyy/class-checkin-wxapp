@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, make_response
 from routes import auth_bp, student_bp, teacher_bp, admin_bp, common_bp
 from db import check_and_init_database
 from config import Config
@@ -13,6 +13,14 @@ app.register_blueprint(student_bp)
 app.register_blueprint(teacher_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(common_bp)
+
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
 
 
 @app.errorhandler(ServiceException)

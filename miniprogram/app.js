@@ -39,9 +39,9 @@ App({
 
   navigateByRole: function(role) {
     if (role === 'student' || role === 'monitor') {
-      wx.switchTab({ url: '/pages/student/index/index' });
+      wx.reLaunch({ url: '/pages/student/index/index' });
     } else if (role === 'teacher') {
-      wx.redirectTo({ url: '/pages/teacher/classes/classes' });
+      wx.reLaunch({ url: '/pages/teacher/classes/classes' });
     } else if (role === 'admin') {
       wx.showModal({ content: '请使用浏览器访问管理后台' });
     }

@@ -43,6 +43,7 @@
 
 .menu-list {
   background-color: #fff;
+  padding-bottom: 120rpx;
 }
 
 .menu-item {

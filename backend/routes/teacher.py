@@ -9,6 +9,12 @@ from utils.auth import token_required, role_required
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/api/teacher')
 
 
+def get_teacher_class(teacher):
+    """获取教师的班级，处理None情况"""
+    class_name = teacher.get('class', '') or ''
+    return class_name.strip()
+
+
 @teacher_bp.route('/classes', methods=['GET'])
 @token_required
 @role_required(['teacher'])
@@ -37,7 +43,7 @@ def get_class_students():
     返回: {"code": 200, "message": "success", "data": [...]}
     """
     teacher = request.current_user
-    class_name = request.args.get('class_name', teacher.get('class', '')).strip()
+    class_name = request.args.get('class_name', get_teacher_class(teacher))
 
     if not class_name:
         return jsonify({
@@ -67,7 +73,7 @@ def get_class_punch_summary():
     from datetime import date
 
     teacher = request.current_user
-    class_name = request.args.get('class_name', teacher.get('class', '')).strip()
+    class_name = request.args.get('class_name', get_teacher_class(teacher))
     date_str = request.args.get('date', date.today().strftime('%Y-%m-%d'))
 
     if not class_name:
@@ -95,7 +101,7 @@ def get_pending_leaves():
     返回: {"code": 200, "message": "success", "data": [...]}
     """
     teacher = request.current_user
-    class_name = request.args.get('class_name', teacher.get('class', '')).strip()
+    class_name = request.args.get('class_name', get_teacher_class(teacher))
 
     if not class_name:
         return jsonify({
@@ -138,7 +144,7 @@ def approve_leave():
             'message': '审批状态不能为空'
         }), 400
 
-    class_name = teacher.get('class', '')
+    class_name = get_teacher_class(teacher)
     result = LeaveService.approve_leave(leave_id, class_name, status)
     return jsonify({
         'code': 200,
@@ -158,7 +164,7 @@ def get_pending_makeups():
     返回: {"code": 200, "message": "success", "data": [...]}
     """
     teacher = request.current_user
-    class_name = request.args.get('class_name', teacher.get('class', '')).strip()
+    class_name = request.args.get('class_name', get_teacher_class(teacher))
 
     if not class_name:
         return jsonify({
@@ -202,7 +208,7 @@ def approve_makeup():
             'message': '审批状态不能为空'
         }), 400
 
-    class_name = teacher.get('class', '')
+    class_name = get_teacher_class(teacher)
     result = MakeupService.approve_makeup(makeup_id, class_name, status)
     return jsonify({
         'code': 200,
@@ -231,7 +237,7 @@ def appoint_monitor():
             'message': '学生学号不能为空'
         }), 400
 
-    teacher_class = teacher.get('class', '')
+    teacher_class = get_teacher_class(teacher)
     result = TeacherService.appoint_monitor(student_id, teacher_class)
     return jsonify({
         'code': 200,
@@ -259,7 +265,7 @@ def remove_monitor():
             'message': '学生学号不能为空'
         }), 400
 
-    teacher_class = teacher.get('class', '')
+    teacher_class = get_teacher_class(teacher)
     result = TeacherService.remove_monitor(student_id, teacher_class)
     return jsonify({
         'code': 200,
@@ -279,7 +285,7 @@ def get_monitors():
     返回: {"code": 200, "message": "success", "data": [...]}
     """
     teacher = request.current_user
-    class_name = request.args.get('class_name', teacher.get('class', '')).strip()
+    class_name = request.args.get('class_name', get_teacher_class(teacher))
 
     if not class_name:
         return jsonify({

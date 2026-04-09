@@ -15,10 +15,11 @@ Page({
   async loadClasses() {
     request('/teacher/classes', 'GET')
       .then(classes => {
-        this.setData({ classes });
+        const classList = classes.map(c => typeof c === 'string' ? c : c.class_name);
+        this.setData({ classes: classList });
 
-        if (classes && classes.length > 0) {
-          this.setData({ selectedClass: classes[0].class_name });
+        if (classList && classList.length > 0) {
+          this.setData({ selectedClass: classList[0] });
           this.loadStudents();
         }
       })
@@ -28,8 +29,8 @@ Page({
   },
 
   onClassChange(e) {
-    const index = e.detail.value;
-    const className = this.data.classes[index].class_name;
+    const index = parseInt(e.detail.value, 10);
+    const className = this.data.classes[index];
     this.setData({ selectedClass: className });
     this.loadStudents();
   },

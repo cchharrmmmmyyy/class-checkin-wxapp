@@ -58,7 +58,7 @@ class MakeupService:
             {
                 'id': r['id'],
                 'user_id': r['user_id'],
-                'punch_date': r['punch_date'],
+                'target_date': r['target_date'],
                 'reason': r['reason'],
                 'status': r['status'],
                 'created_at': r['created_at']
@@ -75,7 +75,7 @@ class MakeupService:
                 'id': app['id'],
                 'username': app['username'],
                 'user_id': app['user_id'],
-                'punch_date': app['punch_date'],
+                'target_date': app['target_date'],
                 'reason': app['reason'],
                 'status': app['status'],
                 'created_at': app['created_at']
@@ -110,13 +110,14 @@ class MakeupService:
         # 如果批准补卡，创建打卡记录
         if status == 'approved':
             # 使用模块级别的punch_dao实例
+            # 补卡记录使用0作为默认坐标，因为没有实际位置信息
             punch_dao.create_punch(
                 makeup_application['user_id'],
-                makeup_application['punch_date'],
-                '12:00:00',  # 默认补卡时间
-                None,  # 补卡不需要位置
-                None,
-                is_makeup=1  # 标记为补卡
+                makeup_application['target_date'],
+                '12:00:00',
+                0,  # latitude
+                0,  # longitude
+                is_makeup=1
             )
 
         return {

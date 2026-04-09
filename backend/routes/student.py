@@ -80,7 +80,7 @@ def apply_leave():
     leave_type = data.get('leave_type', 'personal')
     reason = data.get('reason', '')
 
-    result = LeaveService.apply_leave(user_id, start_date, end_date)
+    result = LeaveService.apply_leave(user_id, start_date, end_date, leave_type, reason)
     return jsonify({
         'code': 200,
         'message': 'success',
@@ -183,4 +183,85 @@ def get_notifications():
         'code': 200,
         'message': 'success',
         'data': notifications
+    }), 200
+
+
+@student_bp.route('/monitor/class-punch-status', methods=['GET'])
+@token_required
+@role_required(['monitor'])
+def get_monitor_class_punch_status():
+    """
+    班委获取班级打卡状态
+    ---
+    查询参数: date
+    返回: {"code": 200, "message": "success", "data": {...}}
+    """
+    user_id = request.current_user['user_id']
+    class_name = request.current_user.get('class', '')
+    date_str = request.args.get('date')
+
+    if not class_name:
+        return jsonify({
+            'code': 4001,
+            'message': '班级信息不存在'
+        }), 400
+
+    from services import StatisticsService
+    summary = StatisticsService.get_daily_statistics(class_name, date_str)
+    return jsonify({
+        'code': 200,
+        'message': 'success',
+        'data': summary
+    }), 200
+
+
+@student_bp.route('/monitor/class-leaves', methods=['GET'])
+@token_required
+@role_required(['monitor'])
+def get_monitor_class_leaves():
+    """
+    班委获取班级待审批请假列表
+    ---
+    返回: {"code": 200, "message": "success", "data": [...]}
+    """
+    user_id = request.current_user['user_id']
+    class_name = request.current_user.get('class', '')
+
+    if not class_name:
+        return jsonify({
+            'code': 4001,
+            'message': '班级信息不存在'
+        }), 400
+
+    applications = LeaveService.get_pending_applications(class_name)
+    return jsonify({
+        'code': 200,
+        'message': 'success',
+        'data': applications
+    }), 200
+
+
+@student_bp.route('/monitor/class-makeups', methods=['GET'])
+@token_required
+@role_required(['monitor'])
+def get_monitor_class_makeups():
+    """
+    班委获取班级待审批补卡列表
+    ---
+    返回: {"code": 200, "message": "success", "data": [...]}
+    """
+    user_id = request.current_user['user_id']
+    class_name = request.current_user.get('class', '')
+
+    if not class_name:
+        return jsonify({
+            'code': 4001,
+            'message': '班级信息不存在'
+        }), 400
+
+    applications = MakeupService.get_pending_makeup_applications(class_name)
+    return jsonify({
+        'code': 200,
+        'message': 'success',
+        'data': applications
     }), 200

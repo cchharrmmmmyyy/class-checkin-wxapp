@@ -15,11 +15,11 @@
     <view wx:if="{{activeTab === 0}}">
       <view class="record-card" wx:for="{{punchRecords}}" wx:key="id">
         <view class="record-header">
-          <text class="record-date">日期：{{item.date}}</text>
+          <text class="record-date">日期：{{item.punch_date}}</text>
         </view>
         <view class="record-body">
-          <text class="record-time">时间：{{item.time}}</text>
-          <text class="record-location">地点：{{item.location || '未知地点'}}</text>
+          <text class="record-time">时间：{{item.punch_time}}</text>
+          <text class="record-location">地点：{{item.latitude ? '已记录位置' : '未知地点'}}</text>
         </view>
       </view>
     </view>
@@ -27,11 +27,12 @@
     <view wx:if="{{activeTab === 1}}">
       <view class="record-card" wx:for="{{leaveRecords}}" wx:key="id">
         <view class="record-header">
-          <text class="record-date">{{item.start_date}} ~ {{item.end_date}}</text>
+          <text class="record-date">{{item.leave_start_date}} ~ {{item.leave_end_date}}</text>
         </view>
         <view class="record-body">
           <text class="record-type">类型：{{item.leave_type}}</text>
-          <text class="record-status status-{{item.status === '待审批' ? 'pending' : (item.status === '已通过' ? 'approved' : 'rejected')}}">{{item.status}}</text>
+          <text class="record-reason">事由：{{item.leave_reason || '无'}}</text>
+          <text class="record-status status-{{item.leave_status}}">{{item.leave_status === 'pending' ? '待审批' : (item.leave_status === 'approved' ? '已通过' : '已拒绝')}}</text>
         </view>
       </view>
     </view>
@@ -42,13 +43,13 @@
           <text class="record-date">补卡日期：{{item.target_date}}</text>
         </view>
         <view class="record-body">
-          <text class="record-reason">原因：{{item.reason}}</text>
-          <text class="record-status status-{{item.status === '待审批' ? 'pending' : (item.status === '已通过' ? 'approved' : 'rejected')}}">{{item.status}}</text>
+          <text class="record-reason">原因：{{item.reason || '无'}}</text>
+          <text class="record-status status-{{item.status}}">{{item.status === 'pending' ? '待审批' : (item.status === 'approved' ? '已通过' : '已拒绝')}}</text>
         </view>
       </view>
     </view>
 
-    <view class="no-more" wx:if="{{!hasMore && records.length > 0}}">
+    <view class="no-more" wx:if="{{!hasMore && ((activeTab === 0 && punchRecords.length > 0) || (activeTab === 1 && leaveRecords.length > 0) || (activeTab === 2 && makeupRecords.length > 0))}}">
       <text>没有更多了</text>
     </view>
 
@@ -57,5 +58,5 @@
     </view>
   </view>
 
-  <custom-tabbar current="1" />
+  <custom-tabbar current="1" role="student" />
 </view>

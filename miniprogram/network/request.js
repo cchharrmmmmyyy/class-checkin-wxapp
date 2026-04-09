@@ -27,10 +27,13 @@ const request = (url, method, data) => {
           }
         } else {
           wx.showToast({
-            title: '网络异常，请稍后重试',
-            icon: 'none'
+            title: res.data?.message || `请求失败 (${res.statusCode})`,
+            icon: 'none',
+            duration: 2000
           });
-          reject(res);
+          const error = new Error(res.data?.message || '请求失败');
+          error.code = res.data?.code || res.statusCode;
+          reject(error);
         }
       },
       fail(err) {

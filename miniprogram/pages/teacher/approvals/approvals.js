@@ -14,39 +14,30 @@ Page({
   },
 
   onPullDownRefresh() {
-    this.loadData()
-      .finally(() => {
-        wx.stopPullDownRefresh();
-      });
+    this.loadData().finally(() => {
+      wx.stopPullDownRefresh();
+    });
   },
 
   onTabChange(e) {
-    const index = e.detail.index;
+    const index = parseInt(e.currentTarget.dataset.index, 10);
     this.setData({ activeTab: index });
   },
 
   async loadData() {
     this.setData({ loading: true });
 
-    Promise.all([
-      request('/teacher/leave/pending', 'GET')
-        .then(leaveList => {
-          this.setData({ leaveList });
-        })
-        .catch(err => {
-          console.error('加载请假审批列表失败', err);
-        }),
-      request('/teacher/makeup/pending', 'GET')
-        .then(makeupList => {
-          this.setData({ makeupList });
-        })
-        .catch(err => {
-          console.error('加载补卡审批列表失败', err);
-        })
-    ])
-      .finally(() => {
-        this.setData({ loading: false });
-      });
+    try {
+      const [leaveList, makeupList] = await Promise.all([
+        request('/teacher/leave/pending', 'GET'),
+        request('/teacher/makeup/pending', 'GET')
+      ]);
+      this.setData({ leaveList: leaveList || [], makeupList: makeupList || [] });
+    } catch (err) {
+      console.error('加载审批列表失败', err);
+    } finally {
+      this.setData({ loading: false });
+    }
   },
 
   onApprove(e) {
@@ -58,7 +49,8 @@ Page({
       success: async (res) => {
         if (res.confirm) {
           const apiPath = type === 'leave' ? '/teacher/leave/approve' : '/teacher/makeup/approve';
-          request(apiPath, 'POST', { id, status: 'approved' })
+          const requestData = type === 'leave' ? { leave_id: id, status: 'approved' } : { makeup_id: id, status: 'approved' };
+          request(apiPath, 'POST', requestData)
             .then(() => {
               wx.showToast({ title: '已通过', icon: 'success' });
               this.loadData();
@@ -80,7 +72,8 @@ Page({
       success: async (res) => {
         if (res.confirm) {
           const apiPath = type === 'leave' ? '/teacher/leave/approve' : '/teacher/makeup/approve';
-          request(apiPath, 'POST', { id, status: 'rejected' })
+          const requestData = type === 'leave' ? { leave_id: id, status: 'rejected' } : { makeup_id: id, status: 'rejected' };
+          request(apiPath, 'POST', requestData)
             .then(() => {
               wx.showToast({ title: '已拒绝', icon: 'success' });
               this.loadData();

@@ -19,4 +19,6 @@
       <text>暂无班级数据</text>
     </view>
   </view>
+
+  <custom-tabbar current="0" role="teacher" />
 </view>

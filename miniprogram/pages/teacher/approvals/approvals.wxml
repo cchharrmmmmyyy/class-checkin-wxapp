@@ -16,9 +16,9 @@
           <text class="student-id">{{item.user_id}}</text>
         </view>
         <view class="card-body">
-          <text class="date-range">{{item.start_date}} ~ {{item.end_date}}</text>
+          <text class="date-range">{{item.leave_start_date}} ~ {{item.leave_end_date}}</text>
           <text class="leave-type">类型：{{item.leave_type}}</text>
-          <text class="reason">事由：{{item.reason}}</text>
+          <text class="reason">事由：{{item.leave_reason || '无'}}</text>
         </view>
         <view class="card-actions">
           <button class="action-btn reject" bindtap="onReject" data-id="{{item.id}}" data-type="leave">拒绝</button>
@@ -52,4 +52,6 @@
       </view>
     </view>
   </view>
+
+  <custom-tabbar current="1" role="teacher" />
 </view>

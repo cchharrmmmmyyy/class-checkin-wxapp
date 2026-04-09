@@ -13,24 +13,24 @@
     <view class="card-title">📊 今日打卡概览</view>
     <view class="summary-stats">
       <view class="stat-item">
-        <text class="stat-value">{{summary.total_count || 0}}</text>
+        <text class="stat-value">{{summary.total_students || 0}}</text>
         <text class="stat-label">总人数</text>
       </view>
       <view class="stat-item">
-        <text class="stat-value">{{summary.punched_count || 0}}</text>
+        <text class="stat-value">{{summary.present || 0}}</text>
         <text class="stat-label">已打卡</text>
       </view>
       <view class="stat-item">
-        <text class="stat-value">{{summary.leave_count || 0}}</text>
+        <text class="stat-value">{{summary.leave || 0}}</text>
         <text class="stat-label">请假</text>
       </view>
       <view class="stat-item">
-        <text class="stat-value">{{summary.unpunched_count || 0}}</text>
+        <text class="stat-value">{{summary.absent || 0}}</text>
         <text class="stat-label">未打卡</text>
       </view>
     </view>
     <view class="attendance-rate">
-      出勤率：{{summary.attendance_rate || 0}}%
+      出勤率：{{attendanceRate}}%
     </view>
   </view>
 

@@ -25,4 +25,6 @@
       <text>暂无学生数据</text>
     </view>
   </view>
+
+  <custom-tabbar current="2" role="teacher" />
 </view>

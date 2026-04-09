@@ -6,6 +6,7 @@ Page({
     currentDate: '',
     className: '',
     summary: null,
+    attendanceRate: '0',
     unpunchedStudents: [],
     pendingLeave: [],
     pendingMakeup: [],
@@ -28,10 +29,9 @@ Page({
   },
 
   onPullDownRefresh() {
-    this.loadData()
-      .finally(() => {
-        wx.stopPullDownRefresh();
-      });
+    this.loadData().finally(() => {
+      wx.stopPullDownRefresh();
+    });
   },
 
   onDateChange(e) {
@@ -42,38 +42,40 @@ Page({
   async loadData() {
     this.setData({ loading: true });
 
-    Promise.all([
-      request('/teacher/class/punch-summary', 'GET', {
-        class_name: this.data.className,
-        date: this.data.currentDate
-      }).catch(err => {
-        console.error('加载打卡概览失败', err);
-        return null;
-      }),
-      request('/teacher/leave/pending', 'GET', {
-        class_name: this.data.className
-      }).catch(err => {
-        console.error('加载请假待审批失败', err);
-        return [];
-      }),
-      request('/teacher/makeup/pending', 'GET', {
-        class_name: this.data.className
-      }).catch(err => {
-        console.error('加载补卡待审批失败', err);
-        return [];
-      })
-    ])
-      .then(([summary, leavePending, makeupPending]) => {
-        this.setData({
-          summary,
-          unpunchedStudents: summary ? (summary.unpunched_students || []) : [],
-          pendingLeave: leavePending || [],
-          pendingMakeup: makeupPending || []
-        });
-      })
-      .finally(() => {
-        this.setData({ loading: false });
+    try {
+      const [summary, leavePending, makeupPending] = await Promise.all([
+        request('/student/monitor/class-punch-status', 'GET', {
+          date: this.data.currentDate
+        }).catch(err => {
+          console.error('加载打卡概览失败', err);
+          return null;
+        }),
+        request('/student/monitor/class-leaves', 'GET').catch(err => {
+          console.error('加载请假待审批失败', err);
+          return [];
+        }),
+        request('/student/monitor/class-makeups', 'GET').catch(err => {
+          console.error('加载补卡待审批失败', err);
+          return [];
+        })
+      ]);
+      const summaryData = summary;
+      const attendanceRate = summaryData && summaryData.attendance_rate
+        ? (summaryData.attendance_rate * 100).toFixed(2)
+        : '0.00';
+
+      this.setData({
+        summary: summaryData,
+        attendanceRate,
+        unpunchedStudents: summaryData ? (summaryData.unpunched_students || []) : [],
+        pendingLeave: leavePending || [],
+        pendingMakeup: makeupPending || []
       });
+    } catch (err) {
+      console.error('加载数据失败', err);
+    } finally {
+      this.setData({ loading: false });
+    }
   },
 
   onRemindStudent(e) {

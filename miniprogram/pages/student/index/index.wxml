@@ -44,5 +44,5 @@
     </view>
   </view>
 
-  <custom-tabbar current="0" />
+  <custom-tabbar current="0" role="student" />
 </view>

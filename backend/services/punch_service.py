@@ -4,7 +4,6 @@ from utils.geo import calculate_distance
 from utils.exceptions import ServiceException
 from config import Config
 
-# 创建DAO实例
 user_dao = UserDAO()
 punch_dao = PunchDAO()
 punch_geofence_dao = PunchGeofenceDAO()
@@ -15,22 +14,20 @@ class PunchService:
 
     @staticmethod
     def punch(user_id, latitude, longitude):
-        # 获取启用的打卡围栏
         punch_geofences = punch_geofence_dao.get_enabled_geofences()
-        
+
         if punch_geofences and latitude is not None and longitude is not None:
-            # 检查是否在任何一个围栏范围内
             in_range = False
             for geofence in punch_geofences:
                 distance = calculate_distance(
                     latitude, longitude,
-                    geofence['latitude'],
-                    geofence['longitude']
+                    geofence.latitude,
+                    geofence.longitude
                 )
-                if distance <= geofence['radius']:
+                if distance <= geofence.radius:
                     in_range = True
                     break
-            
+
             if not in_range:
                 raise ServiceException(
                     '不在打卡范围内',
@@ -46,18 +43,15 @@ class PunchService:
         today = datetime.now().strftime('%Y-%m-%d')
         now = datetime.now().strftime('%H:%M:%S')
 
-        # 检查今日是否有已批准的请假
         leave_records = leave_dao.get_leave_records_by_user(user_id)
         for leave in leave_records:
-            if leave['leave_status'] == 'approved' and leave['leave_start_date'] <= today <= leave['leave_end_date']:
+            if leave.leave_status == 'approved' and leave.leave_start_date <= today <= leave.leave_end_date:
                 raise ServiceException('请假期间不允许打卡', code=2004)
 
-        # 检查今日是否已打卡
         existing = punch_dao.get_punch_by_user_and_date(user_id, today)
         if existing:
             raise ServiceException('今日已打卡', code=2003)
 
-        # 创建打卡记录
         punch_id = punch_dao.create_punch(user_id, today, now, latitude, longitude)
 
         return {
@@ -99,7 +93,4 @@ class PunchService:
     @staticmethod
     def get_class_punch_records(class_name):
         today = datetime.now().strftime('%Y-%m-%d')
-
-        # 这里需要实现班级打卡记录的逻辑
-        # 暂时返回空列表
         return []

@@ -1,0 +1,63 @@
+<view class="container">
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <view class="info-tip">
+    <text>以下请假/补卡申请已提交，等待教师审批</text>
+  </view>
+
+  <view class="list-section" wx:if="{{type === 'leave' && leaveList.length > 0}}">
+    <view class="list-item" wx:for="{{leaveList}}" wx:key="id">
+      <view class="item-header">
+        <text class="student-name">{{item.username}}</text>
+        <text class="student-id">{{item.user_id}}</text>
+      </view>
+      <view class="item-body">
+        <view class="info-row">
+          <text class="label">请假时间：</text>
+          <text class="value">{{item.leave_start_date}} ~ {{item.leave_end_date}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">请假类型：</text>
+          <text class="value">{{item.leave_type || '事假'}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">请假事由：</text>
+          <text class="value">{{item.leave_reason || '无'}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">状态：</text>
+          <text class="status pending">待教师审批</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="list-section" wx:if="{{type === 'makeup' && makeupList.length > 0}}">
+    <view class="list-item" wx:for="{{makeupList}}" wx:key="id">
+      <view class="item-header">
+        <text class="student-name">{{item.username}}</text>
+        <text class="student-id">{{item.user_id}}</text>
+      </view>
+      <view class="item-body">
+        <view class="info-row">
+          <text class="label">补卡日期：</text>
+          <text class="value">{{item.target_date}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">补卡原因：</text>
+          <text class="value">{{item.reason || '无'}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">状态：</text>
+          <text class="status pending">待教师审批</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:if="{{(type === 'leave' && leaveList.length === 0) || (type === 'makeup' && makeupList.length === 0)}}">
+    <text>暂无待审批申请</text>
+  </view>
+</view>

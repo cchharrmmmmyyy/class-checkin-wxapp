@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 from db_connection import verify_password, execute_update
-from dao import UserDAO
+from dao import UserDAO, ClassTeacherDAO
 from utils.auth import generate_token
 from utils.exceptions import ServiceException
 
 # 创建DAO实例
 user_dao = UserDAO()
+class_teacher_dao = ClassTeacherDAO()
 
 
 class AuthService:
@@ -28,17 +29,17 @@ class AuthService:
             # 增加登录失败次数
             fail_count = user.login_fail_count + 1
             lock_until = None
-            
+
             # 连续失败5次，锁定账户1小时
             if fail_count >= 5:
                 lock_until = datetime.now() + timedelta(hours=1)
-            
+
             # 更新登录失败信息
             execute_update(
                 "UPDATE users SET login_fail_count = ?, lock_until = ? WHERE user_id = ?",
                 (fail_count, lock_until, user_id)
             )
-            
+
             raise ServiceException('学号/工号或密码错误', code=1001, http_status=401)
 
         # 登录成功，重置登录失败信息
@@ -50,6 +51,14 @@ class AuthService:
         user_role = user.role
         user_class = user.class_name
         username = user.username
+
+        if user_role == 'teacher' and not user_class:
+            teacher_classes = class_teacher_dao.get_list(
+                where="teacher_id = ? AND deleted_at IS NULL",
+                params=(user_id,)
+            )
+            if teacher_classes:
+                user_class = teacher_classes[0].class_name
 
         token = generate_token(user_id, username, user_role, user_class)
 

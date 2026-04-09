@@ -11,15 +11,15 @@
 
   <view class="summary-strip">
     <view class="summary-item">
-      <text class="summary-value">{{summary.punched_count || 0}}</text>
+      <text class="summary-value">{{summary.present || 0}}</text>
       <text class="summary-label">已打卡</text>
     </view>
     <view class="summary-item">
-      <text class="summary-value">{{summary.unpunched_count || 0}}</text>
+      <text class="summary-value">{{summary.absent || 0}}</text>
       <text class="summary-label">未打卡</text>
     </view>
     <view class="summary-item">
-      <text class="summary-value">{{summary.leave_count || 0}}</text>
+      <text class="summary-value">{{summary.leave || 0}}</text>
       <text class="summary-label">请假</text>
     </view>
   </view>
@@ -33,21 +33,22 @@
   </view>
 
   <view class="student-list">
-    <view class="student-card" wx:for="{{students}}" wx:key="user_id">
+    <view class="student-card" wx:for="{{filteredStudents}}" wx:key="user_id">
       <view class="student-info">
         <text class="student-name">{{item.username}}</text>
         <text class="student-id">{{item.user_id}}</text>
       </view>
-      <view class="status-tag status-{{item.status === '已打卡' ? 'punched' : (item.status === '未打卡' ? 'absent' : 'leave')}}">
-        <text wx:if="{{item.status === '已打卡'}}">{{item.punch_time}}</text>
-        <text wx:elif="{{item.status === '未打卡'}}">缺勤</text>
-        <text wx:elif="{{item.status === '请假'}}">请假</text>
-        <text wx:else>{{item.status}}</text>
+      <view class="status-tag status-{{item.status}}">
+        <text wx:if="{{item.status === 'present'}}">{{item.punch_time}}</text>
+        <text wx:elif="{{item.status === 'leave'}}">请假</text>
+        <text wx:else>缺勤</text>
       </view>
     </view>
 
-    <view class="no-data" wx:if="{{students.length === 0}}">
+    <view class="no-data" wx:if="{{filteredStudents.length === 0}}">
       <text>暂无学生数据</text>
     </view>
   </view>
+
+  <custom-tabbar current="0" role="teacher" />
 </view>

@@ -1,5 +1,5 @@
 from typing import List, Optional
-from dao import notification_dao
+from dao import NotificationDAO
 from utils.exceptions import ServiceException
 
 
@@ -26,6 +26,7 @@ class NotificationService:
             'related_id': related_id
         }
 
+        notification_dao = NotificationDAO()
         return notification_dao.create(data, conn=conn)
 
     @staticmethod
@@ -50,6 +51,7 @@ class NotificationService:
     def get_user_notifications(user_id: str, notification_type: str = None,
                                is_read: bool = None, limit: int = 50,
                                offset: int = 0) -> List[dict]:
+        notification_dao = NotificationDAO()
         conditions = ['receiver_id = ?']
         params = [user_id]
 
@@ -98,6 +100,7 @@ class NotificationService:
 
     @staticmethod
     def mark_as_read(notification_id: int, user_id: str) -> bool:
+        notification_dao = NotificationDAO()
         notification = notification_dao.get_by_id(notification_id)
         if not notification:
             raise ServiceException('通知不存在', code=8002, http_status=404)
@@ -109,6 +112,7 @@ class NotificationService:
 
     @staticmethod
     def mark_all_as_read(user_id: str) -> int:
+        notification_dao = NotificationDAO()
         notifications = NotificationService.get_user_notifications(
             user_id=user_id,
             is_read=False,
@@ -123,6 +127,7 @@ class NotificationService:
 
     @staticmethod
     def delete_notification(notification_id: int, user_id: str) -> bool:
+        notification_dao = NotificationDAO()
         notification = notification_dao.get_by_id(notification_id)
         if not notification:
             raise ServiceException('通知不存在', code=8002, http_status=404)

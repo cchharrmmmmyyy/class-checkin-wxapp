@@ -29,6 +29,8 @@ Page({
     this.setData({ showPasswordModal: false });
   },
 
+  stopPropagation() {},
+
   onOldPasswordInput(e) {
     this.setData({ oldPassword: e.detail.value });
   },

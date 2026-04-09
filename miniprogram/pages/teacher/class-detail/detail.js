@@ -6,7 +6,8 @@ Page({
     currentDate: '',
     summary: null,
     students: [],
-    filterStatus: 'all',
+    filteredStudents: [],
+    filterStatus: '全部',
     statusOptions: ['全部', '已打卡', '未打卡', '请假']
   },
 
@@ -35,37 +36,49 @@ Page({
 
   onFilterChange(e) {
     const index = e.detail.value;
-    this.setData({ filterStatus: this.data.statusOptions[index] });
+    const filterStatus = this.data.statusOptions[index];
+    const { students } = this.data;
+    let filteredStudents = students;
+
+    if (filterStatus !== '全部') {
+      const statusMap = {
+        '已打卡': 'present',
+        '未打卡': 'absent',
+        '请假': 'leave'
+      };
+      filteredStudents = students.filter(s => s.status === statusMap[filterStatus]);
+    }
+
+    this.setData({ filterStatus, filteredStudents });
   },
 
   async loadData() {
     try {
-      const [students, summary] = await Promise.all([
-        request('/teacher/class/students', 'GET', {
-          class_name: this.data.className
-        }),
-        request('/teacher/class/punch-summary', 'GET', {
-          class_name: this.data.className,
-          date: this.data.currentDate
-        })
-      ]);
+      const summary = await request('/teacher/class/punch-summary', 'GET', {
+        class_name: this.data.className,
+        date: this.data.currentDate
+      });
+
+      const students = summary ? (summary.details || []) : [];
+      const filterStatus = this.data.filterStatus;
+      let filteredStudents = students;
+
+      if (filterStatus !== '全部') {
+        const statusMap = {
+          '已打卡': 'present',
+          '未打卡': 'absent',
+          '请假': 'leave'
+        };
+        filteredStudents = students.filter(s => s.status === statusMap[filterStatus]);
+      }
 
       this.setData({
-        students: students || [],
+        students,
+        filteredStudents,
         summary
       });
     } catch (err) {
       console.error('加载班级详情失败', err);
     }
-  },
-
-  getFilteredStudents() {
-    const { students, filterStatus } = this.data;
-
-    if (filterStatus === '全部' || filterStatus === 'all') {
-      return students;
-    }
-
-    return students.filter(s => s.status === filterStatus);
   }
 });

@@ -33,7 +33,7 @@ Page({
   },
 
   onNotificationTap(e) {
-    const index = e.currentTarget.dataset.index;
+    const index = parseInt(e.currentTarget.dataset.index, 10);
     const notification = this.data.notifications[index];
 
     if (notification.is_read) return;

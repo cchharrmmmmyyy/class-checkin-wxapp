@@ -33,8 +33,8 @@
     </view>
   </view>
 
-  <modal class="password-modal" hidden="{{!showPasswordModal}}" bindcancel="onCancelPassword">
-    <view class="modal-content">
+  <view class="password-modal" wx:if="{{showPasswordModal}}" catchtap="onCancelPassword">
+    <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-title">修改密码</view>
 
       <view class="input-group">
@@ -47,5 +47,7 @@
         <button class="modal-btn confirm" bindtap="onSubmitPassword">确定</button>
       </view>
     </view>
-  </modal>
+  </view>
+
+  <custom-tabbar current="2" role="teacher" />
 </view>

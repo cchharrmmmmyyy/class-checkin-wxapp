@@ -8,6 +8,7 @@
     "pages/student/notifications/notifications",
     "pages/student/profile/profile",
     "pages/student/monitor/dashboard",
+    "pages/student/monitor/pending-detail",
     "pages/teacher/classes/classes",
     "pages/teacher/class-detail/detail",
     "pages/teacher/approvals/approvals",
