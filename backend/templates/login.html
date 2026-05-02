@@ -76,21 +76,6 @@
         const globalError = ref('');
         const loading = ref(false);
 
-        try {
-          const params = new URLSearchParams(window.location.search);
-          const reason = params.get('reason');
-          if (reason) {
-            const map = {
-              missing_token: '请先登录',
-              token_invalid: '登录已过期或无效，请重新登录',
-              permission_denied: '权限不足，请使用管理员账号登录'
-            };
-            const msg = map[reason] || '请重新登录';
-            globalError.value = `${msg}（reason: ${reason}）`;
-            window.history.replaceState({}, '', window.location.pathname);
-          }
-        } catch (e) {}
-
         const handleLogin = () => {
           if (loading.value) return;
           if (!validate()) return;
@@ -135,7 +120,7 @@
             });
 
             localStorage.setItem('token', data.data.token);
-            window.location.href = data.data.redirect_url + '?token=' + encodeURIComponent(data.data.token);
+            window.location.href = data.data.redirect_url;
 
           } catch (error) {
             globalError.value = error.response?.data?.message || error.message || '登录失败';
