@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory, request, redirect
+from flask import Flask, send_from_directory
 from werkzeug.exceptions import HTTPException
 from routes import auth_bp, student_bp, teacher_bp, admin_bp, common_bp, compat_bp
 from db import check_and_init_database
@@ -15,21 +15,6 @@ app.register_blueprint(teacher_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(common_bp)
 app.register_blueprint(compat_bp)
-
-
-@app.after_request# 处理 JSON 响应，添加 data 字段
-def normalize_response(response):
-    if response.is_json:
-        body = response.get_json(silent=True)
-        if isinstance(body, dict) and 'code' in body and 'message' in body:
-            if 'data' not in body:
-                body['data'] = None
-            response.set_data(app.json.dumps(body))
-
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-    return response
 
 
 @app.errorhandler(ServiceException)
@@ -51,29 +36,7 @@ def index():
 
 @app.route('/admin')
 def admin_page():
-    token = request.args.get('token') or request.cookies.get('adminToken')
-    if not token:
-        return redirect('/login?reason=missing_token')
-
-    try:
-        from utils.auth import decode_token
-        payload = decode_token(token)
-        if not payload:
-            response = redirect('/login?reason=token_invalid')
-            response.delete_cookie('adminToken')
-            return response
-        if payload.get('role') != 'admin':
-            response = redirect('/login?reason=permission_denied')
-            response.delete_cookie('adminToken')
-            return response
-    except Exception:
-        response = redirect('/login?reason=token_invalid')
-        response.delete_cookie('adminToken')
-        return response
-
-    response = send_from_directory('templates', 'admin.html')
-    response.set_cookie('adminToken', token, httponly=True)
-    return response
+    return send_from_directory('templates', 'admin.html')
 
 
 @app.route('/login')
