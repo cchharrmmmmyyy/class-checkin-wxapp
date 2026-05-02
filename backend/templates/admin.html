@@ -923,39 +923,17 @@
     const { createApp, ref, reactive, onMounted, watch, nextTick, computed } = Vue;
     const { ElMessage, ElMessageBox } = ElementPlus;
 
-    // 尝试从 URL 获取 Token（优先）
-    const urlParams = new URLSearchParams(window.location.search);
-    let token = urlParams.get('token');
-
-    // 尝试从 sessionStorage 获取
-    let storedToken = null;
-    try {
-      storedToken = sessionStorage.getItem('admin_token');
-    } catch (e) {
-      console.warn('sessionStorage 不可用，使用 URL token');
-    }
-
-    if (!token && storedToken) {
-      token = storedToken;
-    }
+    let token = localStorage.getItem('token');
 
     if (token) {
-      // 清理 URL 中的 token
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-      // 尝试保存到 sessionStorage
-      try {
-        sessionStorage.setItem('admin_token', token);
-      } catch (e) {
-        console.warn('sessionStorage 不可用');
-      }
+      window.history.replaceState({}, '', window.location.pathname);
     } else {
       window.location.href = '/login.html';
     }
 
     const app = createApp({
       setup() {
-        const userStr = sessionStorage.getItem('admin_user');
+        const userStr = localStorage.getItem('admin_user');
         const currentUser = ref(userStr ? JSON.parse(userStr).username : '管理员');
 
         const currentTab = ref('dashboard');
@@ -986,7 +964,7 @@
           },
           error => {
             if (error.response?.status === 401) {
-              sessionStorage.clear();
+              localStorage.clear();
               ElMessage.error('登录已过期，请重新登录');
               setTimeout(() => { window.location.href = '/login.html'; }, 1000);
             } else {
@@ -999,7 +977,7 @@
         const logout = async () => {
           try {
             await ElMessageBox.confirm('确定退出吗？', '提示', { type: 'warning' });
-            sessionStorage.clear();
+            localStorage.clear();
             window.location.href = '/login.html';
           } catch (e) {}
         };

@@ -1,5 +1,4 @@
-import uuid
-from flask import Flask, jsonify, send_from_directory, request, g, redirect
+from flask import Flask, send_from_directory, request, redirect
 from werkzeug.exceptions import HTTPException
 from routes import auth_bp, student_bp, teacher_bp, admin_bp, common_bp, compat_bp
 from db import check_and_init_database
@@ -18,24 +17,15 @@ app.register_blueprint(common_bp)
 app.register_blueprint(compat_bp)
 
 
-@app.before_request
-def assign_trace_id():
-    # 优先透传上游请求的 trace_id，便于链路串联
-    g.trace_id = request.headers.get('X-Trace-Id') or str(uuid.uuid4())
-
-
-@app.after_request
+@app.after_request# 处理 JSON 响应，添加 data 字段
 def normalize_response(response):
     if response.is_json:
         body = response.get_json(silent=True)
         if isinstance(body, dict) and 'code' in body and 'message' in body:
             if 'data' not in body:
                 body['data'] = None
-            if 'trace_id' not in body and getattr(g, 'trace_id', None):
-                body['trace_id'] = g.trace_id
             response.set_data(app.json.dumps(body))
 
-    response.headers['X-Trace-Id'] = getattr(g, 'trace_id', '')
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'

@@ -13,14 +13,12 @@ def login():
     """
     用户登录接口
     ---
-    请求体: {"user_id": "xxx", "password": "xxx", "captcha": "xxx", "captcha_token": "xxx"}
+    请求体: {"user_id": "xxx", "password": "xxx"}
     返回: {"code": 200, "message": "success", "data": {"token": "...", "user": {...}, "redirect_url": "..."}}
     """
     data = request.get_json()
     user_id = data.get('user_id', '').strip()
     password = data.get('password', '').strip()
-    captcha = data.get('captcha')
-    captcha_token = data.get('captcha_token')
 
     if not user_id or not password:
         return jsonify({

@@ -1,7 +1,7 @@
 """
 旧同义接口兼容层：
 - 保留短期可用，响应头声明弃用与下线时间；
-- 返回结构统一为 {code, message, data, trace_id?}。
+- 返回结构统一为 {code, message, data}。
 """
 from flask import Blueprint, request
 from services import PunchService, LeaveService, TeacherService

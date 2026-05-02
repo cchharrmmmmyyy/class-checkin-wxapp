@@ -91,8 +91,11 @@
           }
         } catch (e) {}
 
-        // 简单的防抖 timer
-        let submitTimer = null;
+        const handleLogin = () => {
+          if (loading.value) return;
+          if (!validate()) return;
+          performLogin();
+        };
 
         const validate = () => {
           let valid = true;
@@ -122,70 +125,22 @@
           globalError.value = '';
         };
 
-        const handleLogin = () => {
-          if (loading.value) return;
-          if (!validate()) return;
-
-          // 防抖
-          if (submitTimer) clearTimeout(submitTimer);
-          submitTimer = setTimeout(() => {
-            performLogin();
-          }, 200);
-        };
-
         const performLogin = async () => {
           loading.value = true;
-          globalError.value = '';
 
           try {
-            // 严格遵循接口契约
-            const response = await axios.post('/api/admin/login', {
+            const { data } = await axios.post('/api/admin/login', {
               user_id: form.user_id.trim(),
               password: form.password
-            }, {
-              headers: { 'Content-Type': 'application/json' },
-              timeout: 10000
             });
 
-            const resData = response.data;
-            console.log('Login response:', resData);
-
-            // 兼容不同的响应包装 (直接 data 或 code:200 包裹)
-            let payload = resData;
-            if (resData.code === 200 && resData.data) {
-              payload = resData.data;
-              console.log('Payload extracted:', payload);
-            } else if (resData.code && resData.code !== 200) {
-              throw new Error(resData.message || '登录失败');
-            }
-
-            // 严格校验必须字段
-            if (!payload.token || !payload.redirect_url) {
-              throw new Error('服务器响应格式错误：缺少 token 或 redirect_url');
-            }
-
-            console.log('Redirecting to:', payload.redirect_url + '?token=' + payload.token);
-
-            // 跳转到后端指定的地址，并将 token 传递过去
-            const redirectUrl = payload.redirect_url + (payload.redirect_url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(payload.token);
-            window.location.href = redirectUrl;
+            localStorage.setItem('token', data.data.token);
+            window.location.href = data.data.redirect_url + '?token=' + encodeURIComponent(data.data.token);
 
           } catch (error) {
-            loading.value = false;
-            console.error('Login error:', error);
-
-            let message = '网络异常，请稍后重试';
-            if (error.response) {
-              const errData = error.response.data;
-              message = errData?.message || errData?.error || `请求失败 (${error.response.status})`;
-            } else if (error.request) {
-              message = '无法连接到服务器，请检查网络';
-            } else {
-              message = error.message || '未知错误';
-            }
-            globalError.value = message;
+            globalError.value = error.response?.data?.message || error.message || '登录失败';
           } finally {
-            submitTimer = null;
+            loading.value = false;
           }
         };
 
