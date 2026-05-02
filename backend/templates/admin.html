@@ -965,6 +965,7 @@
           error => {
             if (error.response?.status === 401) {
               localStorage.clear();
+              document.cookie = 'adminToken=;path=/;max-age=0';
               ElMessage.error('登录已过期，请重新登录');
               setTimeout(() => { window.location.href = '/login.html'; }, 1000);
             } else {
@@ -978,6 +979,7 @@
           try {
             await ElMessageBox.confirm('确定退出吗？', '提示', { type: 'warning' });
             localStorage.clear();
+            document.cookie = 'adminToken=;path=/;max-age=0';
             window.location.href = '/login.html';
           } catch (e) {}
         };

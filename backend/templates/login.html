@@ -120,6 +120,7 @@
             });
 
             localStorage.setItem('token', data.data.token);
+            document.cookie = 'adminToken=' + data.data.token + ';path=/;max-age=86400;SameSite=Lax';
             window.location.href = data.data.redirect_url;
 
           } catch (error) {

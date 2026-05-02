@@ -1,10 +1,11 @@
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, request
 from werkzeug.exceptions import HTTPException
 from routes import auth_bp, student_bp, teacher_bp, admin_bp, common_bp, compat_bp
 from db import check_and_init_database
 from config import Config
 from utils.exceptions import ServiceException
 from utils.api_response import error, success
+from utils.auth import decode_token
 
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -36,17 +37,20 @@ def index():
 
 @app.route('/admin')
 def admin_page():
-    return send_from_directory('templates', 'admin.html')
-
-
-@app.route('/login')
-def login_page():
+    token = request.cookies.get('adminToken')
+    if token and decode_token(token):
+        return send_from_directory('templates', 'admin.html')
     return send_from_directory('templates', 'login.html')
 
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return success({'status': 'ok'})
+
+
+@app.route('/<path:path>')
+def fallback(path):
+    return send_from_directory('templates', 'login.html')
 
 
 if __name__ == '__main__':
