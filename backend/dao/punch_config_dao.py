@@ -4,7 +4,7 @@ from models.punch_config import PunchConfig
 
 class PunchConfigDAO:
     def __init__(self):
-        from db_connection import get_connection
+        from utils.db import get_connection
         self.get_connection = get_connection
 
     def _row_to_model(self, row):

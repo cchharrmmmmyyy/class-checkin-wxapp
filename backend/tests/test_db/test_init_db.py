@@ -6,7 +6,7 @@ import tempfile
 
 class TestDbConnection:
     def test_hash_password(self):
-        from db_connection import hash_password, verify_password
+        from utils.db import hash_password, verify_password
         password = 'test_password_123'
         hashed = hash_password(password)
 
@@ -15,7 +15,7 @@ class TestDbConnection:
         assert not verify_password('wrong_password', hashed)
 
     def test_verify_password_invalid_format(self):
-        from db_connection import verify_password
+        from utils.db import verify_password
         result = verify_password('password', 'invalid_hash_format')
         assert result is False
 
@@ -24,7 +24,7 @@ class TestInitDatabase:
     def test_init_database_creates_all_tables(self, monkeypatch):
         db_file = os.path.join(tempfile.gettempdir(), f'test_init_db_{os.getpid()}.db')
 
-        import db_connection as db_conn_module
+        import utils.db as db_conn_module
         monkeypatch.setattr(db_conn_module, 'DATABASE_FILE', db_file)
 
         from db.init_db import init_database
@@ -48,10 +48,34 @@ class TestInitDatabase:
 
         conn.close()
 
+    def test_init_database_creates_read_views(self, monkeypatch):
+        db_file = os.path.join(tempfile.gettempdir(), f'test_init_view_db_{os.getpid()}.db')
+
+        import utils.db as db_conn_module
+        monkeypatch.setattr(db_conn_module, 'DATABASE_FILE', db_file)
+
+        from db.init_db import init_database
+        init_database()
+
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+
+        expected_views = [
+            'v_leave_user_read',
+            'v_makeup_user_read'
+        ]
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='view'")
+        actual_views = [row[0] for row in cursor.fetchall()]
+
+        for view_name in expected_views:
+            assert view_name in actual_views, f"View {view_name} was not created"
+
+        conn.close()
+
     def test_punch_config_initial_value(self, monkeypatch):
         db_file = os.path.join(tempfile.gettempdir(), f'test_config_db_{os.getpid()}.db')
 
-        import db_connection as db_conn_module
+        import utils.db as db_conn_module
         monkeypatch.setattr(db_conn_module, 'DATABASE_FILE', db_file)
 
         from db.init_db import init_database

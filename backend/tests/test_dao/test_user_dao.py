@@ -1,5 +1,5 @@
 import pytest
-from db_connection import hash_password, verify_password
+from utils.db import hash_password, verify_password
 
 
 class TestUserDAO:

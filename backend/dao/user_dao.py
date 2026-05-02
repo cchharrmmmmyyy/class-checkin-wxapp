@@ -4,7 +4,7 @@ from models.user import User
 
 class UserDAO:
     def __init__(self):
-        from db_connection import get_connection
+        from utils.db import get_connection
         self.get_connection = get_connection
 
     def _row_to_model(self, row):
@@ -58,7 +58,7 @@ class UserDAO:
             conn.close()
 
     def create(self, data: dict) -> str:
-        from db_connection import hash_password
+        from utils.db import hash_password
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
@@ -85,7 +85,7 @@ class UserDAO:
                     fields.append(f"{key} = ?")
                     values.append(data[key])
             if 'password' in data:
-                from db_connection import hash_password
+                from utils.db import hash_password
                 fields.append("password = ?")
                 values.append(hash_password(data['password']))
             if not fields:
@@ -139,6 +139,15 @@ class UserDAO:
             if where:
                 sql += f" WHERE {where}"
             cursor.execute(sql, params)
+            return cursor.fetchone()[0]
+        finally:
+            conn.close()
+
+    def count_by_role(self, role: str) -> int:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM users WHERE role = ? AND deleted_at IS NULL", (role,))
             return cursor.fetchone()[0]
         finally:
             conn.close()

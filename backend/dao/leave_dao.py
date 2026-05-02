@@ -4,7 +4,7 @@ from models.leave import Leave
 
 class LeaveDAO:
     def __init__(self):
-        from db_connection import get_connection
+        from utils.db import get_connection
         self.get_connection = get_connection
 
     def _row_to_model(self, row):
@@ -23,6 +23,18 @@ class LeaveDAO:
             created_at=row['created_at'],
             deleted_at=row['deleted_at']
         )
+
+    def count(self, where: str = None, params: tuple = ()) -> int:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            sql = "SELECT COUNT(*) FROM v_leave_user_read"
+            if where:
+                sql += f" WHERE {where}"
+            cursor.execute(sql, params)
+            return cursor.fetchone()[0]
+        finally:
+            conn.close()
 
     def get_by_id(self, id: int) -> Optional[Leave]:
         conn = self.get_connection()
@@ -113,7 +125,10 @@ class LeaveDAO:
         try:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT l.*, u.username FROM leaves l JOIN users u ON l.user_id = u.user_id WHERE l.user_id = ? AND l.deleted_at IS NULL ORDER BY l.created_at DESC",
+                "SELECT id, user_id, leave_start_date, leave_end_date, leave_type, leave_reason, leave_status, approved_by, approved_at, created_at, deleted_at, username "
+                "FROM v_leave_user_read "
+                "WHERE user_id = ? AND deleted_at IS NULL "
+                "ORDER BY created_at DESC",
                 (user_id,)
             )
             return cursor.fetchall()
@@ -126,7 +141,10 @@ class LeaveDAO:
         try:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT l.*, u.username, u.user_id FROM leaves l JOIN users u ON l.user_id = u.user_id WHERE u.class_name = ? AND l.leave_status = 'pending' AND l.deleted_at IS NULL ORDER BY l.created_at DESC",
+                "SELECT id, user_id, leave_start_date, leave_end_date, leave_type, leave_reason, leave_status, approved_by, approved_at, created_at, deleted_at, username "
+                "FROM v_leave_user_read "
+                "WHERE class_name = ? AND leave_status = 'pending' AND deleted_at IS NULL "
+                "ORDER BY created_at DESC",
                 (class_name,)
             )
             return cursor.fetchall()
@@ -139,7 +157,9 @@ class LeaveDAO:
         try:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT l.* FROM leaves l JOIN users u ON l.user_id = u.user_id WHERE l.id = ? AND u.class_name = ? AND l.deleted_at IS NULL",
+                "SELECT id, user_id, leave_start_date, leave_end_date, leave_type, leave_reason, leave_status, approved_by, approved_at, created_at, deleted_at "
+                "FROM v_leave_user_read "
+                "WHERE id = ? AND class_name = ? AND deleted_at IS NULL",
                 (leave_id, class_name)
             )
             return cursor.fetchone()
@@ -157,5 +177,26 @@ class LeaveDAO:
             )
             conn.commit()
             return cursor.rowcount > 0
+        finally:
+            conn.close()
+
+    def count_approved_by_date(self, date_str: str) -> int:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT COUNT(*) FROM leaves WHERE leave_status = 'approved' AND ? BETWEEN leave_start_date AND leave_end_date AND deleted_at IS NULL",
+                (date_str,)
+            )
+            return cursor.fetchone()[0]
+        finally:
+            conn.close()
+
+    def count_pending(self) -> int:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM leaves WHERE leave_status = 'pending' AND deleted_at IS NULL")
+            return cursor.fetchone()[0]
         finally:
             conn.close()

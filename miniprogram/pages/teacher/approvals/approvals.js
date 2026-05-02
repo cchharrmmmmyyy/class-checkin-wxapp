@@ -28,11 +28,14 @@ Page({
     this.setData({ loading: true });
 
     try {
-      const [leaveList, makeupList] = await Promise.all([
+      const [leaveRes, makeupRes] = await Promise.all([
         request('/teacher/leave/pending', 'GET'),
         request('/teacher/makeup/pending', 'GET')
       ]);
-      this.setData({ leaveList: leaveList || [], makeupList: makeupList || [] });
+      this.setData({ 
+        leaveList: leaveRes.items || [], 
+        makeupList: makeupRes.items || [] 
+      });
     } catch (err) {
       console.error('加载审批列表失败', err);
     } finally {

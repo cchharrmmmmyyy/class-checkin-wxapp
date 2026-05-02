@@ -282,3 +282,63 @@ class TestLeaveDAO:
         leave = leave_dao.get_by_id(new_id)
         assert leave.leave_status == 'approved'
         assert leave.approved_by == 'T2024001'
+
+    def test_get_leave_records_by_user_contains_username(self, leave_dao):
+        leave_dao.create_leave_record(
+            user_id='S2024001',
+            leave_start_date='2026-04-20',
+            leave_end_date='2026-04-21',
+            leave_type='personal',
+            leave_reason='测试请假'
+        )
+        records = leave_dao.get_leave_records_by_user('S2024001')
+        assert len(records) >= 1
+        assert 'username' in records[0].keys()
+        assert records[0]['user_id'] == 'S2024001'
+
+    def test_get_pending_leave_applications_by_class(self, leave_dao):
+        leave_dao.create_leave_record(
+            user_id='S2024002',
+            leave_start_date='2026-04-22',
+            leave_end_date='2026-04-22',
+            leave_type='personal',
+            leave_reason='测试待审批'
+        )
+        rows = leave_dao.get_pending_leave_applications_by_class('计算机2401')
+        assert len(rows) >= 1
+        assert 'username' in rows[0].keys()
+        assert rows[0]['user_id'] == 'S2024002'
+        assert rows[0]['leave_status'] == 'pending'
+
+    def test_get_leave_record_by_id_and_class_keeps_leave_columns(self, leave_dao):
+        leave_id = leave_dao.create_leave_record(
+            user_id='S2024001',
+            leave_start_date='2026-04-23',
+            leave_end_date='2026-04-23',
+            leave_type='personal',
+            leave_reason='测试按班级查'
+        )
+        row = leave_dao.get_leave_record_by_id_and_class(leave_id, '计算机2401')
+        assert row is not None
+        assert row['id'] == leave_id
+        assert 'username' not in row.keys()
+
+
+class TestMakeupRequestDAO:
+    def test_get_pending_by_class_contains_username(self, makeup_request_dao):
+        new_id = makeup_request_dao.create('S2024001', '2026-04-19', '测试补卡')
+        assert new_id is not None
+
+        rows = makeup_request_dao.get_pending_by_class('计算机2401')
+        assert len(rows) >= 1
+        assert 'username' in rows[0].keys()
+        assert rows[0]['user_id'] == 'S2024001'
+        assert rows[0]['status'] == 'pending'
+
+    def test_get_by_id_and_class_keeps_makeup_columns(self, makeup_request_dao):
+        request_id = makeup_request_dao.create('S2024002', '2026-04-18', '按班级查询')
+        row = makeup_request_dao.get_by_id_and_class(request_id, '计算机2401')
+        assert row is not None
+        assert row['id'] == request_id
+        assert row['user_id'] == 'S2024002'
+        assert 'username' not in row.keys()

@@ -167,38 +167,58 @@ class StatisticsService:
         return sorted(alerts, key=lambda x: x['attendance_rate'])
 
     @staticmethod
-    def get_attendance_trend(class_name, days=30):
-        """获取班级考勤趋势（最近N天）"""
+    def get_attendance_trend(class_name=None, days=30):
+        """获取考勤趋势（最近N天，如果 class_name 为 None 则获取全局趋势）"""
         end_date = datetime.date.today()
         start_date = end_date - datetime.timedelta(days=days - 1)
         
         trend = {
-            'class_name': class_name,
+            'class_name': class_name or '全局',
             'start_date': start_date.strftime('%Y-%m-%d'),
             'end_date': end_date.strftime('%Y-%m-%d'),
             'days': days,
             'daily_data': []
         }
         
-        students = user_dao.get_list(where="class_name = ? AND deleted_at IS NULL", params=(class_name,))
+        if class_name:
+            students = user_dao.get_list(where="class_name = ? AND role = 'student' AND deleted_at IS NULL", params=(class_name,))
+        else:
+            students = user_dao.get_list(where="role = 'student' AND deleted_at IS NULL")
+            
         student_count = len(students)
         
         if student_count == 0:
             return trend
         
+        student_ids = [s.user_id for s in students]
+        
         for i in range(days):
             current_date = start_date + datetime.timedelta(days=i)
             date_str = current_date.strftime('%Y-%m-%d')
             
-            punches = punch_dao.get_list(
-                where="punch_date = ?",
-                params=(date_str,)
-            )
-            
-            leaves = leave_dao.get_list(
-                where="leave_start_date <= ? AND leave_end_date >= ? AND leave_status = 'approved' AND deleted_at IS NULL",
-                params=(date_str, date_str)
-            )
+            # 优化：只统计目标学生的打卡
+            if class_name:
+                # 班级模式：需要过滤学生
+                punches = punch_dao.get_list(
+                    where="punch_date = ? AND user_id IN ({})".format(','.join(['?'] * len(student_ids))),
+                    params=(date_str, *student_ids)
+                )
+                
+                leaves = leave_dao.get_list(
+                    where="leave_start_date <= ? AND leave_end_date >= ? AND leave_status = 'approved' AND deleted_at IS NULL AND user_id IN ({})".format(','.join(['?'] * len(student_ids))),
+                    params=(date_str, date_str, *student_ids)
+                )
+            else:
+                # 全局模式
+                punches = punch_dao.get_list(
+                    where="punch_date = ?",
+                    params=(date_str,)
+                )
+                
+                leaves = leave_dao.get_list(
+                    where="leave_start_date <= ? AND leave_end_date >= ? AND leave_status = 'approved' AND deleted_at IS NULL",
+                    params=(date_str, date_str)
+                )
             
             daily_punch_users = set(p.user_id for p in punches)
             daily_leave_users = set(l.user_id for l in leaves)
@@ -217,7 +237,7 @@ class StatisticsService:
                 'present_count': present_count,
                 'leave_count': leave_count,
                 'absent_count': absent_count,
-                'attendance_rate': attendance_rate
+                'attendance_rate': round(attendance_rate, 4)
             })
         
         return trend

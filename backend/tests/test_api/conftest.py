@@ -26,7 +26,8 @@ def _create_test_db():
         '01_campuses.sql', '02_departments.sql', '03_majors.sql', '04_grades.sql',
         '05_classes.sql', '06_users.sql', '07_class_teachers.sql', '08_punch_geofences.sql',
         '09_punch_time_slots.sql', '10_punch_rules.sql', '11_punches.sql', '12_leaves.sql',
-        '13_makeup_requests.sql', '14_punch_config.sql', '15_operation_logs.sql', '16_notifications.sql'
+        '13_makeup_requests.sql', '14_punch_config.sql', '15_operation_logs.sql', '16_notifications.sql',
+        '17_read_views.sql'
     ]
 
     for sql_file in sql_files:
@@ -172,8 +173,8 @@ def temp_db():
 
 @pytest.fixture(scope='function')
 def app(temp_db, monkeypatch):
-    import db_connection
-    monkeypatch.setattr(db_connection, 'get_connection', _get_test_connection)
+    import utils.db
+    monkeypatch.setattr(utils.db, 'get_connection', _get_test_connection)
 
     import services.auth_service
     monkeypatch.setattr(services.auth_service.user_dao, 'get_connection', _get_test_connection)

@@ -15,9 +15,10 @@ Page({
 
   onLoad() {
     const app = getApp();
+    const userInfo = app.globalData.userInfo || {};
     this.setData({
-      userInfo: app.globalData.userInfo,
-      className: app.globalData.userInfo.class_name
+      userInfo,
+      className: userInfo.class_name || userInfo.class || ''
     });
 
     const today = new Date();

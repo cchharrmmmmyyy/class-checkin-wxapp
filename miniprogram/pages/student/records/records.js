@@ -35,12 +35,13 @@ Page({
 
     request('/student/punch-records', 'GET', {
       page: this.data.page,
-      page_size: this.data.pageSize
+      size: this.data.pageSize
     })
-      .then(records => {
+      .then(data => {
+        const items = data.items || [];
         this.setData({
-          punchRecords: records,
-          hasMore: records.length >= this.data.pageSize
+          punchRecords: this.data.page === 1 ? items : [...this.data.punchRecords, ...items],
+          hasMore: items.length >= this.data.pageSize
         });
       })
       .catch(err => {
@@ -56,12 +57,13 @@ Page({
 
     request('/student/leave/records', 'GET', {
       page: this.data.page,
-      page_size: this.data.pageSize
+      size: this.data.pageSize
     })
-      .then(records => {
+      .then(data => {
+        const items = data.items || [];
         this.setData({
-          leaveRecords: records,
-          hasMore: records.length >= this.data.pageSize
+          leaveRecords: this.data.page === 1 ? items : [...this.data.leaveRecords, ...items],
+          hasMore: items.length >= this.data.pageSize
         });
       })
       .catch(err => {
@@ -77,12 +79,13 @@ Page({
 
     request('/student/makeup/records', 'GET', {
       page: this.data.page,
-      page_size: this.data.pageSize
+      size: this.data.pageSize
     })
-      .then(records => {
+      .then(data => {
+        const items = data.items || [];
         this.setData({
-          makeupRecords: records,
-          hasMore: records.length >= this.data.pageSize
+          makeupRecords: this.data.page === 1 ? items : [...this.data.makeupRecords, ...items],
+          hasMore: items.length >= this.data.pageSize
         });
       })
       .catch(err => {

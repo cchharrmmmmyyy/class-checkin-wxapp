@@ -7,8 +7,9 @@ import jwt
 import datetime
 from datetime import timezone
 from functools import wraps
-from flask import request, jsonify
+from flask import request
 from config import Config
+from utils.api_response import error
 
 SECRET_KEY = Config.SECRET_KEY
 TOKEN_EXPIRE_HOURS = Config.TOKEN_EXPIRE_HOURS
@@ -53,14 +54,16 @@ def token_required(f):
             try:
                 token = auth_header.split(' ')[1]
             except IndexError:
-                return jsonify({'code': 401, 'message': '令牌格式错误'}), 401
+                return error('令牌格式错误', 401, 401)
+        elif 'token' in request.args:
+            token = request.args['token']
 
         if not token:
-            return jsonify({'code': 401, 'message': '缺少令牌'}), 401
+            return error('缺少令牌', 401, 401)
 
         payload = decode_token(token)
         if not payload:
-            return jsonify({'code': 401, 'message': '令牌无效或已过期'}), 401
+            return error('令牌无效或已过期', 401, 401)
 
         request.current_user = payload
         return f(*args, **kwargs)
@@ -79,14 +82,11 @@ def role_required(allowed_roles):
         @wraps(f)
         def decorated(*args, **kwargs):
             if not hasattr(request, 'current_user'):
-                return jsonify({'code': 401, 'message': '请先登录'}), 401
+                return error('请先登录', 401, 401)
 
             user_role = request.current_user.get('role')
             if user_role not in allowed_roles:
-                return jsonify({
-                    'code': 403,
-                    'message': f'权限不足，需要角色: {", ".join(allowed_roles)}'
-                }), 403
+                return error(f'权限不足，需要角色: {", ".join(allowed_roles)}', 403, 403)
 
             return f(*args, **kwargs)
         return decorated
@@ -105,17 +105,18 @@ def web_token_required(f):
             try:
                 token = auth_header.split(' ')[1]
             except IndexError:
-                return jsonify({'code': 401, 'message': '令牌格式错误'}), 401
-
-        if not token and 'adminToken' in request.cookies:
+                return error('令牌格式错误', 401, 401)
+        elif 'token' in request.args:
+            token = request.args['token']
+        elif not token and 'adminToken' in request.cookies:
             token = request.cookies.get('adminToken')
 
         if not token:
-            return jsonify({'code': 401, 'message': '缺少令牌'}), 401
+            return error('缺少令牌', 401, 401)
 
         payload = decode_token(token)
         if not payload:
-            return jsonify({'code': 401, 'message': '令牌无效或已过期'}), 401
+            return error('令牌无效或已过期', 401, 401)
 
         request.current_user = payload
         return f(*args, **kwargs)

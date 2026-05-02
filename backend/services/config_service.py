@@ -1,5 +1,6 @@
 from dao import PunchConfigDAO
 from utils.exceptions import ServiceException
+import json
 
 # 创建DAO实例
 punch_config_dao = PunchConfigDAO()
@@ -20,13 +21,27 @@ class ConfigService:
                 'allow_makeup': True,
                 'holiday_ranges': []
             }
-        
+
+        holiday_ranges = []
+        raw_holiday_ranges = getattr(config, 'holiday_ranges', None)
+        if isinstance(raw_holiday_ranges, list):
+            holiday_ranges = raw_holiday_ranges
+        elif isinstance(raw_holiday_ranges, str):
+            s = raw_holiday_ranges.strip()
+            if s:
+                try:
+                    decoded = json.loads(s)
+                    if isinstance(decoded, list):
+                        holiday_ranges = decoded
+                except Exception:
+                    holiday_ranges = []
+
         return {
-            'global_time_check_enabled': config.global_time_check_enabled,
-            'global_location_check_enabled': config.global_location_check_enabled,
-            'allow_multi_punch': config.allow_multi_punch,
-            'allow_makeup': config.allow_makeup,
-            'holiday_ranges': config.holiday_ranges or [],
+            'global_time_check_enabled': bool(config.global_time_check_enabled),
+            'global_location_check_enabled': bool(config.global_location_check_enabled),
+            'allow_multi_punch': bool(config.allow_multi_punch),
+            'allow_makeup': bool(config.allow_makeup),
+            'holiday_ranges': holiday_ranges,
             'updated_at': config.updated_at
         }
 
@@ -39,13 +54,41 @@ class ConfigService:
             if field not in config_data:
                 raise ServiceException(f'缺少必要配置项: {field}', code=2001)
         
-        # 验证数据类型
+        # 验证数据类型（兼容 0/1）
+        normalized_bools = {}
         for field in required_fields:
-            if not isinstance(config_data[field], bool):
+            val = config_data[field]
+            if isinstance(val, bool):
+                normalized_bools[field] = val
+            elif isinstance(val, int) and val in (0, 1):
+                normalized_bools[field] = bool(val)
+            else:
                 raise ServiceException(f'配置项 {field} 必须是布尔值', code=2002)
-        
+
+        payload = dict(normalized_bools)
+        if 'holiday_ranges' in config_data:
+            holiday_ranges = config_data.get('holiday_ranges')
+            if holiday_ranges is None:
+                payload['holiday_ranges'] = None
+            elif isinstance(holiday_ranges, list):
+                payload['holiday_ranges'] = json.dumps(holiday_ranges, ensure_ascii=False)
+            elif isinstance(holiday_ranges, str):
+                s = holiday_ranges.strip()
+                if not s:
+                    payload['holiday_ranges'] = '[]'
+                else:
+                    try:
+                        decoded = json.loads(s)
+                    except Exception as e:
+                        raise ServiceException('holiday_ranges 必须是数组或合法的 JSON 字符串', code=2002) from e
+                    if not isinstance(decoded, list):
+                        raise ServiceException('holiday_ranges 必须是数组或合法的 JSON 字符串', code=2002)
+                    payload['holiday_ranges'] = s
+            else:
+                raise ServiceException('holiday_ranges 必须是数组或合法的 JSON 字符串', code=2002)
+
         # 更新配置
-        result = punch_config_dao.update(config_data)
+        result = punch_config_dao.update(payload)
         if not result:
             raise ServiceException('更新配置失败', code=2003)
         

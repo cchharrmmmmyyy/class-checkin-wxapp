@@ -4,7 +4,7 @@ from models.punch import Punch
 
 class PunchDAO:
     def __init__(self):
-        from db_connection import get_connection
+        from utils.db import get_connection
         self.get_connection = get_connection
 
     def _row_to_model(self, row):
@@ -22,6 +22,18 @@ class PunchDAO:
             device_id=row['device_id'],
             created_at=row['created_at']
         )
+
+    def count(self, where: str = None, params: tuple = ()) -> int:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            sql = "SELECT COUNT(*) FROM punches"
+            if where:
+                sql += f" WHERE {where}"
+            cursor.execute(sql, params)
+            return cursor.fetchone()[0]
+        finally:
+            conn.close()
 
     def get_by_id(self, id: int) -> Optional[Punch]:
         conn = self.get_connection()
@@ -122,3 +134,15 @@ class PunchDAO:
             'is_makeup': is_makeup
         }
         return self.create(data)
+
+    def count_by_date(self, date_str: str) -> int:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT COUNT(DISTINCT user_id) FROM punches WHERE punch_date = ?",
+                (date_str,)
+            )
+            return cursor.fetchone()[0]
+        finally:
+            conn.close()

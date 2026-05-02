@@ -4,7 +4,7 @@ from models.makeup_request import MakeupRequest
 
 class MakeupRequestDAO:
     def __init__(self):
-        from db_connection import get_connection
+        from utils.db import get_connection
         self.get_connection = get_connection
 
     def _row_to_model(self, row):
@@ -21,6 +21,18 @@ class MakeupRequestDAO:
             created_at=row['created_at'],
             deleted_at=row['deleted_at']
         )
+
+    def count(self, where: str = None, params: tuple = ()) -> int:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            sql = "SELECT COUNT(*) FROM v_makeup_user_read"
+            if where:
+                sql += f" WHERE {where}"
+            cursor.execute(sql, params)
+            return cursor.fetchone()[0]
+        finally:
+            conn.close()
 
     def get_by_id(self, id: int) -> Optional[MakeupRequest]:
         conn = self.get_connection()
@@ -122,11 +134,10 @@ class MakeupRequestDAO:
             cursor = conn.cursor()
             cursor.execute(
                 """
-                SELECT mr.*, u.username 
-                FROM makeup_requests mr
-                JOIN users u ON mr.user_id = u.user_id
-                WHERE u.class_name = ? AND mr.status = 'pending' AND mr.deleted_at IS NULL
-                ORDER BY mr.created_at DESC
+                SELECT id, user_id, target_date, reason, status, approved_by, approved_at, created_at, deleted_at, username
+                FROM v_makeup_user_read
+                WHERE class_name = ? AND status = 'pending' AND deleted_at IS NULL
+                ORDER BY created_at DESC
                 """,
                 (class_name,)
             )
@@ -141,10 +152,9 @@ class MakeupRequestDAO:
             cursor = conn.cursor()
             cursor.execute(
                 """
-                SELECT mr.*
-                FROM makeup_requests mr
-                JOIN users u ON mr.user_id = u.user_id
-                WHERE mr.id = ? AND u.class_name = ? AND mr.deleted_at IS NULL
+                SELECT id, user_id, target_date, reason, status, approved_by, approved_at, created_at, deleted_at
+                FROM v_makeup_user_read
+                WHERE id = ? AND class_name = ? AND deleted_at IS NULL
                 """,
                 (request_id, class_name)
             )

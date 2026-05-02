@@ -23,7 +23,7 @@ import sys
 # 将 backend 目录添加到 Python 路径，以便导入同目录下的模块
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from db_connection import get_connection, hash_password
+from utils.db import get_connection, hash_password
 from config import Config
 
 # 是否插入测试数据，由 config.py 中的 INSERT_TEST_DATA 配置决定
@@ -36,7 +36,7 @@ SCHEMA_DIR = os.path.join(os.path.dirname(__file__), 'schema')
 # 注意：必须严格按照此顺序执行，以确保外键约束正确
 # 依赖关系：campuses -> departments -> majors -> grades -> classes -> users -> class_teachers
 #           punch_geofences -> punch_time_slots -> punch_rules -> punches
-#           leaves -> makeup_requests -> punch_config -> operation_logs -> notifications
+#           leaves -> makeup_requests -> punch_config -> operation_logs -> notifications -> read_views
 SQL_FILES = [
     '01_campuses.sql',           # 校区表（顶层，无依赖）
     '02_departments.sql',        # 学院表（依赖 campuses）
@@ -54,6 +54,7 @@ SQL_FILES = [
     '14_punch_config.sql',       # 全局配置表（独立，只有一行）
     '15_operation_logs.sql',     # 操作日志表（依赖 users）
     '16_notifications.sql',     # 通知表（依赖 users）
+    '17_read_views.sql',         # 只读视图（依赖 leaves, makeup_requests, users）
 ]
 
 

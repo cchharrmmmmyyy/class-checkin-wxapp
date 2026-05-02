@@ -49,8 +49,8 @@ class NotificationService:
 
     @staticmethod
     def get_user_notifications(user_id: str, notification_type: str = None,
-                               is_read: bool = None, limit: int = 50,
-                               offset: int = 0) -> List[dict]:
+                               is_read: bool = None, page: int = 1,
+                               size: int = 50) -> dict:
         notification_dao = NotificationDAO()
         conditions = ['receiver_id = ?']
         params = [user_id]
@@ -65,15 +65,17 @@ class NotificationService:
         where = ' AND '.join(conditions)
         order_by = 'created_at DESC'
 
+        total = notification_dao.count(where=where, params=tuple(params))
+        offset = (page - 1) * size
         notifications = notification_dao.get_list(
             where=where,
             params=tuple(params),
             order_by=order_by,
-            limit=limit,
+            limit=size,
             offset=offset
         )
 
-        return [
+        items = [
             {
                 'id': n.id,
                 'receiver_id': n.receiver_id,
@@ -87,6 +89,16 @@ class NotificationService:
             }
             for n in notifications
         ]
+        
+        total_pages = (total + size - 1) // size if total else 0
+        return {
+            'items': items,
+            'total': total,
+            'page': page,
+            'size': size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages
+        }
 
     @staticmethod
     def get_unread_count(user_id: str, notification_type: str = None) -> int:

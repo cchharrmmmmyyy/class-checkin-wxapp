@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from db_connection import verify_password, execute_update
+from utils.db import verify_password, execute_update
 from dao import UserDAO, ClassTeacherDAO
 from utils.auth import generate_token
 from utils.exceptions import ServiceException
@@ -88,7 +88,7 @@ class AuthService:
     @staticmethod
     def reset_password(user_id, new_password):
         """重置密码"""
-        from db_connection import hash_password
+        from utils.db import hash_password
         result = execute_update(
             "UPDATE users SET password = ?, is_first_login = 0 WHERE user_id = ?",
             (hash_password(new_password), user_id)
@@ -98,7 +98,7 @@ class AuthService:
     @staticmethod
     def change_password(user_id, old_password, new_password):
         """修改密码"""
-        from db_connection import verify_password, hash_password
+        from utils.db import verify_password, hash_password
 
         user = user_dao.get_by_id(user_id)
         if not user:

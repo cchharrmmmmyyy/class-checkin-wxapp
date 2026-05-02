@@ -25,7 +25,8 @@ def _create_test_db():
         '01_campuses.sql', '02_departments.sql', '03_majors.sql', '04_grades.sql',
         '05_classes.sql', '06_users.sql', '07_class_teachers.sql', '08_punch_geofences.sql',
         '09_punch_time_slots.sql', '10_punch_rules.sql', '11_punches.sql', '12_leaves.sql',
-        '13_makeup_requests.sql', '14_punch_config.sql', '15_operation_logs.sql', '16_notifications.sql'
+        '13_makeup_requests.sql', '14_punch_config.sql', '15_operation_logs.sql', '16_notifications.sql',
+        '17_read_views.sql'
     ]
 
     for sql_file in sql_files:
@@ -36,7 +37,7 @@ def _create_test_db():
 
     cursor.execute('PRAGMA foreign_keys = ON')
 
-    from db_connection import hash_password
+    from utils.db import hash_password
     _insert_test_data(cursor, hash_password)
 
     conn.commit()
@@ -162,7 +163,7 @@ def mock_get_connection(temp_db, monkeypatch):
         conn.row_factory = sqlite3.Row
         return conn
 
-    monkeypatch.setattr('db_connection.get_connection', _get_connection)
+    monkeypatch.setattr('utils.db.get_connection', _get_connection)
     return _get_connection
 
 
@@ -200,6 +201,12 @@ def punch_rule_dao(mock_get_connection):
 def leave_dao(mock_get_connection):
     from dao.leave_dao import LeaveDAO
     return LeaveDAO()
+
+
+@pytest.fixture(scope='function')
+def makeup_request_dao(mock_get_connection):
+    from dao.makeup_request_dao import MakeupRequestDAO
+    return MakeupRequestDAO()
 
 
 @pytest.fixture(scope='function')

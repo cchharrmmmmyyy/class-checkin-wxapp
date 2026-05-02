@@ -35,7 +35,7 @@ class LogService:
     def get_operation_logs(target_type: str = None, target_id: str = None,
                           operator_id: str = None, operation_type: str = None,
                           start_date: str = None, end_date: str = None,
-                          limit: int = 50, offset: int = 0) -> List[dict]:
+                          page: int = 1, size: int = 50) -> dict:
         conditions = []
         params = []
 
@@ -61,15 +61,19 @@ class LogService:
         where = ' AND '.join(conditions) if conditions else None
         order_by = 'created_at DESC'
 
-        logs = operation_log_dao.get_list(
+        dao = operation_log_dao.OperationLogDAO()
+        total = dao.count(where=where, params=tuple(params))
+        
+        offset = (page - 1) * size
+        logs = dao.get_list(
             where=where,
             params=tuple(params),
             order_by=order_by,
-            limit=limit,
+            limit=size,
             offset=offset
         )
 
-        return [
+        items = [
             {
                 'id': log.id,
                 'operator_id': log.operator_id,
@@ -83,6 +87,16 @@ class LogService:
             }
             for log in logs
         ]
+        
+        total_pages = (total + size - 1) // size if total else 0
+        return {
+            'items': items,
+            'total': total,
+            'page': page,
+            'size': size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages
+        }
 
     @staticmethod
     def get_user_operation_logs(user_id: str, operation_type: str = None,

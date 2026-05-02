@@ -33,12 +33,11 @@ Page({
   async loadClassRecords() {
     try {
       const userInfo = utils.getUserInfo();
-      if (!userInfo || !userInfo.class) {
+      const className = userInfo ? (userInfo.class || userInfo.class_name) : '';
+      if (!className) {
         utils.showToast('无法获取班级信息', 'none');
         return;
       }
-
-      const className = userInfo.class;
       const res = await api.student.getClassRecords(className);
 
       if (res.success) {

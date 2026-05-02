@@ -15,21 +15,21 @@ def get_notifications():
     """
     获取当前用户的通知列表
     ---
-    查询参数: type, unread_only, limit, offset
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: type, unread_only, page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     user_id = request.current_user['user_id']
     notification_type = request.args.get('type')
     unread_only = request.args.get('unread_only', 'false').lower() == 'true'
-    limit = request.args.get('limit', 50, type=int)
-    offset = request.args.get('offset', 0, type=int)
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
     notifications = NotificationService.get_user_notifications(
         user_id,
         notification_type=notification_type,
         is_read=not unread_only if unread_only else None,
-        limit=limit,
-        offset=offset
+        page=page,
+        size=size
     )
     return jsonify({
         'code': 200,
@@ -90,8 +90,8 @@ def get_operation_logs():
     """
     获取操作日志（管理员和教师可用）
     ---
-    查询参数: target_type, target_id, operator_id, operation_type, start_date, end_date, limit, offset
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: target_type, target_id, operator_id, operation_type, start_date, end_date, page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     target_type = request.args.get('target_type')
     target_id = request.args.get('target_id')
@@ -99,8 +99,8 @@ def get_operation_logs():
     operation_type = request.args.get('operation_type')
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    limit = request.args.get('limit', 50, type=int)
-    offset = request.args.get('offset', 0, type=int)
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
     logs = LogService.get_operation_logs(
         target_type=target_type,
@@ -109,8 +109,8 @@ def get_operation_logs():
         operation_type=operation_type,
         start_date=start_date,
         end_date=end_date,
-        limit=limit,
-        offset=offset
+        page=page,
+        size=size
     )
     return jsonify({
         'code': 200,

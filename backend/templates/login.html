@@ -1,169 +1,206 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理员登录</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            color: #333;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .login-container {
-            max-width: 400px;
-            width: 100%;
-            padding: 30px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #2c3e50;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-
-        .btn:hover {
-            background-color: #2980b9;
-        }
-
-        .message {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            text-align: center;
-            display: none;
-        }
-
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .back-link a {
-            color: #3498db;
-            text-decoration: none;
-        }
-
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>考勤系统 · 管理员登录</title>
+  <script src="/static/js/vue.global.prod.js"></script>
+  <script src="/static/js/axios.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Microsoft YaHei', -apple-system, sans-serif; background: linear-gradient(145deg, #2b3a67 0%, #1b2a4e 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .login-wrapper { width: 100%; max-width: 420px; }
+    .login-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 28px; padding: 44px 36px; box-shadow: 0 25px 50px -8px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); }
+    .logo-area { text-align: center; margin-bottom: 36px; }
+    .logo-icon { font-size: 48px; line-height: 1; margin-bottom: 12px; }
+    .logo-text { font-size: 26px; font-weight: 600; color: #1e293b; letter-spacing: 2px; }
+    .logo-sub { font-size: 13px; color: #64748b; margin-top: 6px; }
+    .form-group { margin-bottom: 24px; }
+    .form-label { display: block; font-size: 14px; font-weight: 500; color: #334155; margin-bottom: 8px; }
+    .input-field { width: 100%; padding: 14px 18px; font-size: 16px; border: 1.5px solid #e2e8f0; border-radius: 18px; background: #fff; transition: all 0.2s; outline: none; }
+    .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.15); }
+    .input-field.error { border-color: #ef4444; }
+    .error-msg { color: #ef4444; font-size: 13px; margin-top: 6px; padding-left: 8px; min-height: 20px; }
+    .global-error { background: #fee2e2; color: #b91c1c; padding: 12px 16px; border-radius: 14px; margin-bottom: 20px; font-size: 14px; border-left: 4px solid #ef4444; }
+    .login-btn { width: 100%; padding: 15px; background: #1e293b; color: white; border: none; border-radius: 40px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px; box-shadow: 0 8px 16px -4px rgba(0,0,0,0.2); }
+    .login-btn:hover { background: #0f172a; transform: translateY(-2px); box-shadow: 0 14px 20px -6px rgba(0,0,0,0.3); }
+    .login-btn:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
+    .demo-hint { margin-top: 24px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 20px; }
+  </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>管理员登录</h1>
-        <div id="message" class="message"></div>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">用户ID</label>
-                <input type="text" id="username" name="user_id" required placeholder="请输入用户ID">
-            </div>
-            <div class="form-group">
-                <label for="password">密码</label>
-                <input type="password" id="password" name="password" required placeholder="请输入密码">
-            </div>
-            <button type="submit" class="btn">登录</button>
-        </form>
-        <div class="back-link">
-            <a href="/">返回首页</a>
+  <div id="app">
+    <div class="login-wrapper">
+      <div class="login-card">
+        <div class="logo-area">
+          <div class="logo-icon">📋</div>
+          <div class="logo-text">班级考勤</div>
+          <div class="logo-sub">管理员后台</div>
         </div>
+
+        <!-- 全局错误 -->
+        <div v-if="globalError" class="global-error">{{ globalError }}</div>
+
+        <form @submit.prevent="handleLogin">
+          <div class="form-group">
+            <label class="form-label">账号</label>
+            <input type="text" v-model="form.user_id" class="input-field" :class="{ error: errors.user_id }" placeholder="工号 / 学号" autocomplete="off" @input="clearError('user_id')">
+            <div class="error-msg">{{ errors.user_id }}</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">密码</label>
+            <input type="password" v-model="form.password" class="input-field" :class="{ error: errors.password }" placeholder="••••••••" autocomplete="current-password" @input="clearError('password')">
+            <div class="error-msg">{{ errors.password }}</div>
+          </div>
+
+          <button type="submit" class="login-btn" :disabled="loading">
+            {{ loading ? '登录中...' : '登 录' }}
+          </button>
+        </form>
+
+        <div class="demo-hint" v-if="!loading">
+          初始账号：admin001 / admin123
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+  <script>
+    const { createApp, ref, reactive } = Vue;
 
-            const user_id = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
+    const app = createApp({
+      setup() {
+        const form = reactive({ user_id: '', password: '' });
+        const errors = reactive({ user_id: '', password: '' });
+        const globalError = ref('');
+        const loading = ref(false);
 
-            fetch('/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ user_id, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const expires = new Date();
-                    expires.setHours(expires.getHours() + 24);
-                    document.cookie = `adminToken=${data.token};expires=${expires.toUTCString()};path=/`;
-                    localStorage.setItem('adminUser', JSON.stringify(data.user));
-                    showMessage('登录成功！', 'success');
-                    setTimeout(() => {
-                        window.location.href = data.redirect_url ;
-                    }, 500);
-                } else {
-                    showMessage(data.message || '登录失败', 'error');
-                }
-            })
-            .catch(error => {
-                showMessage('登录失败，请重试！', 'error');
-                console.error('Login error:', error);
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const reason = params.get('reason');
+          if (reason) {
+            const map = {
+              missing_token: '请先登录',
+              token_invalid: '登录已过期或无效，请重新登录',
+              permission_denied: '权限不足，请使用管理员账号登录'
+            };
+            const msg = map[reason] || '请重新登录';
+            globalError.value = `${msg}（reason: ${reason}）`;
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+        } catch (e) {}
+
+        // 简单的防抖 timer
+        let submitTimer = null;
+
+        const validate = () => {
+          let valid = true;
+          errors.user_id = '';
+          errors.password = '';
+
+          if (!form.user_id.trim()) {
+            errors.user_id = '请输入账号';
+            valid = false;
+          } else if (form.user_id.length < 3 || form.user_id.length > 20) {
+            errors.user_id = '账号长度应为 3-20 位';
+            valid = false;
+          }
+
+          if (!form.password) {
+            errors.password = '请输入密码';
+            valid = false;
+          } else if (form.password.length < 6) {
+            errors.password = '密码至少 6 位';
+            valid = false;
+          }
+          return valid;
+        };
+
+        const clearError = (field) => {
+          errors[field] = '';
+          globalError.value = '';
+        };
+
+        const handleLogin = () => {
+          if (loading.value) return;
+          if (!validate()) return;
+
+          // 防抖
+          if (submitTimer) clearTimeout(submitTimer);
+          submitTimer = setTimeout(() => {
+            performLogin();
+          }, 200);
+        };
+
+        const performLogin = async () => {
+          loading.value = true;
+          globalError.value = '';
+
+          try {
+            // 严格遵循接口契约
+            const response = await axios.post('/api/admin/login', {
+              user_id: form.user_id.trim(),
+              password: form.password
+            }, {
+              headers: { 'Content-Type': 'application/json' },
+              timeout: 10000
             });
-        });
 
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-        }
-    </script>
+            const resData = response.data;
+            console.log('Login response:', resData);
+
+            // 兼容不同的响应包装 (直接 data 或 code:200 包裹)
+            let payload = resData;
+            if (resData.code === 200 && resData.data) {
+              payload = resData.data;
+              console.log('Payload extracted:', payload);
+            } else if (resData.code && resData.code !== 200) {
+              throw new Error(resData.message || '登录失败');
+            }
+
+            // 严格校验必须字段
+            if (!payload.token || !payload.redirect_url) {
+              throw new Error('服务器响应格式错误：缺少 token 或 redirect_url');
+            }
+
+            console.log('Redirecting to:', payload.redirect_url + '?token=' + payload.token);
+
+            // 跳转到后端指定的地址，并将 token 传递过去
+            const redirectUrl = payload.redirect_url + (payload.redirect_url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(payload.token);
+            window.location.href = redirectUrl;
+
+          } catch (error) {
+            loading.value = false;
+            console.error('Login error:', error);
+
+            let message = '网络异常，请稍后重试';
+            if (error.response) {
+              const errData = error.response.data;
+              message = errData?.message || errData?.error || `请求失败 (${error.response.status})`;
+            } else if (error.request) {
+              message = '无法连接到服务器，请检查网络';
+            } else {
+              message = error.message || '未知错误';
+            }
+            globalError.value = message;
+          } finally {
+            submitTimer = null;
+          }
+        };
+
+        return {
+          form,
+          errors,
+          globalError,
+          loading,
+          handleLogin,
+          clearError
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
 </body>
 </html>

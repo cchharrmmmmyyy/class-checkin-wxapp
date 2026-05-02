@@ -41,13 +41,17 @@ Page({
 
     try {
       const data = await request('/login', 'POST', { user_id, password });
+      const normalizedUser = {
+        ...data.user,
+        class: data.user.class || data.user.class_name || ''
+      };
       wx.setStorageSync('token', data.token);
-      wx.setStorageSync('userInfo', data.user);
+      wx.setStorageSync('userInfo', normalizedUser);
       getApp().globalData.token = data.token;
-      getApp().globalData.userInfo = data.user;
+      getApp().globalData.userInfo = normalizedUser;
       wx.showToast({ title: '登录成功', icon: 'success' });
       setTimeout(() => {
-        getApp().navigateByRole(data.user.role);
+        getApp().navigateByRole(normalizedUser.role);
       }, 1000);
     } catch (err) {
       console.error('登录失败', err);

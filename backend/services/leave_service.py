@@ -43,9 +43,29 @@ class LeaveService:
         }
 
     @staticmethod
-    def get_user_leave_records(user_id):
-        records = leave_dao.get_leave_records_by_user(user_id)
-        return [
+    def get_user_leave_records(user_id, page=1, size=50):
+        where = "user_id = ? AND deleted_at IS NULL"
+        params = (user_id,)
+        
+        total = leave_dao.count(where=where, params=params)
+        offset = (page - 1) * size
+        
+        conn = leave_dao.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT id, user_id, leave_start_date, leave_end_date, leave_type, leave_reason, leave_status, username "
+                "FROM v_leave_user_read "
+                "WHERE user_id = ? AND deleted_at IS NULL "
+                "ORDER BY created_at DESC "
+                "LIMIT ? OFFSET ?",
+                (user_id, size, offset)
+            )
+            records = cursor.fetchall()
+        finally:
+            conn.close()
+
+        items = [
             {
                 'id': r['id'],
                 'user_id': r['user_id'],
@@ -58,11 +78,41 @@ class LeaveService:
             }
             for r in records
         ]
+        
+        total_pages = (total + size - 1) // size if total else 0
+        return {
+            'items': items,
+            'total': total,
+            'page': page,
+            'size': size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages
+        }
 
     @staticmethod
-    def get_pending_applications(class_name):
-        applications = leave_dao.get_pending_leave_applications_by_class(class_name)
-        return [
+    def get_pending_applications(class_name, page=1, size=50):
+        where = "class_name = ? AND leave_status = 'pending' AND deleted_at IS NULL"
+        params = (class_name,)
+        
+        total = leave_dao.count(where=where, params=params)
+        offset = (page - 1) * size
+        
+        conn = leave_dao.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT id, user_id, leave_start_date, leave_end_date, leave_type, leave_reason, leave_status, username "
+                "FROM v_leave_user_read "
+                "WHERE class_name = ? AND leave_status = 'pending' AND deleted_at IS NULL "
+                "ORDER BY created_at DESC "
+                "LIMIT ? OFFSET ?",
+                (class_name, size, offset)
+            )
+            applications = cursor.fetchall()
+        finally:
+            conn.close()
+
+        items = [
             {
                 'id': app['id'],
                 'username': app['username'],
@@ -75,6 +125,16 @@ class LeaveService:
             }
             for app in applications
         ]
+        
+        total_pages = (total + size - 1) // size if total else 0
+        return {
+            'items': items,
+            'total': total,
+            'page': page,
+            'size': size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages
+        }
 
     @staticmethod
     def approve_leave(leave_id, class_name, status):

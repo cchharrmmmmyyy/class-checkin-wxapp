@@ -1,979 +1,2091 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理员管理系统</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #2c3e50;
-        }
-
-        .admin-section {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-right: 10px;
-        }
-
-        .btn:hover {
-            background-color: #2980b9;
-        }
-
-        .btn-danger {
-            background-color: #e74c3c;
-        }
-
-        .btn-danger:hover {
-            background-color: #c0392b;
-        }
-
-        .btn-warning {
-            background-color: #f39c12;
-            color: white;
-        }
-
-        .btn-warning:hover {
-            background-color: #d68910;
-        }
-
-        .btn-success {
-            background-color: #2ecc71;
-        }
-
-        .btn-success:hover {
-            background-color: #27ae60;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 500px;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close:hover {
-            color: black;
-        }
-
-        .message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .action-buttons {
-            margin-bottom: 20px;
-        }
-
-        .tab-navigation {
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            background-color: #f0f0f0;
-            color: #333;
-            border: 1px solid #ddd;
-            margin-right: 5px;
-        }
-
-        .tab-btn.active {
-            background-color: #3498db;
-            color: white;
-            border-color: #3498db;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .filter-section {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-        }
-
-        .user-info {
-            float: right;
-            color: #666;
-            font-size: 14px;
-        }
-
-        @media (max-width: 768px) {
-            table {
-                font-size: 12px;
-            }
-
-            th, td {
-                padding: 8px;
-            }
-
-            .btn {
-                padding: 8px 12px;
-                font-size: 12px;
-            }
-
-            .filter-section .form-group {
-                display: block !important;
-                width: 100% !important;
-                margin-right: 0 !important;
-                margin-bottom: 10px !important;
-            }
-
-            .filter-section label {
-                display: inline-block !important;
-                width: 100px !important;
-            }
-
-            .filter-section input, .filter-section select {
-                width: calc(100% - 110px) !important;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>考勤系统 · 管理后台</title>
+  <link rel="stylesheet" href="/static/css/element-plus.css">
+  <script src="/static/js/vue.global.prod.js"></script>
+  <script src="/static/js/element-plus.full.js"></script>
+  <script src="/static/js/axios.min.js"></script>
+  <script src="/static/js/echarts.min.js"></script>
+  <style>
+    /* 不要使用全局的 * {} 重置，会影响 Element Plus */
+    body { font-family: 'Microsoft YaHei', sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
+    .layout { display: flex; height: 100vh; }
+    .sidebar { width: 220px; background: #304156; color: #bfcbd9; display: flex; flex-direction: column; overflow: hidden; }
+    .sidebar .logo { height: 60px; display: flex; align-items: center; justify-content: center; background: #263445; color: #fff; font-size: 18px; font-weight: 600; }
+    .sidebar .menu { border-right: none; background: #304156 !important; flex: 1; min-height: 0; height: calc(100vh - 60px); overflow-y: auto; overflow-x: hidden; --el-menu-bg-color: #304156; --el-menu-hover-bg-color: #263445; --el-menu-active-color: #409eff; }
+    .sidebar .el-menu { height: 100%; overflow-y: auto; overflow-x: hidden; background: #304156 !important; }
+    .sidebar .el-menu-item { color: #bfcbd9; }
+    .sidebar .el-menu-item:hover, .sidebar .el-menu-item.is-active { background: #263445 !important; color: #409eff !important; }
+    .sidebar .el-sub-menu__title { color: #bfcbd9; background: #304156 !important; }
+    .sidebar .el-sub-menu__title:hover { background: #263445 !important; }
+    .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .header { height: 60px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .header-right { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .content { flex: 1; padding: 24px; overflow-y: auto; }
+    .page-title { font-size: 22px; font-weight: 600; margin-bottom: 20px; color: #303133; }
+    .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+    .stat-card { background: #fff; border-radius: 12px; padding: 20px; display: flex; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .stat-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 26px; margin-right: 18px; }
+    .stat-value { font-size: 30px; font-weight: 700; color: #303133; }
+    .stat-label { font-size: 14px; color: #909399; margin-top: 4px; }
+    .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .chart-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 16px; font-weight: 600; }
+    .filter-bar { background: #fff; padding: 16px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .table-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .pagination { margin-top: 20px; display: flex; justify-content: flex-end; }
+    
+    /* 保护 Element Plus 的表格样式 */
+    .el-table { box-sizing: content-box; }
+    .el-table th, .el-table td { margin: 0; padding: 0; box-sizing: content-box; }
+  </style>
 </head>
 <body>
-    <div class="container">
+  <div id="app">
+    <div class="layout">
+      <div class="sidebar">
+        <div class="logo">📋 考勤管理</div>
+        <el-menu :default-active="currentTab" class="menu" background-color="transparent" text-color="#bfcbd9" active-text-color="#409eff" @select="handleMenuSelect">
+          <el-menu-item index="dashboard"><el-icon><DataLine /></el-icon><span>数据概览</span></el-menu-item>
+          <el-sub-menu index="org">
+            <template #title><el-icon><OfficeBuilding /></el-icon><span>组织架构</span></template>
+            <el-menu-item index="campuses">校区管理</el-menu-item>
+            <el-menu-item index="departments">院系管理</el-menu-item>
+            <el-menu-item index="majors">专业管理</el-menu-item>
+            <el-menu-item index="grades">年级管理</el-menu-item>
+            <el-menu-item index="classes">班级管理</el-menu-item>
+          </el-sub-menu>
+          <el-menu-item index="students"><el-icon><User /></el-icon><span>学生管理</span></el-menu-item>
+          <el-menu-item index="teachers"><el-icon><UserFilled /></el-icon><span>教师管理</span></el-menu-item>
+          <el-menu-item index="teaching"><el-icon><Reading /></el-icon><span>教学管理</span></el-menu-item>
+          <el-menu-item index="attendance"><el-icon><Calendar /></el-icon><span>考勤记录</span></el-menu-item>
+          <el-sub-menu index="rules">
+            <template #title><el-icon><Filter /></el-icon><span>考勤规则</span></template>
+            <el-menu-item index="time_slots">时间段管理</el-menu-item>
+            <el-menu-item index="geofences">地理围栏</el-menu-item>
+            <el-menu-item index="punch_rules">打卡规则</el-menu-item>
+          </el-sub-menu>
+          <el-menu-item index="config"><el-icon><Setting /></el-icon><span>系统配置</span></el-menu-item>
+          <el-menu-item index="logs"><el-icon><Document /></el-icon><span>日志审计</span></el-menu-item>
+        </el-menu>
+      </div>
 
-        <div class="admin-section">
-            <div class="tab-navigation">
-                <span id="userInfo" style="float: right; color: #666; margin-right: 15px;"></span>
-                <button class="btn tab-btn active" onclick="switchTab('user')">用户管理</button>
-                <button class="btn tab-btn" onclick="switchTab('attendance')">考勤记录管理</button>
-                <button class="btn tab-btn" onclick="switchTab('location')">打卡位置管理</button>
-                <button class="btn" onclick="logout()">退出登录</button>
-            </div>
-
-            <div id="message" class="message" style="display: none;"></div>
-
-            <div id="userTab" class="tab-content active">
-                <div class="action-buttons">
-                    <h2>用户管理</h2>
-                    <button class="btn btn-success" onclick="openAddModal()">添加用户</button>
-                </div>
-
-                <table id="userTable">
-                    <thead>
-                        <tr>
-                            <th>用户名</th>
-                            <th>用户ID</th>
-                            <th>密码</th>
-                            <th>角色</th>
-                            <th>班级</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody">
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="attendanceTab" class="tab-content">
-                <div class="action-buttons">
-                    <h2>考勤记录管理</h2>
-                    <button class="btn btn-success" onclick="openAddAttendanceModal()">添加考勤记录</button>
-                </div>
-
-                <div class="filter-section">
-                    <div class="form-group" style="display: inline-block; width: 18%; margin-right: 1%;">
-                        <label for="filterUsername" style="display: inline-block; margin-right: 5px;">用户名：</label>
-                        <input type="text" id="filterUsername" placeholder="输入用户名" style="width: 70%;">
-                    </div>
-                    <div class="form-group" style="display: inline-block; width: 18%; margin-right: 1%;">
-                        <label for="filterUserId" style="display: inline-block; margin-right: 5px;">用户ID：</label>
-                        <input type="text" id="filterUserId" placeholder="输入用户ID" style="width: 70%;">
-                    </div>
-                    <div class="form-group" style="display: inline-block; width: 20%; margin-right: 1%;">
-                        <label for="filterStartDate" style="display: inline-block; margin-right: 5px;">开始日期：</label>
-                        <input type="date" id="filterStartDate" style="width: 65%;">
-                    </div>
-                    <div class="form-group" style="display: inline-block; width: 20%; margin-right: 1%;">
-                        <label for="filterEndDate" style="display: inline-block; margin-right: 5px;">结束日期：</label>
-                        <input type="date" id="filterEndDate" style="width: 65%;">
-                    </div>
-                    <div class="form-group" style="display: inline-block; width: 15%; margin-right: 1%;">
-                        <label for="filterLeaveStatus" style="display: inline-block; margin-right: 5px;">请假状态：</label>
-                        <select id="filterLeaveStatus" style="width: 65%;">
-                            <option value="">全部</option>
-                            <option value="pending">待审批</option>
-                            <option value="approved">已批准</option>
-                            <option value="rejected">已拒绝</option>
-                        </select>
-                    </div>
-                    <button class="btn" onclick="searchAttendanceRecords()">查询</button>
-                    <button class="btn" onclick="resetFilters()">重置</button>
-                </div>
-
-                <table id="attendanceTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>用户名</th>
-                            <th>用户ID</th>
-                            <th>打卡日期</th>
-                            <th>请假开始日期</th>
-                            <th>请假结束日期</th>
-                            <th>请假状态</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="attendanceTableBody">
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="locationTab" class="tab-content">
-                <div class="action-buttons">
-                    <h2>打卡位置管理</h2>
-                </div>
-
-                <div class="filter-section">
-                    <div class="form-group">
-                        <label for="locationName">位置名称</label>
-                        <input type="text" id="locationName" placeholder="例如：学校大门、办公楼">
-                    </div>
-                    <div class="form-group">
-                        <label for="locationLatitude">纬度</label>
-                        <input type="number" step="0.000001" id="locationLatitude" placeholder="例如：39.908823">
-                    </div>
-                    <div class="form-group">
-                        <label for="locationLongitude">经度</label>
-                        <input type="number" step="0.000001" id="locationLongitude" placeholder="例如：116.397470">
-                    </div>
-                    <div class="form-group">
-                        <label for="locationRadius">打卡范围（米）</label>
-                        <input type="number" id="locationRadius" placeholder="例如：500">
-                    </div>
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="locationEnabled" checked> 启用位置校验
-                        </label>
-                    </div>
-                    <button class="btn btn-success" onclick="savePunchLocation()">保存</button>
-                    <button class="btn" onclick="loadPunchLocation()">刷新</button>
-                </div>
-
-                <div id="locationInfo" style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 4px; display: none;">
-                    <h3>当前打卡位置设置</h3>
-                    <p><strong>位置名称：</strong><span id="currentLocationName">-</span></p>
-                    <p><strong>纬度：</strong><span id="currentLocationLat">-</span></p>
-                    <p><strong>经度：</strong><span id="currentLocationLng">-</span></p>
-                    <p><strong>打卡范围：</strong><span id="currentLocationRadius">-</span> 米</p>
-                    <p><strong>状态：</strong><span id="currentLocationStatus">-</span></p>
-                </div>
-            </div>
+      <div class="main-area">
+        <div class="header">
+          <span></span>
+          <div class="header-right" @click="logout">
+            <el-icon><Avatar /></el-icon>
+            <span>{{ currentUser }}</span>
+            <el-icon><ArrowDown /></el-icon>
+          </div>
         </div>
+
+        <div class="content">
+          <div v-show="currentTab === 'dashboard'">
+            <h2 class="page-title">数据概览</h2>
+            <div class="stat-cards">
+              <div class="stat-card">
+                <div class="stat-icon" style="background: #409eff"><el-icon :size="28"><User /></el-icon></div>
+                <div><div class="stat-value">{{ stats.total_students }}</div><div class="stat-label">总学生数</div></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon" style="background: #67c23a"><el-icon :size="28"><CircleCheck /></el-icon></div>
+                <div><div class="stat-value">{{ stats.present_today }}</div><div class="stat-label">今日已打卡</div></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon" style="background: #e6a23c"><el-icon :size="28"><Clock /></el-icon></div>
+                <div><div class="stat-value">{{ stats.on_leave_today }}</div><div class="stat-label">请假中</div></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon" style="background: #f56c6c"><el-icon :size="28"><Warning /></el-icon></div>
+                <div><div class="stat-value">{{ stats.absent_today }}</div><div class="stat-label">今日缺卡</div></div>
+              </div>
+            </div>
+            <div class="chart-row">
+              <div class="chart-card">
+                <div class="card-header">近7日出勤趋势</div>
+                <div v-if="statsReady" ref="trendChart" style="height: 280px;"></div>
+                <div v-else style="height: 280px; display: flex; align-items: center; justify-content: center; color: #999;">加载中...</div>
+              </div>
+              <div class="chart-card">
+                <div class="card-header">待办提醒</div>
+                <div v-if="stats.pending_leaves > 0" style="padding: 12px; background: #fdf6ec; border-radius: 10px; margin-bottom: 10px; cursor: pointer;" @click="currentTab = 'attendance'">
+                  <el-icon color="#e6a23c"><Clock /></el-icon> {{ stats.pending_leaves }} 条请假待审批
+                </div>
+                <div v-else style="padding: 20px; text-align: center; color: #67c23a;"><el-icon><CircleCheck /></el-icon> 暂无待处理</div>
+                <div v-if="stats.geofence" style="margin-top: 20px; padding: 12px; background: #ecf5ff; border-radius: 10px;">
+                  <div><strong>{{ stats.geofence.name }}</strong> <el-tag :type="stats.geofence.enabled ? 'success' : 'info'" size="small"> {{ stats.geofence.enabled ? '已启用' : '已禁用' }}</el-tag></div>
+                  <div style="font-size:13px; color:#666; margin-top:8px;">半径 {{ stats.geofence.radius }}m</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 时间段管理 -->
+          <div v-show="currentTab === 'time_slots'">
+            <h2 class="page-title">时间段管理</h2>
+            <div class="filter-bar">
+              <el-input v-model="timeSlotFilters.name" placeholder="名称" style="width: 200px;" clearable></el-input>
+              <el-button type="primary" @click="loadTimeSlots">搜索</el-button>
+              <el-button type="success" @click="openTimeSlotDialog()">新增时段</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="timeSlots" v-loading="loading" stripe border>
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="name" label="名称"></el-table-column>
+                <el-table-column prop="start_time" label="开始时间"></el-table-column>
+                <el-table-column prop="end_time" label="结束时间"></el-table-column>
+                <el-table-column label="启用" width="100">
+                  <template #default="{ row }">
+                    <el-tag :type="row.enabled ? 'success' : 'info'">{{ row.enabled ? '启用' : '禁用' }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="150">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openTimeSlotDialog(row)">编辑</el-button>
+                    <el-button type="danger" link @click="deleteTimeSlot(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination v-model:current-page="timeSlotPage" :page-size="timeSlotSize" :total="timeSlotTotal" layout="total, prev, pager, next" @current-change="loadTimeSlots"></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <!-- 地理围栏 -->
+          <div v-show="currentTab === 'geofences'">
+            <h2 class="page-title">地理围栏</h2>
+            <div class="filter-bar">
+              <el-input v-model="geofenceFilters.name" placeholder="名称" style="width: 200px;" clearable></el-input>
+              <el-select v-model="geofenceFilters.fenceType" placeholder="围栏类型" style="width: 150px;" clearable>
+                <el-option label="圆形" value="circle"></el-option>
+                <el-option label="多边形" value="polygon"></el-option>
+              </el-select>
+              <el-button type="primary" @click="loadGeofences">搜索</el-button>
+              <el-button type="success" @click="openGeofenceDialog()">新增围栏</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="geofences" v-loading="loading" stripe border>
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="name" label="名称"></el-table-column>
+                <el-table-column label="类型" width="120">
+                  <template #default="{ row }">
+                    <el-tag :type="row.fence_type === 'circle' ? 'primary' : 'warning'">
+                      {{ row.fence_type === 'circle' ? '圆形' : '多边形' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="配置详情">
+                  <template #default="{ row }">
+                    <span v-if="row.fence_type === 'circle'">
+                      中心: ({{ row.latitude }}, {{ row.longitude }}), 半径: {{ row.radius }}m
+                    </span>
+                    <span v-else>
+                      顶点数: {{ (row.polygon_coords || []).length }}
+                    </span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="状态" width="100">
+                  <template #default="{ row }">
+                    <el-tag :type="row.enabled ? 'success' : 'info'">{{ row.enabled ? '启用' : '禁用' }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="150">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openGeofenceDialog(row)">编辑</el-button>
+                    <el-button type="danger" link @click="deleteGeofence(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination v-model:current-page="geofencePage" :page-size="geofenceSize" :total="geofenceTotal" layout="total, prev, pager, next" @current-change="loadGeofences"></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <!-- 打卡规则 -->
+          <div v-show="currentTab === 'punch_rules'">
+            <h2 class="page-title">打卡规则</h2>
+            <div class="filter-bar">
+              <el-select v-model="punchRuleFilters.timeSlotId" placeholder="时段" style="width: 180px;" clearable>
+                <el-option v-for="item in timeSlotOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+              <el-select v-model="punchRuleFilters.geofenceId" placeholder="围栏" style="width: 180px;" clearable>
+                <el-option v-for="item in geofenceOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+              <el-button type="primary" @click="loadPunchRules">搜索</el-button>
+              <el-button type="success" @click="openPunchRuleDialog()">新增规则</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="punchRules" v-loading="loading" stripe border>
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="priority" label="优先级" width="100" sortable></el-table-column>
+                <el-table-column label="关联时段">
+                  <template #default="{ row }">
+                    {{ timeSlotOptions.find(t => t.id === row.time_slot_id)?.name || row.time_slot_id }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="关联围栏">
+                  <template #default="{ row }">
+                    {{ geofenceOptions.find(g => g.id === row.geofence_id)?.name || row.geofence_id }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="校验项" width="180">
+                  <template #default="{ row }">
+                    <el-tag :type="row.time_enabled ? 'success' : 'info'" size="small" style="margin-right: 4px;">时间</el-tag>
+                    <el-tag :type="row.location_enabled ? 'success' : 'info'" size="small">位置</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="状态" width="100">
+                  <template #default="{ row }">
+                    <el-tag :type="row.enabled ? 'success' : 'info'">{{ row.enabled ? '启用' : '禁用' }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="150">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openPunchRuleDialog(row)">编辑</el-button>
+                    <el-button type="danger" link @click="deletePunchRule(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination v-model:current-page="punchRulePage" :page-size="punchRuleSize" :total="punchRuleTotal" layout="total, prev, pager, next" @current-change="loadPunchRules"></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <!-- 校区管理 -->
+          <div v-show="currentTab === 'campuses'">
+            <h2 class="page-title">校区管理</h2>
+            <div class="filter-bar">
+              <el-input v-model="campusFilters.name" placeholder="校区名称" style="width: 200px;" clearable></el-input>
+              <el-button type="primary" @click="loadCampuses">搜索</el-button>
+              <el-button type="success" @click="openCampusDialog()">新增校区</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="campuses" v-loading="loading" stripe border>
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="name" label="校区名称"></el-table-column>
+                <el-table-column label="操作" width="150">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openCampusDialog(row)">编辑</el-button>
+                    <el-button type="danger" link @click="deleteCampus(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination v-model:current-page="campusPage" :page-size="campusSize" :total="campusTotal" layout="total, prev, pager, next" @current-change="loadCampuses"></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <!-- 院系管理 -->
+          <div v-show="currentTab === 'departments'">
+            <h2 class="page-title">院系管理</h2>
+            <div class="filter-bar">
+              <el-select v-model="departmentFilters.campusId" placeholder="所属校区" style="width: 180px;" clearable>
+                <el-option v-for="item in campusOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+              <el-input v-model="departmentFilters.name" placeholder="院系名称" style="width: 180px;" clearable></el-input>
+              <el-button type="primary" @click="loadDepartments">搜索</el-button>
+              <el-button type="success" @click="openDepartmentDialog()">新增院系</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="departments" v-loading="loading" stripe border>
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="name" label="院系名称"></el-table-column>
+                <el-table-column prop="campus_name" label="所属校区"></el-table-column>
+                <el-table-column label="操作" width="150">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openDepartmentDialog(row)">编辑</el-button>
+                    <el-button type="danger" link @click="deleteDepartment(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination v-model:current-page="departmentPage" :page-size="departmentSize" :total="departmentTotal" layout="total, prev, pager, next" @current-change="loadDepartments"></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <!-- 专业管理 -->
+          <div v-show="currentTab === 'majors'">
+            <h2 class="page-title">专业管理</h2>
+            <div class="filter-bar">
+              <el-select v-model="majorFilters.campusId" placeholder="校区" style="width: 150px;" clearable @change="onMajorFilterCampusChange">
+                <el-option v-for="item in campusOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+              <el-select v-model="majorFilters.departmentId" placeholder="院系" style="width: 180px;" clearable @change="loadMajors">
+                <el-option v-for="item in filteredDepartmentOptionsForMajorFilter" :key="item.id" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+              <el-input v-model="majorFilters.name" placeholder="专业名称" style="width: 180px;" clearable></el-input>
+              <el-button type="primary" @click="loadMajors">搜索</el-button>
+              <el-button type="success" @click="openMajorDialog()">新增专业</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="majors" v-loading="loading" stripe border>
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="name" label="专业名称"></el-table-column>
+                <el-table-column prop="department_name" label="所属院系"></el-table-column>
+                <el-table-column prop="campus_name" label="所属校区"></el-table-column>
+                <el-table-column label="操作" width="150">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openMajorDialog(row)">编辑</el-button>
+                    <el-button type="danger" link @click="deleteMajor(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination v-model:current-page="majorPage" :page-size="majorSize" :total="majorTotal" layout="total, prev, pager, next" @current-change="loadMajors"></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <!-- 年级管理 -->
+          <div v-show="currentTab === 'grades'">
+            <h2 class="page-title">年级管理</h2>
+            <div class="filter-bar">
+              <el-select v-model="gradeFilters.campusId" placeholder="校区" style="width: 140px;" clearable @change="onGradeFilterCampusChange">
+                <el-option v-for="item in campusOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+              <el-select v-model="gradeFilters.departmentId" placeholder="院系" style="width: 140px;" clearable @change="onGradeFilterDepartmentChange">
+                <el-option v-for="item in filteredDepartmentOptionsForGradeFilter" :key="item.id" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+              <el-select v-model="gradeFilters.majorId" placeholder="专业" style="width: 140px;" clearable>
+                <el-option v-for="item in filteredMajorOptionsForGradeFilter" :key="item.id" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+              <el-input v-model="gradeFilters.year" placeholder="年份" style="width: 100px;" clearable></el-input>
+              <el-button type="primary" @click="loadGrades">搜索</el-button>
+              <el-button type="success" @click="openGradeDialog()">新增年级</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="grades" v-loading="loading" stripe border>
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="year" label="入学年份"></el-table-column>
+                <el-table-column prop="major_name" label="专业"></el-table-column>
+                <el-table-column prop="department_name" label="院系"></el-table-column>
+                <el-table-column label="操作" width="150">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openGradeDialog(row)">编辑</el-button>
+                    <el-button type="danger" link @click="deleteGrade(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination v-model:current-page="gradePage" :page-size="gradeSize" :total="gradeTotal" layout="total, prev, pager, next" @current-change="loadGrades"></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <!-- 班级管理 -->
+          <div v-show="currentTab === 'classes'">
+            <h2 class="page-title">班级管理</h2>
+            <div class="filter-bar">
+              <el-select v-model="classFilters.majorId" placeholder="专业" style="width: 140px;" clearable @change="onClassFilterMajorChange">
+                <el-option v-for="item in majorOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+              <el-select v-model="classFilters.gradeId" placeholder="年级" style="width: 140px;" clearable>
+                <el-option v-for="item in filteredGradeOptionsForClassFilter" :key="item.id" :label="`${item.year}级`" :value="item.id"></el-option>
+              </el-select>
+              <el-input v-model="classFilters.className" placeholder="班级名称" style="width: 140px;" clearable></el-input>
+              <el-button type="primary" @click="loadClasses">搜索</el-button>
+              <el-button type="success" @click="openClassDialog()">新增班级</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="classes" v-loading="loading" stripe border>
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="class_name" label="班级名称"></el-table-column>
+                <el-table-column prop="grade_name" label="年级"></el-table-column>
+                <el-table-column prop="major_name" label="专业"></el-table-column>
+                <el-table-column label="操作" width="150">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openClassDialog(row)">编辑</el-button>
+                    <el-button type="danger" link @click="deleteClass(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination v-model:current-page="classPage" :page-size="classSize" :total="classTotal" layout="total, prev, pager, next" @current-change="loadClasses"></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <div v-show="currentTab === 'students'">
+            <h2 class="page-title">学生管理</h2>
+            <div class="filter-bar">
+              <el-input v-model="studentFilters.userId" placeholder="学号" style="width: 140px;" clearable></el-input>
+              <el-input v-model="studentFilters.username" placeholder="姓名" style="width: 120px;" clearable></el-input>
+              <el-select v-model="studentFilters.className" placeholder="班级" style="width: 160px;" clearable filterable>
+                <el-option v-for="c in classList" :key="c" :label="c" :value="c"></el-option>
+              </el-select>
+              <el-button type="primary" @click="loadStudents">搜索</el-button>
+              <el-button @click="resetStudentFilters">重置</el-button>
+              <el-button type="success" @click="openStudentDialog()">新增学生</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="students" v-loading="loading" stripe border>
+                <el-table-column prop="user_id" label="学号" width="120"></el-table-column>
+                <el-table-column prop="username" label="姓名" width="120"></el-table-column>
+                <el-table-column prop="class" label="班级" min-width="150"></el-table-column>
+                <el-table-column prop="role" label="角色" width="100">
+                  <template #default="{ row }">
+                    <el-tag v-if="row.role === 'monitor'" type="warning" size="small">班委</el-tag>
+                    <el-tag v-else type="primary" size="small">学生</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="200">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openStudentDialog(row)">编辑</el-button>
+                    <el-button type="warning" link @click="resetStudentPwd(row)">重置密码</el-button>
+                    <el-button type="danger" link @click="deleteStudent(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination
+                  v-model:current-page="studentPage"
+                  :page-size="studentSize"
+                  :total="studentTotal"
+                  layout="total, prev, pager, next"
+                  @current-change="loadStudents"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div v-show="currentTab === 'teachers'">
+            <h2 class="page-title">教师管理</h2>
+            <div class="filter-bar">
+              <el-input v-model="teacherFilters.userId" placeholder="工号" style="width: 140px;" clearable></el-input>
+              <el-input v-model="teacherFilters.username" placeholder="姓名" style="width: 120px;" clearable></el-input>
+              <el-button type="primary" @click="loadTeachers">搜索</el-button>
+              <el-button @click="resetTeacherFilters">重置</el-button>
+              <el-button type="success" @click="openTeacherDialog()">新增教师</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="teachers" v-loading="loading" stripe border>
+                <el-table-column prop="user_id" label="工号" width="120"></el-table-column>
+                <el-table-column prop="username" label="姓名" width="120"></el-table-column>
+                <el-table-column prop="class" label="任教班级" min-width="200">
+                  <template #default="{ row }">
+                    <el-tag v-for="c in (row.class || '').split(',').filter(x => x)" :key="c" size="small" style="margin-right: 4px;">{{ c }}</el-tag>
+                    <span v-if="!row.class">-</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="200">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openTeacherDialog(row)">编辑</el-button>
+                    <el-button type="warning" link @click="resetTeacherPwd(row)">重置密码</el-button>
+                    <el-button type="danger" link @click="deleteTeacher(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination
+                  v-model:current-page="teacherPage"
+                  :page-size="teacherSize"
+                  :total="teacherTotal"
+                  layout="total, prev, pager, next"
+                  @current-change="loadTeachers"
+                ></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <!-- 教学管理 -->
+          <div v-show="currentTab === 'teaching'">
+            <h2 class="page-title">教学管理</h2>
+            <div class="filter-bar">
+              <el-input v-model="teachingFilters.teacherId" placeholder="教师工号" style="width: 140px;" clearable></el-input>
+              <el-select v-model="teachingFilters.className" placeholder="班级" style="width: 160px;" clearable filterable>
+                <el-option v-for="c in classList" :key="c" :label="c" :value="c"></el-option>
+              </el-select>
+              <el-input v-model="teachingFilters.semester" placeholder="学期" style="width: 140px;" clearable></el-input>
+              <el-button type="primary" @click="loadTeachingAssignments">搜索</el-button>
+              <el-button @click="resetTeachingFilters">重置</el-button>
+              <el-button type="success" @click="openTeachingDialog()">新增任课</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="teachingAssignments" v-loading="loading" stripe border>
+                <el-table-column prop="teacher_id" label="教师工号" width="120"></el-table-column>
+                <el-table-column prop="teacher_name" label="教师姓名" width="120"></el-table-column>
+                <el-table-column prop="class_name" label="班级" min-width="150"></el-table-column>
+                <el-table-column prop="semester" label="学期" width="150">
+                  <template #default="{ row }">{{ row.semester || '-' }}</template>
+                </el-table-column>
+                <el-table-column label="操作" width="150">
+                  <template #default="{ row }">
+                    <el-button type="primary" link @click="openTeachingDialog(row)">编辑</el-button>
+                    <el-button type="danger" link @click="deleteTeachingAssignment(row)">移除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination
+                  v-model:current-page="teachingPage"
+                  :page-size="teachingSize"
+                  :total="teachingTotal"
+                  layout="total, prev, pager, next"
+                  @current-change="loadTeachingAssignments"
+                ></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <div v-show="currentTab === 'attendance'">
+            <h2 class="page-title">考勤记录管理</h2>
+            <div class="filter-bar">
+              <el-input v-model="attendanceFilters.userId" placeholder="学号" style="width: 130px;" clearable></el-input>
+              <el-input v-model="attendanceFilters.username" placeholder="姓名" style="width: 120px;" clearable></el-input>
+              <el-date-picker v-model="attendanceFilters.dateRange" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="YYYY-MM-DD" style="width: 260px;"></el-date-picker>
+              <el-select v-model="attendanceFilters.leaveStatus" placeholder="请假状态" style="width: 120px;" clearable>
+                <el-option label="待审批" value="pending"></el-option>
+                <el-option label="已批准" value="approved"></el-option>
+                <el-option label="已拒绝" value="rejected"></el-option>
+              </el-select>
+              <el-button type="primary" @click="loadAttendance">搜索</el-button>
+              <el-button @click="resetAttendanceFilters">重置</el-button>
+              <el-button type="warning" @click="exportAttendance">导出CSV</el-button>
+              <el-button type="success" @click="openPunchDialog">补打卡</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="attendanceRecords" v-loading="loading" stripe border>
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="user_id" label="学号" width="120"></el-table-column>
+                <el-table-column prop="username" label="姓名" width="100"></el-table-column>
+                <el-table-column prop="punch_date" label="打卡日期" width="120">
+                  <template #default="{ row }">{{ row.punch_date || '-' }}</template>
+                </el-table-column>
+                <el-table-column label="请假时间" min-width="200">
+                  <template #default="{ row }">
+                    <span v-if="row.leave_start_date">{{ row.leave_start_date }} 至 {{ row.leave_end_date }}</span>
+                    <span v-else>-</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="leave_status" label="状态" width="100">
+                  <template #default="{ row }">
+                    <el-tag v-if="row.leave_status === 'pending'" type="warning" size="small">待审批</el-tag>
+                    <el-tag v-else-if="row.leave_status === 'approved'" type="success" size="small">已批准</el-tag>
+                    <el-tag v-else-if="row.leave_status === 'rejected'" type="danger" size="small">已拒绝</el-tag>
+                    <el-tag v-else-if="row.punch_date" type="success" size="small">已打卡</el-tag>
+                    <el-tag v-else type="info" size="small">-</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="100">
+                  <template #default="{ row }">
+                    <el-button type="danger" link @click="deleteAttendance(row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination
+                  v-model:current-page="attendancePage"
+                  :page-size="attendanceSize"
+                  :total="attendanceTotal"
+                  layout="total, prev, pager, next"
+                  @current-change="loadAttendance"
+                ></el-pagination>
+              </div>
+            </div>
+          </div>
+
+          <div v-show="currentTab === 'config'">
+            <h2 class="page-title">系统配置</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="table-card">
+                <div class="card-header">打卡围栏配置</div>
+                <el-form label-width="120px">
+                  <el-form-item label="位置名称"><el-input v-model="geofenceForm.name" placeholder="如：教学楼A"></el-input></el-form-item>
+                  <el-form-item label="纬度"><el-input-number v-model="geofenceForm.latitude" :precision="6" :step="0.000001" controls-position="right" style="width: 100%;"></el-input-number></el-form-item>
+                  <el-form-item label="经度"><el-input-number v-model="geofenceForm.longitude" :precision="6" :step="0.000001" controls-position="right" style="width: 100%;"></el-input-number></el-form-item>
+                  <el-form-item label="有效半径（米）"><el-input-number v-model="geofenceForm.radius" :min="10" :max="1000" controls-position="right" style="width: 100%;"></el-input-number></el-form-item>
+                  <el-form-item label="启用打卡"><el-switch v-model="geofenceForm.enabled"></el-switch></el-form-item>
+                  <el-form-item>
+                    <el-button type="primary" @click="saveGeofence" :loading="saving">保存配置</el-button>
+                    <el-button @click="loadGeofence">刷新</el-button>
+                  </el-form-item>
+                </el-form>
+              </div>
+              <div class="table-card">
+                <div class="card-header">全局设置</div>
+                <el-form label-width="150px">
+                  <el-form-item label="启用时间校验"><el-switch v-model="configForm.global_time_check_enabled"></el-switch></el-form-item>
+                  <el-form-item label="启用位置校验"><el-switch v-model="configForm.global_location_check_enabled"></el-switch></el-form-item>
+                  <el-form-item label="允许多人打卡"><el-switch v-model="configForm.allow_multi_punch"></el-switch></el-form-item>
+                  <el-form-item label="允许补卡"><el-switch v-model="configForm.allow_makeup"></el-switch></el-form-item>
+                  <el-form-item>
+                    <el-button type="primary" @click="saveConfig" :loading="saving">保存设置</el-button>
+                    <el-button @click="loadConfig">刷新</el-button>
+                  </el-form-item>
+                </el-form>
+              </div>
+            </div>
+          </div>
+
+          <div v-show="currentTab === 'logs'">
+            <h2 class="page-title">日志审计</h2>
+            <div class="filter-bar">
+              <el-date-picker v-model="logFilters.dateRange" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="YYYY-MM-DD" style="width: 260px;"></el-date-picker>
+              <el-select v-model="logFilters.operationType" placeholder="操作类型" style="width: 140px;" clearable>
+                <el-option label="登录" value="LOGIN"></el-option>
+                <el-option label="登出" value="LOGOUT"></el-option>
+                <el-option label="创建" value="CREATE"></el-option>
+                <el-option label="更新" value="UPDATE"></el-option>
+                <el-option label="删除" value="DELETE"></el-option>
+              </el-select>
+              <el-input v-model="logFilters.operatorId" placeholder="操作者ID" style="width: 140px;" clearable></el-input>
+              <el-button type="primary" @click="loadLogs">搜索</el-button>
+              <el-button @click="resetLogFilters">重置</el-button>
+            </div>
+            <div class="table-card">
+              <el-table :data="logs" v-loading="loading" stripe border>
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="operator_id" label="操作者" width="120"></el-table-column>
+                <el-table-column prop="operation_type" label="操作类型" width="100">
+                  <template #default="{ row }">
+                    <el-tag v-if="row.operation_type === 'LOGIN'" type="success" size="small">登录</el-tag>
+                    <el-tag v-else-if="row.operation_type === 'LOGOUT'" type="info" size="small">登出</el-tag>
+                    <el-tag v-else-if="row.operation_type === 'CREATE'" type="primary" size="small">创建</el-tag>
+                    <el-tag v-else-if="row.operation_type === 'UPDATE'" type="warning" size="small">更新</el-tag>
+                    <el-tag v-else-if="row.operation_type === 'DELETE'" type="danger" size="small">删除</el-tag>
+                    <el-tag v-else type="info" size="small">{{ row.operation_type }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="target_type" label="目标类型" width="100"></el-table-column>
+                <el-table-column prop="target_id" label="目标ID" width="120"></el-table-column>
+                <el-table-column prop="ip_address" label="IP地址" width="140"></el-table-column>
+                <el-table-column prop="created_at" label="操作时间" min-width="180">
+                  <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
+                </el-table-column>
+              </el-table>
+              <div class="pagination">
+                <el-pagination
+                  v-model:current-page="logPage"
+                  :page-size="logSize"
+                  :total="logTotal"
+                  layout="total, prev, pager, next"
+                  @current-change="loadLogs"
+                ></el-pagination>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div id="userModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 id="modalTitle">添加用户</h3>
-            <form id="userForm">
-                <input type="hidden" id="editUserId">
+    <!-- 校区弹窗 -->
+    <el-dialog v-model="campusDialogVisible" :title="campusEditId ? '编辑校区' : '新增校区'" width="400px">
+      <el-form :model="campusForm" label-width="80px">
+        <el-form-item label="名称" required><el-input v-model="campusForm.name"></el-input></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="campusDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveCampus" :loading="saving">确定</el-button>
+      </template>
+    </el-dialog>
 
-                <div class="form-group">
-                    <label for="userName">用户名</label>
-                    <input type="text" id="userName" name="username" required>
-                </div>
+    <!-- 院系弹窗 -->
+    <el-dialog v-model="departmentDialogVisible" :title="departmentEditId ? '编辑院系' : '新增院系'" width="450px">
+      <el-form :model="departmentForm" label-width="80px">
+        <el-form-item label="校区" required>
+          <el-select v-model="departmentForm.campus_id" placeholder="请选择校区" style="width: 100%;">
+            <el-option v-for="item in campusOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="名称" required><el-input v-model="departmentForm.name"></el-input></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="departmentDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveDepartment" :loading="saving">确定</el-button>
+      </template>
+    </el-dialog>
 
-                <div class="form-group">
-                    <label for="userId">用户ID</label>
-                    <input type="text" id="userId" name="user_id" required>
-                </div>
+    <!-- 专业弹窗 -->
+    <el-dialog v-model="majorDialogVisible" :title="majorEditId ? '编辑专业' : '新增专业'" width="450px">
+      <el-form :model="majorForm" label-width="80px">
+        <el-form-item label="校区" required>
+          <el-select v-model="majorForm.campus_id" placeholder="请选择校区" style="width: 100%;" @change="onMajorDialogCampusChange">
+            <el-option v-for="item in campusOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="院系" required>
+          <el-select v-model="majorForm.department_id" placeholder="请选择院系" style="width: 100%;">
+            <el-option v-for="item in filteredDepartmentOptionsForMajorDialog" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="名称" required><el-input v-model="majorForm.name"></el-input></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="majorDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveMajor" :loading="saving">确定</el-button>
+      </template>
+    </el-dialog>
 
-                <div class="form-group">
-                    <label for="userPassword">密码</label>
-                    <input type="text" id="userPassword" name="password" required>
-                </div>
+    <!-- 年级弹窗 -->
+    <el-dialog v-model="gradeDialogVisible" :title="gradeEditId ? '编辑年级' : '新增年级'" width="450px">
+      <el-form :model="gradeForm" label-width="80px">
+        <el-form-item label="校区" required>
+          <el-select v-model="gradeForm.campus_id" placeholder="请选择校区" style="width: 100%;" @change="onGradeDialogCampusChange">
+            <el-option v-for="item in campusOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="院系" required>
+          <el-select v-model="gradeForm.department_id" placeholder="请选择院系" style="width: 100%;" @change="onGradeDialogDepartmentChange">
+            <el-option v-for="item in filteredDepartmentOptionsForGradeDialog" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="专业" required>
+          <el-select v-model="gradeForm.major_id" placeholder="请选择专业" style="width: 100%;">
+            <el-option v-for="item in filteredMajorOptionsForGradeDialog" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="年份" required><el-input v-model="gradeForm.year" placeholder="如: 2024"></el-input></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="gradeDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveGrade" :loading="saving">确定</el-button>
+      </template>
+    </el-dialog>
 
-                <div class="form-group">
-                    <label for="userRole">角色</label>
-                    <select id="userRole" name="role" required>
-                        <option value="student">学生</option>
-                        <option value="monitor">班委</option>
-                        <option value="teacher">教师</option>
-                        <option value="admin">管理员</option>
-                    </select>
-                </div>
+    <!-- 班级弹窗 -->
+    <el-dialog v-model="classDialogVisible" :title="classEditId ? '编辑班级' : '新增班级'" width="450px">
+      <el-form :model="classForm" label-width="80px">
+        <el-form-item label="专业" required>
+          <el-select v-model="classForm.major_id" placeholder="请选择专业" style="width: 100%;" @change="onClassDialogMajorChange">
+            <el-option v-for="item in majorOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="年级" required>
+          <el-select v-model="classForm.grade_id" placeholder="请选择年级" style="width: 100%;">
+            <el-option v-for="item in filteredGradeOptionsForClassDialog" :key="item.id" :label="`${item.year}级`" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="名称" required><el-input v-model="classForm.class_name"></el-input></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="classDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveClass" :loading="saving">确定</el-button>
+      </template>
+    </el-dialog>
 
-                <div class="form-group">
-                    <label for="userClass">班级</label>
-                    <input type="text" id="userClass" name="class">
-                </div>
+    <el-dialog v-model="studentDialogVisible" :title="studentEditId ? '编辑学生' : '新增学生'" width="500px">
+      <el-form :model="studentForm" label-width="80px">
+        <el-form-item label="学号" required><el-input v-model="studentForm.user_id" :disabled="!!studentEditId"></el-input></el-form-item>
+        <el-form-item label="姓名" required><el-input v-model="studentForm.username"></el-input></el-form-item>
+        <el-form-item label="班级" required>
+          <el-select v-model="studentForm.class" filterable style="width: 100%;"><el-option v-for="c in classList" :key="c" :label="c" :value="c"></el-option></el-select>
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-radio-group v-model="studentForm.role">
+            <el-radio label="student">学生</el-radio>
+            <el-radio label="monitor">班委</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="!studentEditId" label="密码"><el-input v-model="studentForm.password" type="password" show-password></el-input></el-form-item>
+      </el-form>
+      <template #footer><el-button @click="studentDialogVisible = false">取消</el-button><el-button type="primary" @click="saveStudent" :loading="saving">确定</el-button></template>
+    </el-dialog>
 
-                <button type="submit" class="btn btn-success">保存</button>
-                <button type="button" class="btn" onclick="closeModal()">取消</button>
-            </form>
-        </div>
-    </div>
+    <el-dialog v-model="teacherDialogVisible" :title="teacherEditId ? '编辑教师' : '新增教师'" width="500px">
+      <el-form :model="teacherForm" label-width="80px">
+        <el-form-item label="工号" required><el-input v-model="teacherForm.user_id" :disabled="!!teacherEditId"></el-input></el-form-item>
+        <el-form-item label="姓名" required><el-input v-model="teacherForm.username"></el-input></el-form-item>
+        <el-form-item label="任教班级">
+          <el-select v-model="teacherForm.selectedClasses" multiple filterable style="width: 100%;"><el-option v-for="c in classList" :key="c" :label="c" :value="c"></el-option></el-select>
+        </el-form-item>
+        <el-form-item v-if="!teacherEditId" label="密码"><el-input v-model="teacherForm.password" type="password" show-password></el-input></el-form-item>
+      </el-form>
+      <template #footer><el-button @click="teacherDialogVisible = false">取消</el-button><el-button type="primary" @click="saveTeacher" :loading="saving">确定</el-button></template>
+    </el-dialog>
 
-    <div id="attendanceModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeAttendanceModal()">&times;</span>
-            <h3 id="attendanceModalTitle">添加考勤记录</h3>
-            <form id="attendanceForm">
-                <input type="hidden" id="editRecordId">
+    <!-- 教学任务弹窗 -->
+    <el-dialog v-model="teachingDialogVisible" :title="teachingEditKey ? '编辑任课' : '新增任课'" width="450px">
+      <el-form :model="teachingForm" label-width="80px">
+        <el-form-item label="教师" required>
+          <el-select v-model="teachingForm.teacher_id" placeholder="选择教师" filterable style="width: 100%;" :disabled="!!teachingEditKey">
+            <el-option v-for="t in teacherOptions" :key="t.user_id" :label="`${t.username} (${t.user_id})`" :value="t.user_id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="班级" required>
+          <el-select v-model="teachingForm.class_name" placeholder="选择班级" filterable style="width: 100%;" :disabled="!!teachingEditKey">
+            <el-option v-for="c in classList" :key="c" :label="c" :value="c"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="学期">
+          <el-input v-model="teachingForm.semester" placeholder="如: 2024-2025-1"></el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="teachingDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveTeachingAssignment" :loading="saving">确定</el-button>
+      </template>
+    </el-dialog>
 
-                <div class="form-group">
-                    <label for="attendanceUsername">用户名</label>
-                    <input type="text" id="attendanceUsername" name="username" required>
-                </div>
+    <el-dialog v-model="punchDialogVisible" title="补打卡记录" width="500px">
+      <el-form :model="punchForm" label-width="100px">
+        <el-form-item label="学号" required><el-input v-model="punchForm.user_id" placeholder="请输入学号"></el-input></el-form-item>
+        <el-form-item label="打卡日期" required>
+          <el-date-picker v-model="punchForm.punch_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;"></el-date-picker>
+        </el-form-item>
+        <el-form-item label="备注"><el-input v-model="punchForm.remark" type="textarea" :rows="3" placeholder="管理员代录"></el-input></el-form-item>
+      </el-form>
+      <template #footer><el-button @click="punchDialogVisible = false">取消</el-button><el-button type="primary" @click="savePunch" :loading="saving">确定</el-button></template>
+    </el-dialog>
 
-                <div class="form-group">
-                    <label for="attendanceUserId">用户ID</label>
-                    <input type="text" id="attendanceUserId" name="user_id" required>
-                </div>
+    <!-- 时间段弹窗 -->
+    <el-dialog v-model="timeSlotDialogVisible" :title="timeSlotEditId ? '编辑时段' : '新增时段'" width="450px">
+      <el-form :model="timeSlotForm" label-width="100px">
+        <el-form-item label="名称" required><el-input v-model="timeSlotForm.name" placeholder="如：第一节课"></el-input></el-form-item>
+        <el-form-item label="开始时间" required>
+          <el-time-picker v-model="timeSlotForm.start_time" format="HH:mm:ss" value-format="HH:mm:ss" placeholder="开始时间" style="width: 100%;"></el-time-picker>
+        </el-form-item>
+        <el-form-item label="结束时间" required>
+          <el-time-picker v-model="timeSlotForm.end_time" format="HH:mm:ss" value-format="HH:mm:ss" placeholder="结束时间" style="width: 100%;"></el-time-picker>
+        </el-form-item>
+        <el-form-item label="启用"><el-switch v-model="timeSlotForm.enabled"></el-switch></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="timeSlotDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveTimeSlot" :loading="saving">确定</el-button>
+      </template>
+    </el-dialog>
 
-                <div class="form-group">
-                    <label for="attendancePunchDate">打卡日期</label>
-                    <input type="date" id="attendancePunchDate" name="punch_date" required>
-                </div>
+    <!-- 地理围栏弹窗 -->
+    <el-dialog v-model="geofenceDialogVisible" :title="geofenceEditId ? '编辑围栏' : '新增围栏'" width="500px">
+      <el-form :model="geofenceFormDialog" label-width="100px">
+        <el-form-item label="围栏名称" required><el-input v-model="geofenceFormDialog.name" placeholder="如：教学楼A"></el-input></el-form-item>
+        <el-form-item label="围栏类型" required>
+          <el-radio-group v-model="geofenceFormDialog.fence_type">
+            <el-radio label="circle">圆形</el-radio>
+            <el-radio label="polygon">多边形</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <template v-if="geofenceFormDialog.fence_type === 'circle'">
+          <el-form-item label="中心纬度" required>
+            <el-input-number v-model="geofenceFormDialog.latitude" :precision="6" :step="0.000001" controls-position="right" style="width: 100%;"></el-input-number>
+          </el-form-item>
+          <el-form-item label="中心经度" required>
+            <el-input-number v-model="geofenceFormDialog.longitude" :precision="6" :step="0.000001" controls-position="right" style="width: 100%;"></el-input-number>
+          </el-form-item>
+          <el-form-item label="半径(米)" required>
+            <el-input-number v-model="geofenceFormDialog.radius" :min="10" :max="5000" controls-position="right" style="width: 100%;"></el-input-number>
+          </el-form-item>
+        </template>
+        <template v-else>
+          <el-form-item label="多边形顶点" required>
+            <el-input v-model="geofenceFormDialog.polygon_coords_str" type="textarea" :rows="5" placeholder="JSON格式: [[lat1, lon1], [lat2, lon2], ...]"></el-input>
+            <div style="font-size: 12px; color: #999; margin-top: 4px;">请输入经纬度数组，至少3个点。例如: [[39.9, 116.4], [39.9, 116.5], [39.8, 116.5]]</div>
+          </el-form-item>
+        </template>
+        <el-form-item label="启用"><el-switch v-model="geofenceFormDialog.enabled"></el-switch></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="geofenceDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveGeofenceRecord" :loading="saving">确定</el-button>
+      </template>
+    </el-dialog>
 
-                <div class="form-group">
-                    <label for="attendanceLeaveStart">请假开始日期</label>
-                    <input type="date" id="attendanceLeaveStart" name="leave_start_date">
-                </div>
+    <!-- 打卡规则弹窗 -->
+    <el-dialog v-model="punchRuleDialogVisible" :title="punchRuleEditId ? '编辑规则' : '新增规则'" width="500px">
+      <el-form :model="punchRuleForm" label-width="100px">
+        <el-form-item label="选择时段" required>
+          <el-select v-model="punchRuleForm.time_slot_id" placeholder="请选择时段" style="width: 100%;">
+            <el-option v-for="item in timeSlotOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="选择围栏" required>
+          <el-select v-model="punchRuleForm.geofence_id" placeholder="请选择围栏" style="width: 100%;">
+            <el-option v-for="item in geofenceOptions" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="优先级" required>
+          <el-input-number v-model="punchRuleForm.priority" :min="1" :max="1000" style="width: 100%;"></el-input-number>
+          <div style="font-size: 12px; color: #999; margin-top: 4px;">数字越小优先级越高</div>
+        </el-form-item>
+        <el-form-item label="开启校验">
+          <el-checkbox v-model="punchRuleForm.time_enabled">时间校验</el-checkbox>
+          <el-checkbox v-model="punchRuleForm.location_enabled">位置校验</el-checkbox>
+        </el-form-item>
+        <el-form-item label="启用规则"><el-switch v-model="punchRuleForm.enabled"></el-switch></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="punchRuleDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="savePunchRule" :loading="saving">确定</el-button>
+      </template>
+    </el-dialog>
+  </div>
 
-                <div class="form-group">
-                    <label for="attendanceLeaveEnd">请假结束日期</label>
-                    <input type="date" id="attendanceLeaveEnd" name="leave_end_date">
-                </div>
+  <script>
+    const { createApp, ref, reactive, onMounted, watch, nextTick, computed } = Vue;
+    const { ElMessage, ElMessageBox } = ElementPlus;
 
-                <div class="form-group">
-                    <label for="attendanceLeaveStatus">请假状态</label>
-                    <select id="attendanceLeaveStatus" name="leave_status" required>
-                        <option value="pending">待审批</option>
-                        <option value="approved">已批准</option>
-                        <option value="rejected">已拒绝</option>
-                    </select>
-                </div>
+    // 尝试从 URL 获取 Token（优先）
+    const urlParams = new URLSearchParams(window.location.search);
+    let token = urlParams.get('token');
 
-                <button type="submit" class="btn btn-success">保存</button>
-                <button type="button" class="btn" onclick="closeAttendanceModal()">取消</button>
-            </form>
-        </div>
-    </div>
+    // 尝试从 sessionStorage 获取
+    let storedToken = null;
+    try {
+      storedToken = sessionStorage.getItem('admin_token');
+    } catch (e) {
+      console.warn('sessionStorage 不可用，使用 URL token');
+    }
 
-    <script>
-        function getToken() {
-            // 先从 Cookie 读取，如果没有则尝试 localStorage（兼容旧版本）
-            const cookieValue = document.cookie.split('; ')
-                .find(row => row.startsWith('adminToken='))
-                ?.split('=')[1];
-            return cookieValue || localStorage.getItem('adminToken') || '';
-        }
+    if (!token && storedToken) {
+      token = storedToken;
+    }
 
-        function getUser() {
-            const userStr = localStorage.getItem('adminUser');
-            return userStr ? JSON.parse(userStr) : null;
-        }
+    if (token) {
+      // 清理 URL 中的 token
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      // 尝试保存到 sessionStorage
+      try {
+        sessionStorage.setItem('admin_token', token);
+      } catch (e) {
+        console.warn('sessionStorage 不可用');
+      }
+    } else {
+      window.location.href = '/login.html';
+    }
 
-        function fetchWithAuth(url, options = {}) {
-            const token = getToken();
-            const headers = {
-                'Content-Type': 'application/json',
-                ...options.headers
-            };
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-            return fetch(url, {
-                ...options,
-                headers,
-                credentials: 'same-origin'
-            });
-        }
+    const app = createApp({
+      setup() {
+        const userStr = sessionStorage.getItem('admin_user');
+        const currentUser = ref(userStr ? JSON.parse(userStr).username : '管理员');
 
-        function checkAuth() {
-            const token = getToken();
-            const user = getUser();
-            if (!token || !user) {
-                window.location.href = '/login';
-                return false;
-            }
-            const userInfoEl = document.getElementById('userInfo');
-            if (userInfoEl) {
-                userInfoEl.textContent = `${user.username} (${user.user_id})`;
-            }
-            return true;
-        }
+        const currentTab = ref('dashboard');
+        const loading = ref(false);
+        const saving = ref(false);
+        const statsReady = ref(false);
 
-        function logout() {
-            // 清除 Cookie
-            document.cookie = 'adminToken=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
-            localStorage.removeItem('adminUser');
-            window.location.href = '/login';
-        }
-
-        function loadUsers() {
-            fetchWithAuth('/api/admin/users')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    renderUserTable(data.data);
-                } else {
-                    showMessage(data.message || '获取用户列表失败！', 'error');
-                }
-            })
-            .catch(error => {
-                showMessage('获取用户列表失败，请重试！', 'error');
-                console.error('Load users error:', error);
-            });
-        }
-
-        function renderUserTable(users) {
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = '';
-
-            users.forEach(user => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${user.username}</td>
-                    <td>${user.user_id}</td>
-                    <td>******</td>
-                    <td>${user.role}</td>
-                    <td>${user.class || '-'}</td>
-                    <td>
-                        <button class="btn" onclick="editUser('${user.user_id}')">编辑</button>
-                        <button class="btn btn-warning" onclick="resetUserPassword('${user.user_id}')">重置密码</button>
-                        <button class="btn btn-danger" onclick="deleteUser('${user.user_id}')">删除</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function openAddModal() {
-            document.getElementById('modalTitle').textContent = '添加用户';
-            document.getElementById('editUserId').value = '';
-            document.getElementById('userForm').reset();
-            document.getElementById('userId').readOnly = false;
-            document.getElementById('userModal').style.display = 'block';
-        }
-
-        function editUser(userId) {
-            fetchWithAuth('/api/admin/users')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const user = data.data.find(u => u.user_id === userId);
-                    if (user) {
-                        document.getElementById('modalTitle').textContent = '编辑用户';
-                        document.getElementById('editUserId').value = userId;
-                        document.getElementById('userName').value = user.username;
-                        document.getElementById('userId').value = user.user_id;
-                        document.getElementById('userId').readOnly = true;
-                        document.getElementById('userPassword').value = user.password;
-                        document.getElementById('userRole').value = user.role;
-                        document.getElementById('userClass').value = user.class || '';
-                        document.getElementById('userModal').style.display = 'block';
-                    }
-                }
-            });
-        }
-
-        function closeModal() {
-            document.getElementById('userModal').style.display = 'none';
-        }
-
-        document.getElementById('userForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const editUserId = document.getElementById('editUserId').value;
-            const username = document.getElementById('userName').value;
-            const user_id = document.getElementById('userId').value;
-            const password = document.getElementById('userPassword').value;
-            const role = document.getElementById('userRole').value;
-            const class_name = document.getElementById('userClass').value;
-
-            saveUser({
-                username,
-                user_id,
-                password,
-                role,
-                class: class_name
-            });
+        const request = axios.create({ baseURL: '/api', timeout: 20000 });
+        request.interceptors.request.use(config => {
+          config.headers.Authorization = `Bearer ${token}`;
+          return config;
         });
-
-        function saveUser(userData) {
-            fetchWithAuth('/api/admin/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(userData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showMessage(data.message, 'success');
-                    closeModal();
-                    loadUsers();
-                } else {
-                    showMessage(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                showMessage('操作失败，请重试！', 'error');
-                console.error('Save user error:', error);
-            });
-        }
-
-        function deleteUser(userId) {
-            if (confirm('确定要删除这个用户吗？')) {
-                fetchWithAuth(`/api/admin/users/${userId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showMessage(data.message, 'success');
-                        loadUsers();
-                    } else {
-                        showMessage(data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    showMessage('删除失败，请重试！', 'error');
-                    console.error('Delete user error:', error);
-                });
+        request.interceptors.response.use(
+          response => {
+            const res = response.data;
+            // 统一响应格式处理：必须包含 code, message, data
+            if (typeof res !== 'object' || res === null) {
+              return response;
             }
-        }
-
-        function resetUserPassword(userId) {
-            if (confirm('确定要重置这个用户的密码吗？新密码将显示在下方。')) {
-                fetchWithAuth('/api/admin/reset-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ user_id: userId })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showMessage(`密码重置成功！新密码：${data.new_password}`, 'success');
-                        alert(`密码重置成功！\n\n用户名：${userId}\n新密码：${data.new_password}\n\n请告知用户此密码。`);
-                    } else {
-                        showMessage(data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    showMessage('重置密码失败，请重试！', 'error');
-                    console.error('Reset password error:', error);
-                });
+            
+            if (res.code !== undefined && res.code !== 200) {
+              ElMessage.error(res.message || '业务请求失败');
+              return Promise.reject(new Error(res.message));
             }
-        }
-
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 3000);
-        }
-
-        window.onclick = function(event) {
-            const userModal = document.getElementById('userModal');
-            const attendanceModal = document.getElementById('attendanceModal');
-            if (event.target == userModal) {
-                userModal.style.display = 'none';
-            } else if (event.target == attendanceModal) {
-                attendanceModal.style.display = 'none';
+            
+            // 正常返回 data 部分，如果不存在 data 则返回整个 res (兼容旧接口)
+            return res.data !== undefined ? res.data : res;
+          },
+          error => {
+            if (error.response?.status === 401) {
+              sessionStorage.clear();
+              ElMessage.error('登录已过期，请重新登录');
+              setTimeout(() => { window.location.href = '/login.html'; }, 1000);
+            } else {
+              ElMessage.error(error.response?.data?.message || error.message || '网络错误');
             }
-        }
+            return Promise.reject(error);
+          }
+        );
 
-        window.onload = function() {
-            if (!checkAuth()) return;
-            loadUsers();
-        }
+        const logout = async () => {
+          try {
+            await ElMessageBox.confirm('确定退出吗？', '提示', { type: 'warning' });
+            sessionStorage.clear();
+            window.location.href = '/login.html';
+          } catch (e) {}
+        };
 
-        function switchTab(tabName) {
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-            });
+        const handleMenuSelect = (index) => { currentTab.value = index; };
 
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            tabButtons.forEach(button => {
-                button.classList.remove('active');
-            });
-
-            document.getElementById(tabName + 'Tab').classList.add('active');
-            event.target.classList.add('active');
-
-            if (tabName === 'attendance') {
-                loadAttendanceRecords();
-            } else if (tabName === 'location') {
-                loadPunchLocation();
-            }
-        }
-
-        function loadAttendanceRecords(filters = {}) {
-            let queryParams = new URLSearchParams();
-            if (filters.username) queryParams.append('username', filters.username);
-            if (filters.user_id) queryParams.append('user_id', filters.user_id);
-            if (filters.start_date) queryParams.append('start_date', filters.start_date);
-            if (filters.end_date) queryParams.append('end_date', filters.end_date);
-            if (filters.leave_status) queryParams.append('leave_status', filters.leave_status);
-
-            fetchWithAuth(`/api/admin/attendance-records?${queryParams.toString()}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    renderAttendanceTable(data.data);
-                } else {
-                    showMessage('获取考勤记录列表失败！', 'error');
-                }
-            })
-            .catch(error => {
-                showMessage('获取考勤记录列表失败，请重试！', 'error');
-                console.error('Load attendance records error:', error);
-            });
-        }
-
-        function renderAttendanceTable(records) {
-            const tbody = document.getElementById('attendanceTableBody');
-            tbody.innerHTML = '';
-
-            records.forEach(record => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${record.id}</td>
-                    <td>${record.username}</td>
-                    <td>${record.user_id}</td>
-                    <td>${record.punch_date}</td>
-                    <td>${record.leave_start_date || '-'}</td>
-                    <td>${record.leave_end_date || '-'}</td>
-                    <td>${getStatusText(record.leave_status)}</td>
-                    <td>
-                        <button class="btn" onclick="editAttendanceRecord(${record.id})">编辑</button>
-                        <button class="btn btn-danger" onclick="deleteAttendanceRecord(${record.id})">删除</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function getStatusText(status) {
-            switch (status) {
-                case 'pending': return '待审批';
-                case 'approved': return '已批准';
-                case 'rejected': return '已拒绝';
-                default: return '未知';
-            }
-        }
-
-        function openAddAttendanceModal() {
-            document.getElementById('attendanceModalTitle').textContent = '添加考勤记录';
-            document.getElementById('editRecordId').value = '';
-            document.getElementById('attendanceForm').reset();
-            document.getElementById('attendanceModal').style.display = 'block';
-        }
-
-        function editAttendanceRecord(recordId) {
-            fetchWithAuth('/api/admin/attendance-records')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const record = data.data.find(r => r.id === recordId);
-                    if (record) {
-                        document.getElementById('attendanceModalTitle').textContent = '编辑考勤记录';
-                        document.getElementById('editRecordId').value = recordId;
-                        document.getElementById('attendanceUsername').value = record.username;
-                        document.getElementById('attendanceUserId').value = record.user_id;
-                        document.getElementById('attendancePunchDate').value = record.punch_date;
-                        document.getElementById('attendanceLeaveStart').value = record.leave_start_date || '';
-                        document.getElementById('attendanceLeaveEnd').value = record.leave_end_date || '';
-                        document.getElementById('attendanceLeaveStatus').value = record.leave_status;
-                        document.getElementById('attendanceModal').style.display = 'block';
-                    }
-                }
-            });
-        }
-
-        function closeAttendanceModal() {
-            document.getElementById('attendanceModal').style.display = 'none';
-        }
-
-        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const recordId = document.getElementById('editRecordId').value;
-            const username = document.getElementById('attendanceUsername').value;
-            const user_id = document.getElementById('attendanceUserId').value;
-            const punch_date = document.getElementById('attendancePunchDate').value;
-            const leave_start_date = document.getElementById('attendanceLeaveStart').value;
-            const leave_end_date = document.getElementById('attendanceLeaveEnd').value;
-            const leave_status = document.getElementById('attendanceLeaveStatus').value;
-
-            saveAttendanceRecord({
-                id: recordId,
-                username,
-                user_id,
-                punch_date,
-                leave_start_date,
-                leave_end_date,
-                leave_status
-            });
+        const stats = reactive({
+          total_students: 0, present_today: 0, on_leave_today: 0, absent_today: 0,
+          pending_leaves: 0, geofence: null
         });
+        const trendChart = ref(null);
+        let chartInstance = null;
 
-        function saveAttendanceRecord(recordData) {
-            fetchWithAuth('/api/admin/attendance-records', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(recordData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showMessage(data.message, 'success');
-                    closeAttendanceModal();
-                    loadAttendanceRecords();
-                } else {
-                    showMessage(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                showMessage('操作失败，请重试！', 'error');
-                console.error('Save attendance record error:', error);
-            });
-        }
-
-        function deleteAttendanceRecord(recordId) {
-            if (confirm('确定要删除这条考勤记录吗？')) {
-                fetchWithAuth(`/api/admin/attendance-records/${recordId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showMessage(data.message, 'success');
-                        loadAttendanceRecords();
-                    } else {
-                        showMessage(data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    showMessage('删除失败，请重试！', 'error');
-                    console.error('Delete attendance record error:', error);
-                });
+        const loadDashboard = async () => {
+          try {
+            const data = await request.get('/admin/dashboard/stats');
+            if (data) {
+              stats.total_students = data.total_students || 0;
+              stats.present_today = data.present_today || 0;
+              stats.on_leave_today = data.on_leave_today || 0;
+              stats.absent_today = data.absent_today || 0;
+              stats.pending_leaves = data.pending_leaves || 0;
+              stats.geofence = data.geofence || null;
             }
-        }
 
-        function searchAttendanceRecords() {
-            const filters = {
-                username: document.getElementById('filterUsername').value.trim(),
-                user_id: document.getElementById('filterUserId').value.trim(),
-                start_date: document.getElementById('filterStartDate').value,
-                end_date: document.getElementById('filterEndDate').value,
-                leave_status: document.getElementById('filterLeaveStatus').value
-            };
-            loadAttendanceRecords(filters);
-        }
+            // 获取趋势数据
+            const trendData = await request.get('/admin/dashboard/trend?days=7');
+            statsReady.value = true;
+            nextTick(() => renderChart(trendData));
+          } catch (e) {
+            console.error(e);
+            statsReady.value = true; // 确保即使失败也显示图表区域
+          }
+        };
 
-        function resetFilters() {
-            document.getElementById('filterUsername').value = '';
-            document.getElementById('filterUserId').value = '';
-            document.getElementById('filterStartDate').value = '';
-            document.getElementById('filterEndDate').value = '';
-            document.getElementById('filterLeaveStatus').value = '';
-            loadAttendanceRecords();
-        }
+        const renderChart = (trendData) => {
+          if (!trendChart.value || !trendData || !trendData.daily_data || !Array.isArray(trendData.daily_data)) return;
+          if (chartInstance) chartInstance.dispose();
+          chartInstance = echarts.init(trendChart.value);
 
-        function loadPunchLocation() {
-            fetchWithAuth('/api/admin/punch-location')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const locationInfo = document.getElementById('locationInfo');
-                    if (data.data) {
-                        document.getElementById('locationName').value = data.data.name || '';
-                        document.getElementById('locationLatitude').value = data.data.latitude || '';
-                        document.getElementById('locationLongitude').value = data.data.longitude || '';
-                        document.getElementById('locationRadius').value = data.data.radius || '';
-                        document.getElementById('locationEnabled').checked = data.data.enabled === 1;
+          const xAxisData = trendData.daily_data.map(d => d.date ? d.date.substring(5) : '');
+          const seriesData = trendData.daily_data.map(d => d.attendance_rate != null ? (d.attendance_rate * 100).toFixed(1) : '0');
 
-                        document.getElementById('currentLocationName').textContent = data.data.name || '-';
-                        document.getElementById('currentLocationLat').textContent = data.data.latitude || '-';
-                        document.getElementById('currentLocationLng').textContent = data.data.longitude || '-';
-                        document.getElementById('currentLocationRadius').textContent = data.data.radius || '-';
-                        document.getElementById('currentLocationStatus').textContent = data.data.enabled === 1 ? '已启用' : '已禁用';
+          const option = {
+            tooltip: {
+              trigger: 'axis',
+              formatter: '{b}<br/>出勤率: {c}%'
+            },
+            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+            xAxis: { type: 'category', data: xAxisData, boundaryGap: false },
+            yAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%' } },
+            series: [{
+              name: '出勤率',
+              data: seriesData,
+              type: 'line',
+              smooth: true,
+              color: '#409eff',
+              areaStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  { offset: 0, color: 'rgba(64, 158, 255, 0.3)' },
+                  { offset: 1, color: 'rgba(64, 158, 255, 0)' }
+                ])
+              }
+            }]
+          };
+          chartInstance.setOption(option);
+        };
 
-                        locationInfo.style.display = 'block';
-                    } else {
-                        document.getElementById('locationName').value = '';
-                        document.getElementById('locationLatitude').value = '';
-                        document.getElementById('locationLongitude').value = '';
-                        document.getElementById('locationRadius').value = '';
-                        document.getElementById('locationEnabled').checked = true;
-                        locationInfo.style.display = 'none';
-                    }
-                }
-            })
-            .catch(error => {
-                showMessage('加载打卡位置失败！', 'error');
-                console.error('Load punch location error:', error);
+        const students = ref([]);
+        const studentPage = ref(1);
+        const studentSize = ref(10);
+        const studentTotal = ref(0);
+        const studentFilters = reactive({ userId: '', username: '', className: '' });
+        const studentDialogVisible = ref(false);
+        const studentEditId = ref('');
+        const studentForm = reactive({ user_id: '', username: '', class: '', role: 'student', password: '123456' });
+
+        const teachers = ref([]);
+        const teacherPage = ref(1);
+        const teacherSize = ref(10);
+        const teacherTotal = ref(0);
+        const teacherFilters = reactive({ userId: '', username: '' });
+        const teacherDialogVisible = ref(false);
+        const teacherEditId = ref('');
+        const teacherForm = reactive({ user_id: '', username: '', selectedClasses: [], password: '123456' });
+        const teacherOptions = ref([]);
+
+        const teachingAssignments = ref([]);
+        const teachingPage = ref(1);
+        const teachingSize = ref(10);
+        const teachingTotal = ref(0);
+        const teachingFilters = reactive({ teacherId: '', className: '', semester: '' });
+        const teachingDialogVisible = ref(false);
+        const teachingEditKey = ref(''); // 用 class_name|teacher_id 表示
+        const teachingForm = reactive({ teacher_id: '', class_name: '', semester: '' });
+
+        const attendanceRecords = ref([]);
+        const attendancePage = ref(1);
+        const attendanceSize = ref(10);
+        const attendanceTotal = ref(0);
+        const attendanceFilters = reactive({ userId: '', username: '', dateRange: [], leaveStatus: '' });
+        const punchDialogVisible = ref(false);
+        const punchForm = reactive({ user_id: '', punch_date: '', remark: '' });
+
+        const geofenceForm = reactive({ name: '', latitude: null, longitude: null, radius: 200, enabled: false });
+        const configForm = reactive({ global_time_check_enabled: true, global_location_check_enabled: true, allow_multi_punch: false, allow_makeup: true });
+
+        const logs = ref([]);
+        const logPage = ref(1);
+        const logSize = ref(10);
+        const logTotal = ref(0);
+        const logFilters = reactive({ dateRange: [], operationType: '', operatorId: '' });
+
+        // --- 考勤规则管理数据 ---
+        const timeSlots = ref([]);
+        const timeSlotPage = ref(1);
+        const timeSlotSize = ref(10);
+        const timeSlotTotal = ref(0);
+        const timeSlotFilters = reactive({ name: '' });
+        const timeSlotDialogVisible = ref(false);
+        const timeSlotEditId = ref(null);
+        const timeSlotForm = reactive({ name: '', start_time: '', end_time: '', enabled: true });
+        const timeSlotOptions = ref([]);
+
+        const geofences = ref([]);
+        const geofencePage = ref(1);
+        const geofenceSize = ref(10);
+        const geofenceTotal = ref(0);
+        const geofenceFilters = reactive({ name: '', fenceType: '' });
+        const geofenceDialogVisible = ref(false);
+        const geofenceEditId = ref(null);
+        const geofenceFormDialog = reactive({ name: '', fence_type: 'circle', latitude: 0, longitude: 0, radius: 100, polygon_coords_str: '', enabled: true });
+        const geofenceOptions = ref([]);
+
+        const punchRules = ref([]);
+        const punchRulePage = ref(1);
+        const punchRuleSize = ref(10);
+        const punchRuleTotal = ref(0);
+        const punchRuleFilters = reactive({ timeSlotId: null, geofenceId: null });
+        const punchRuleDialogVisible = ref(false);
+        const punchRuleEditId = ref(null);
+        const punchRuleForm = reactive({ time_slot_id: null, geofence_id: null, priority: 100, time_enabled: true, location_enabled: true, enabled: true });
+
+        // --- 组织架构管理数据 ---
+        const campuses = ref([]);
+        const campusPage = ref(1);
+        const campusSize = ref(10);
+        const campusTotal = ref(0);
+        const campusFilters = reactive({ name: '' });
+        const campusDialogVisible = ref(false);
+        const campusEditId = ref('');
+        const campusForm = reactive({ name: '' });
+        const campusOptions = ref([]);
+
+        const departments = ref([]);
+        const departmentPage = ref(1);
+        const departmentSize = ref(10);
+        const departmentTotal = ref(0);
+        const departmentFilters = reactive({ campusId: '', name: '' });
+        const departmentDialogVisible = ref(false);
+        const departmentEditId = ref('');
+        const departmentForm = reactive({ campus_id: '', name: '' });
+        const departmentOptions = ref([]);
+
+        const majors = ref([]);
+        const majorPage = ref(1);
+        const majorSize = ref(10);
+        const majorTotal = ref(0);
+        const majorFilters = reactive({ campusId: '', departmentId: '', name: '' });
+        const majorDialogVisible = ref(false);
+        const majorEditId = ref('');
+        const majorForm = reactive({ campus_id: '', department_id: '', name: '' });
+        const majorOptions = ref([]);
+
+        const grades = ref([]);
+        const gradePage = ref(1);
+        const gradeSize = ref(10);
+        const gradeTotal = ref(0);
+        const gradeFilters = reactive({ campusId: '', departmentId: '', majorId: '', year: '' });
+        const gradeDialogVisible = ref(false);
+        const gradeEditId = ref('');
+        const gradeForm = reactive({ campus_id: '', department_id: '', major_id: '', year: '', name: '' });
+        const gradeOptions = ref([]);
+
+        const classes = ref([]);
+        const classPage = ref(1);
+        const classSize = ref(10);
+        const classTotal = ref(0);
+        const classFilters = reactive({ majorId: '', gradeId: '', className: '' });
+        const classDialogVisible = ref(false);
+        const classEditId = ref('');
+        const classForm = reactive({ major_id: '', grade_id: '', class_name: '' });
+
+        const classList = ref([]);
+        const loadAllClassNames = async () => {
+          try {
+            const data = await request.get('/admin/org/classes', { params: { size: 1000 } });
+            if (data.items) {
+              classList.value = data.items.map(c => c.class_name).sort();
+            }
+          } catch (e) { console.error(e); }
+        };
+
+        // --- 级联过滤逻辑 ---
+        const filteredDepartmentOptionsForMajorFilter = computed(() => {
+          if (!majorFilters.campusId) return departmentOptions.value;
+          return departmentOptions.value.filter(d => d.campus_id === majorFilters.campusId);
+        });
+        const onMajorFilterCampusChange = () => { majorFilters.departmentId = ''; majorFilters.name = ''; loadDepartments(); };
+
+        const filteredDepartmentOptionsForMajorDialog = computed(() => {
+          if (!majorForm.campus_id) return departmentOptions.value;
+          return departmentOptions.value.filter(d => d.campus_id === majorForm.campus_id);
+        });
+        const onMajorDialogCampusChange = () => { majorForm.department_id = ''; };
+
+        const filteredDepartmentOptionsForGradeFilter = computed(() => {
+          if (!gradeFilters.campusId) return departmentOptions.value;
+          return departmentOptions.value.filter(d => d.campus_id === gradeFilters.campusId);
+        });
+        const onGradeFilterCampusChange = () => { gradeFilters.departmentId = ''; gradeFilters.majorId = ''; loadDepartments(); };
+
+        const filteredMajorOptionsForGradeFilter = computed(() => {
+          if (!gradeFilters.departmentId) return majorOptions.value;
+          return majorOptions.value.filter(m => m.department_id === gradeFilters.departmentId);
+        });
+        const onGradeFilterDepartmentChange = () => { gradeFilters.majorId = ''; loadMajors(); };
+
+        const filteredDepartmentOptionsForGradeDialog = computed(() => {
+          if (!gradeForm.campus_id) return departmentOptions.value;
+          return departmentOptions.value.filter(d => d.campus_id === gradeForm.campus_id);
+        });
+        const onGradeDialogCampusChange = () => { gradeForm.department_id = ''; gradeForm.major_id = ''; };
+
+        const filteredMajorOptionsForGradeDialog = computed(() => {
+          if (!gradeForm.department_id) return majorOptions.value;
+          return majorOptions.value.filter(m => m.department_id === gradeForm.department_id);
+        });
+        const onGradeDialogDepartmentChange = () => { gradeForm.major_id = ''; };
+
+        const filteredGradeOptionsForClassFilter = computed(() => {
+          if (!classFilters.majorId) return gradeOptions.value;
+          return gradeOptions.value.filter(g => g.major_id === classFilters.majorId);
+        });
+        const onClassFilterMajorChange = () => { classFilters.gradeId = ''; loadGrades(); };
+
+        const filteredGradeOptionsForClassDialog = computed(() => {
+          if (!classForm.major_id) return gradeOptions.value;
+          return gradeOptions.value.filter(g => g.major_id === classForm.major_id);
+        });
+        const onClassDialogMajorChange = () => { classForm.grade_id = ''; };
+
+        // --- 组织架构加载方法 ---
+        const loadCampuses = async () => {
+          loading.value = true;
+          try {
+            const params = { page: campusPage.value, size: campusSize.value };
+            if (campusFilters.name) params.name = campusFilters.name;
+            const data = await request.get('/admin/org/campuses', { params });
+            console.log('loadCampuses data:', data);
+            campuses.value = data.items || [];
+            campusTotal.value = data.total || 0;
+            // 更新选项
+            const allCampuses = await request.get('/admin/org/campuses', { params: { size: 1000 } });
+            campusOptions.value = allCampuses.items || [];
+          } catch (e) { console.error('loadCampuses error:', e); }
+          loading.value = false;
+        };
+
+        const loadDepartments = async () => {
+          loading.value = true;
+          try {
+            const params = { page: departmentPage.value, size: departmentSize.value };
+            if (departmentFilters.campusId) params.campus_id = departmentFilters.campusId;
+            if (departmentFilters.name) params.name = departmentFilters.name;
+            const data = await request.get('/admin/org/departments', { params });
+            console.log('loadDepartments data:', data);
+            departments.value = data.items || [];
+            departmentTotal.value = data.total || 0;
+            // 更新选项
+            const allDeps = await request.get('/admin/org/departments', { params: { size: 1000 } });
+            departmentOptions.value = allDeps.items || [];
+          } catch (e) { console.error('loadDepartments error:', e); }
+          loading.value = false;
+        };
+
+        const loadMajors = async () => {
+          loading.value = true;
+          try {
+            const params = { page: majorPage.value, size: majorSize.value };
+            if (majorFilters.campusId) params.campus_id = majorFilters.campusId;
+            if (majorFilters.departmentId) params.department_id = majorFilters.departmentId;
+            if (majorFilters.name) params.name = majorFilters.name;
+            const data = await request.get('/admin/org/majors', { params });
+            majors.value = data.items || [];
+            majorTotal.value = data.total || 0;
+            // 更新选项
+            const allMajors = await request.get('/admin/org/majors', { params: { size: 1000, campus_id: majorFilters.campusId } });
+            majorOptions.value = allMajors.items || [];
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+
+        const loadGrades = async () => {
+          loading.value = true;
+          try {
+            const params = { page: gradePage.value, size: gradeSize.value };
+            if (gradeFilters.campusId) params.campus_id = gradeFilters.campusId;
+            if (gradeFilters.departmentId) params.department_id = gradeFilters.departmentId;
+            if (gradeFilters.majorId) params.major_id = gradeFilters.majorId;
+            if (gradeFilters.year) params.year = gradeFilters.year;
+            const data = await request.get('/admin/org/grades', { params });
+            grades.value = data.items || [];
+            gradeTotal.value = data.total || 0;
+            // 更新选项
+            const allGrades = await request.get('/admin/org/grades', { params: { size: 1000, campus_id: gradeFilters.campusId, department_id: gradeFilters.departmentId } });
+            gradeOptions.value = allGrades.items || [];
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+
+        const loadClasses = async () => {
+          loading.value = true;
+          try {
+            const params = { page: classPage.value, size: classSize.value };
+            if (classFilters.gradeId) params.grade_id = classFilters.gradeId;
+            if (classFilters.className) params.class_name = classFilters.className;
+            const data = await request.get('/admin/org/classes', { params });
+            classes.value = data.items || [];
+            classTotal.value = data.total || 0;
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+
+        // --- 组织架构弹窗方法 ---
+        const openCampusDialog = (row) => {
+          if (row) {
+            campusEditId.value = row.id;
+            campusForm.name = row.name;
+          } else {
+            campusEditId.value = '';
+            campusForm.name = '';
+          }
+          campusDialogVisible.value = true;
+        };
+
+        const saveCampus = async () => {
+          if (!campusForm.name) { ElMessage.warning('请输入校区名称'); return; }
+          saving.value = true;
+          try {
+            if (campusEditId.value) await request.put(`/admin/org/campuses/${campusEditId.value}`, campusForm);
+            else await request.post('/admin/org/campuses', campusForm);
+            ElMessage.success('保存成功');
+            campusDialogVisible.value = false;
+            loadCampuses();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+
+        const deleteCampus = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要删除校区「${row.name}」吗？`, '警告', { type: 'warning' });
+            await request.delete(`/admin/org/campuses/${row.id}`);
+            ElMessage.success('删除成功');
+            loadCampuses();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        const openDepartmentDialog = (row) => {
+          if (row) {
+            departmentEditId.value = row.id;
+            departmentForm.campus_id = row.campus_id;
+            departmentForm.name = row.name;
+          } else {
+            departmentEditId.value = '';
+            departmentForm.campus_id = '';
+            departmentForm.name = '';
+          }
+          departmentDialogVisible.value = true;
+        };
+
+        const saveDepartment = async () => {
+          if (!departmentForm.campus_id || !departmentForm.name) { ElMessage.warning('请填写完整信息'); return; }
+          saving.value = true;
+          try {
+            if (departmentEditId.value) await request.put(`/admin/org/departments/${departmentEditId.value}`, departmentForm);
+            else await request.post('/admin/org/departments', departmentForm);
+            ElMessage.success('保存成功');
+            departmentDialogVisible.value = false;
+            loadDepartments();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+
+        const deleteDepartment = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要删除院系「${row.name}」吗？`, '警告', { type: 'warning' });
+            await request.delete(`/admin/org/departments/${row.id}`);
+            ElMessage.success('删除成功');
+            loadDepartments();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        const openMajorDialog = (row) => {
+          if (row) {
+            majorEditId.value = row.id;
+            majorForm.campus_id = row.campus_id;
+            majorForm.department_id = row.department_id;
+            majorForm.name = row.name;
+          } else {
+            majorEditId.value = '';
+            majorForm.campus_id = '';
+            majorForm.department_id = '';
+            majorForm.name = '';
+          }
+          majorDialogVisible.value = true;
+        };
+
+        const saveMajor = async () => {
+          if (!majorForm.department_id || !majorForm.name) { ElMessage.warning('请填写完整信息'); return; }
+          saving.value = true;
+          try {
+            if (majorEditId.value) await request.put(`/admin/org/majors/${majorEditId.value}`, majorForm);
+            else await request.post('/admin/org/majors', majorForm);
+            ElMessage.success('保存成功');
+            majorDialogVisible.value = false;
+            loadMajors();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+
+        const deleteMajor = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要删除专业「${row.name}」吗？`, '警告', { type: 'warning' });
+            await request.delete(`/admin/org/majors/${row.id}`);
+            ElMessage.success('删除成功');
+            loadMajors();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        const openGradeDialog = (row) => {
+          if (row) {
+            gradeEditId.value = row.id;
+            gradeForm.campus_id = row.campus_id;
+            gradeForm.department_id = row.department_id;
+            gradeForm.major_id = row.major_id;
+            gradeForm.year = row.year;
+            gradeForm.name = row.name || '';
+          } else {
+            gradeEditId.value = '';
+            gradeForm.campus_id = '';
+            gradeForm.department_id = '';
+            gradeForm.major_id = '';
+            gradeForm.year = '';
+            gradeForm.name = '';
+          }
+          gradeDialogVisible.value = true;
+        };
+
+        const saveGrade = async () => {
+          if (!gradeForm.major_id || !gradeForm.year) { ElMessage.warning('请填写完整信息'); return; }
+          const payload = {
+            major_id: gradeForm.major_id,
+            year: Number(gradeForm.year),
+            name: (gradeForm.name || `${gradeForm.year}级`).toString().trim()
+          };
+          saving.value = true;
+          try {
+            if (gradeEditId.value) await request.put(`/admin/org/grades/${gradeEditId.value}`, payload);
+            else await request.post('/admin/org/grades', payload);
+            ElMessage.success('保存成功');
+            gradeDialogVisible.value = false;
+            loadGrades();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+
+        const deleteGrade = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要删除年级「${row.major_name} ${row.year}级」吗？`, '警告', { type: 'warning' });
+            await request.delete(`/admin/org/grades/${row.id}`);
+            ElMessage.success('删除成功');
+            loadGrades();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        const openClassDialog = (row) => {
+          if (row) {
+            classEditId.value = row.id;
+            classForm.major_id = row.major_id;
+            classForm.grade_id = row.grade_id;
+            classForm.class_name = row.class_name;
+          } else {
+            classEditId.value = '';
+            classForm.major_id = '';
+            classForm.grade_id = '';
+            classForm.class_name = '';
+          }
+          classDialogVisible.value = true;
+        };
+
+        const saveClass = async () => {
+          if (!classForm.grade_id || !classForm.class_name) { ElMessage.warning('请填写完整信息'); return; }
+          saving.value = true;
+          try {
+            if (classEditId.value) await request.put(`/admin/org/classes/${classEditId.value}`, classForm);
+            else await request.post('/admin/org/classes', classForm);
+            ElMessage.success('保存成功');
+            classDialogVisible.value = false;
+            loadClasses();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+
+        const deleteClass = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要删除班级「${row.class_name}」吗？`, '警告', { type: 'warning' });
+            await request.delete(`/admin/org/classes/${row.class_name}`);
+            ElMessage.success('删除成功');
+            loadClasses();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        // --- 考勤规则方法 ---
+        const loadTimeSlots = async () => {
+          loading.value = true;
+          try {
+            const params = { page: timeSlotPage.value, size: timeSlotSize.value };
+            if (timeSlotFilters.name) params.name = timeSlotFilters.name;
+            const data = await request.get('/admin/rules/time-slots', { params });
+            timeSlots.value = data.items || [];
+            timeSlotTotal.value = data.total || 0;
+            // 单独加载全部时段数据用于下拉选项
+            const allData = await request.get('/admin/rules/time-slots', { params: { size: 1000 } });
+            timeSlotOptions.value = allData.items || [];
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+        const openTimeSlotDialog = (row) => {
+          if (row) {
+            timeSlotEditId.value = row.id;
+            Object.assign(timeSlotForm, { name: row.name, start_time: row.start_time, end_time: row.end_time, enabled: !!row.enabled });
+          } else {
+            timeSlotEditId.value = null;
+            Object.assign(timeSlotForm, { name: '', start_time: '', end_time: '', enabled: true });
+          }
+          timeSlotDialogVisible.value = true;
+        };
+        const saveTimeSlot = async () => {
+          if (!timeSlotForm.name || !timeSlotForm.start_time || !timeSlotForm.end_time) { ElMessage.warning('请填写完整信息'); return; }
+          saving.value = true;
+          try {
+            const data = { ...timeSlotForm, enabled: timeSlotForm.enabled ? 1 : 0 };
+            if (timeSlotEditId.value) await request.put(`/admin/rules/time-slots/${timeSlotEditId.value}`, data);
+            else await request.post('/admin/rules/time-slots', data);
+            ElMessage.success('保存成功');
+            timeSlotDialogVisible.value = false;
+            loadTimeSlots();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+        const deleteTimeSlot = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要删除时段「${row.name}」吗？`, '警告', { type: 'warning' });
+            await request.delete(`/admin/rules/time-slots/${row.id}`);
+            ElMessage.success('删除成功');
+            loadTimeSlots();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        const loadGeofences = async () => {
+          loading.value = true;
+          try {
+            const params = { page: geofencePage.value, size: geofenceSize.value };
+            if (geofenceFilters.name) params.name = geofenceFilters.name;
+            if (geofenceFilters.fenceType) params.fence_type = geofenceFilters.fenceType;
+            const data = await request.get('/admin/rules/punch-geofences', { params });
+            geofences.value = data.items || [];
+            geofenceTotal.value = data.total || 0;
+            // 单独加载全部围栏数据用于下拉选项
+            const allData = await request.get('/admin/rules/punch-geofences', { params: { size: 1000 } });
+            geofenceOptions.value = allData.items || [];
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+        const openGeofenceDialog = (row) => {
+          if (row) {
+            geofenceEditId.value = row.id;
+            Object.assign(geofenceFormDialog, {
+              name: row.name,
+              fence_type: row.fence_type,
+              latitude: row.latitude || 0,
+              longitude: row.longitude || 0,
+              radius: row.radius || 100,
+              polygon_coords_str: row.polygon_coords ? JSON.stringify(row.polygon_coords) : '',
+              enabled: !!row.enabled
             });
-        }
-
-        function savePunchLocation() {
-            const name = document.getElementById('locationName').value.trim();
-            const latitude = parseFloat(document.getElementById('locationLatitude').value);
-            const longitude = parseFloat(document.getElementById('locationLongitude').value);
-            const radius = parseFloat(document.getElementById('locationRadius').value);
-            const enabled = document.getElementById('locationEnabled').checked ? 1 : 0;
-
-            if (!name || isNaN(latitude) || isNaN(longitude) || isNaN(radius)) {
-                showMessage('请填写完整的打卡位置信息！', 'error');
+          } else {
+            geofenceEditId.value = null;
+            Object.assign(geofenceFormDialog, { name: '', fence_type: 'circle', latitude: 0, longitude: 0, radius: 100, polygon_coords_str: '', enabled: true });
+          }
+          geofenceDialogVisible.value = true;
+        };
+        const saveGeofenceRecord = async () => {
+          if (!geofenceFormDialog.name) { ElMessage.warning('请输入名称'); return; }
+          saving.value = true;
+          try {
+            const data = {
+              name: geofenceFormDialog.name,
+              fence_type: geofenceFormDialog.fence_type,
+              enabled: geofenceFormDialog.enabled ? 1 : 0
+            };
+            if (data.fence_type === 'circle') {
+              data.latitude = geofenceFormDialog.latitude;
+              data.longitude = geofenceFormDialog.longitude;
+              data.radius = geofenceFormDialog.radius;
+            } else {
+              try {
+                data.polygon_coords = JSON.parse(geofenceFormDialog.polygon_coords_str);
+              } catch (e) {
+                ElMessage.error('多边形顶点格式不正确');
+                saving.value = false;
                 return;
+              }
             }
+            if (geofenceEditId.value) await request.put(`/admin/rules/punch-geofences/${geofenceEditId.value}`, data);
+            else await request.post('/admin/rules/punch-geofences', data);
+            ElMessage.success('保存成功');
+            geofenceDialogVisible.value = false;
+            loadGeofences();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+        const deleteGeofence = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要删除围栏「${row.name}」吗？`, '警告', { type: 'warning' });
+            await request.delete(`/admin/rules/punch-geofences/${row.id}`);
+            ElMessage.success('删除成功');
+            loadGeofences();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
 
-            fetchWithAuth('/api/admin/punch-location', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name,
-                    latitude,
-                    longitude,
-                    radius,
-                    enabled
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showMessage(data.message, 'success');
-                    loadPunchLocation();
-                } else {
-                    showMessage(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                showMessage('保存打卡位置失败！', 'error');
-                console.error('Save punch location error:', error);
+        const loadPunchRules = async () => {
+          loading.value = true;
+          try {
+            const params = { page: punchRulePage.value, size: punchRuleSize.value };
+            if (punchRuleFilters.timeSlotId) params.time_slot_id = punchRuleFilters.timeSlotId;
+            if (punchRuleFilters.geofenceId) params.geofence_id = punchRuleFilters.geofenceId;
+            const data = await request.get('/admin/rules/punch-rules', { params });
+            punchRules.value = data.items || [];
+            punchRuleTotal.value = data.total || 0;
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+        const openPunchRuleDialog = async (row) => {
+          await Promise.all([loadTimeSlots(), loadGeofences()]);
+          if (row) {
+            punchRuleEditId.value = row.id;
+            Object.assign(punchRuleForm, {
+              time_slot_id: row.time_slot_id,
+              geofence_id: row.geofence_id,
+              priority: row.priority,
+              time_enabled: !!row.time_enabled,
+              location_enabled: !!row.location_enabled,
+              enabled: !!row.enabled
             });
-        }
-    </script>
+          } else {
+            punchRuleEditId.value = null;
+            Object.assign(punchRuleForm, { time_slot_id: null, geofence_id: null, priority: 100, time_enabled: true, location_enabled: true, enabled: true });
+          }
+          punchRuleDialogVisible.value = true;
+        };
+        const savePunchRule = async () => {
+          if (!punchRuleForm.time_slot_id || !punchRuleForm.geofence_id) { ElMessage.warning('请选择时段和围栏'); return; }
+          saving.value = true;
+          try {
+            const data = {
+              ...punchRuleForm,
+              time_enabled: punchRuleForm.time_enabled ? 1 : 0,
+              location_enabled: punchRuleForm.location_enabled ? 1 : 0,
+              enabled: punchRuleForm.enabled ? 1 : 0
+            };
+            if (punchRuleEditId.value) await request.put(`/admin/rules/punch-rules/${punchRuleEditId.value}`, data);
+            else await request.post('/admin/rules/punch-rules', data);
+            ElMessage.success('保存成功');
+            punchRuleDialogVisible.value = false;
+            loadPunchRules();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+        const deletePunchRule = async (row) => {
+          try {
+            await ElMessageBox.confirm('确定要删除这条规则吗？', '警告', { type: 'warning' });
+            await request.delete(`/admin/rules/punch-rules/${row.id}`);
+            ElMessage.success('删除成功');
+            loadPunchRules();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        const loadStudents = async () => {
+          loading.value = true;
+          try {
+            const params = { role: 'student', page: studentPage.value, size: studentSize.value };
+            if (studentFilters.userId) params.user_id = studentFilters.userId;
+            if (studentFilters.username) params.username = studentFilters.username;
+            if (studentFilters.className) params.class_name = studentFilters.className;
+            const data = await request.get('/admin/users', { params });
+            // 使用 data.items 统一格式
+            students.value = data.items || [];
+            studentTotal.value = data.total || 0;
+            // 自动更新班级列表
+            if (students.value.length > 0) {
+              const newClasses = [...new Set(students.value.map(s => s.class).filter(Boolean))];
+              classList.value = [...new Set([...classList.value, ...newClasses])].sort();
+            }
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+
+        const resetStudentFilters = () => { studentFilters.userId = ''; studentFilters.username = ''; studentFilters.className = ''; loadStudents(); };
+        const openStudentDialog = (row) => {
+          if (row) {
+            studentEditId.value = row.user_id;
+            Object.assign(studentForm, { user_id: row.user_id, username: row.username, class: row.class || '', role: row.role, password: '' });
+          } else {
+            studentEditId.value = '';
+            Object.assign(studentForm, { user_id: '', username: '', class: '', role: 'student', password: '123456' });
+          }
+          studentDialogVisible.value = true;
+        };
+        const saveStudent = async () => {
+          saving.value = true;
+          try {
+            const data = { username: studentForm.username, role: studentForm.role, class: studentForm.class };
+            if (studentEditId.value) {
+              await request.put(`/admin/users/${studentEditId.value}`, data);
+            } else {
+              data.user_id = studentForm.user_id;
+              data.password = studentForm.password || '123456';
+              await request.post('/admin/users', data);
+            }
+            ElMessage.success('保存成功');
+            studentDialogVisible.value = false;
+            loadStudents();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+        const resetStudentPwd = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要重置学生「${row.username}」的密码吗？`, '提示', { type: 'warning' });
+            const data = await request.post('/admin/users/reset-password', { user_id: row.user_id });
+            ElMessageBox.alert(`密码重置成功！<br/>新密码：<strong>${data.new_password || '123456'}</strong>`, '提示', { confirmButtonText: '知道了', dangerouslyUseHTMLString: true });
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+        const deleteStudent = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要删除学生「${row.username}」吗？`, '警告', { type: 'warning' });
+            await request.delete(`/admin/users/${row.user_id}`);
+            ElMessage.success('删除成功');
+            loadStudents();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        const loadTeachers = async () => {
+          loading.value = true;
+          try {
+            const params = { role: 'teacher', page: teacherPage.value, size: teacherSize.value };
+            if (teacherFilters.userId) params.user_id = teacherFilters.userId;
+            if (teacherFilters.username) params.username = teacherFilters.username;
+            const data = await request.get('/admin/users', { params });
+            // 使用 data.items 统一格式
+            teachers.value = data.items || [];
+            teacherTotal.value = data.total || 0;
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+        const resetTeacherFilters = () => { teacherFilters.userId = ''; teacherFilters.username = ''; loadTeachers(); };
+        const openTeacherDialog = (row) => {
+          if (row) {
+            teacherEditId.value = row.user_id;
+            Object.assign(teacherForm, { user_id: row.user_id, username: row.username, selectedClasses: row.class ? row.class.split(',').filter(x => x) : [], password: '' });
+          } else {
+            teacherEditId.value = '';
+            Object.assign(teacherForm, { user_id: '', username: '', selectedClasses: [], password: '123456' });
+          }
+          teacherDialogVisible.value = true;
+        };
+        const saveTeacher = async () => {
+          saving.value = true;
+          try {
+            const data = { username: teacherForm.username, role: 'teacher', class: teacherForm.selectedClasses.join(',') };
+            if (teacherEditId.value) {
+              await request.put(`/admin/users/${teacherEditId.value}`, data);
+            } else {
+              data.user_id = teacherForm.user_id;
+              data.password = teacherForm.password || '123456';
+              await request.post('/admin/users', data);
+            }
+            ElMessage.success('保存成功');
+            teacherDialogVisible.value = false;
+            loadTeachers();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+        const resetTeacherPwd = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要重置教师「${row.username}」的密码吗？`, '提示', { type: 'warning' });
+            const data = await request.post('/admin/users/reset-password', { user_id: row.user_id });
+            ElMessageBox.alert(`密码重置成功！<br/>新密码：<strong>${data.new_password || '123456'}</strong>`, '提示', { confirmButtonText: '知道了', dangerouslyUseHTMLString: true });
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+        const deleteTeacher = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要删除教师「${row.username}」吗？`, '警告', { type: 'warning' });
+            await request.delete(`/admin/users/${row.user_id}`);
+            ElMessage.success('删除成功');
+            loadTeachers();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        const loadTeachingAssignments = async () => {
+          loading.value = true;
+          try {
+            const params = { page: teachingPage.value, size: teachingSize.value };
+            if (teachingFilters.teacherId) params.teacher_id = teachingFilters.teacherId;
+            if (teachingFilters.className) params.class_name = teachingFilters.className;
+            if (teachingFilters.semester) params.semester = teachingFilters.semester;
+            const data = await request.get('/admin/teaching/assignments', { params });
+            
+            // 补充教师姓名（通过 teacher_id 在 teacherOptions 中查找，或者让后端返回）
+            // 目前后端 list_teaching_assignments 默认不返回姓名，我们需要自己补充或者修改后端
+            // 先加载所有教师选项以便查找
+            if (teacherOptions.value.length === 0) await loadTeacherOptions();
+            
+            teachingAssignments.value = (data.items || []).map(item => {
+              const teacher = teacherOptions.value.find(t => t.user_id === item.teacher_id);
+              return { ...item, teacher_name: teacher ? teacher.username : item.teacher_id };
+            });
+            teachingTotal.value = data.total || 0;
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+
+        const loadTeacherOptions = async () => {
+          try {
+            const data = await request.get('/admin/users', { params: { role: 'teacher', size: 1000 } });
+            teacherOptions.value = data.items || [];
+          } catch (e) { console.error(e); }
+        };
+
+        const resetTeachingFilters = () => {
+          teachingFilters.teacherId = '';
+          teachingFilters.className = '';
+          teachingFilters.semester = '';
+          loadTeachingAssignments();
+        };
+
+        const openTeachingDialog = (row) => {
+          loadTeacherOptions();
+          loadAllClassNames();
+          if (row) {
+            teachingEditKey.value = `${row.class_name}|${row.teacher_id}`;
+            Object.assign(teachingForm, { teacher_id: row.teacher_id, class_name: row.class_name, semester: row.semester || '' });
+          } else {
+            teachingEditKey.value = '';
+            Object.assign(teachingForm, { teacher_id: '', class_name: '', semester: '' });
+          }
+          teachingDialogVisible.value = true;
+        };
+
+        const saveTeachingAssignment = async () => {
+          if (!teachingForm.teacher_id || !teachingForm.class_name) {
+            ElMessage.warning('请选择教师和班级');
+            return;
+          }
+          saving.value = true;
+          try {
+            if (teachingEditKey.value) {
+              const [className, teacherId] = teachingEditKey.value.split('|');
+              await request.put(`/admin/teaching/assignments/${className}/${teacherId}`, { semester: teachingForm.semester });
+            } else {
+              await request.post('/admin/teaching/assignments', teachingForm);
+            }
+            ElMessage.success('保存成功');
+            teachingDialogVisible.value = false;
+            loadTeachingAssignments();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+
+        const deleteTeachingAssignment = async (row) => {
+          try {
+            await ElMessageBox.confirm(`确定要移除教师「${row.teacher_name}」在「${row.class_name}」的任课关系吗？`, '警告', { type: 'warning' });
+            await request.delete(`/admin/teaching/assignments/${row.class_name}/${row.teacher_id}`);
+            ElMessage.success('移除成功');
+            loadTeachingAssignments();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        const loadAttendance = async () => {
+          loading.value = true;
+          try {
+            const params = { page: attendancePage.value, size: attendanceSize.value };
+            if (attendanceFilters.userId) params.user_id = attendanceFilters.userId;
+            if (attendanceFilters.username) params.username = attendanceFilters.username;
+            if (attendanceFilters.dateRange && attendanceFilters.dateRange.length === 2) {
+              params.start_date = attendanceFilters.dateRange[0];
+              params.end_date = attendanceFilters.dateRange[1];
+            }
+            if (attendanceFilters.leaveStatus) params.leave_status = attendanceFilters.leaveStatus;
+            const data = await request.get('/admin/attendance-records', { params });
+            // 使用 data.items 统一格式
+            attendanceRecords.value = data.items || [];
+            attendanceTotal.value = data.total || 0;
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+        const resetAttendanceFilters = () => { attendanceFilters.userId = ''; attendanceFilters.username = ''; attendanceFilters.dateRange = []; attendanceFilters.leaveStatus = ''; loadAttendance(); };
+        
+        const exportAttendance = () => {
+          const params = new URLSearchParams();
+          if (attendanceFilters.userId) params.append('user_id', attendanceFilters.userId);
+          if (attendanceFilters.username) params.append('username', attendanceFilters.username);
+          if (attendanceFilters.dateRange && attendanceFilters.dateRange.length === 2) {
+            params.append('start_date', attendanceFilters.dateRange[0]);
+            params.append('end_date', attendanceFilters.dateRange[1]);
+          }
+          if (attendanceFilters.leaveStatus) params.append('leave_status', attendanceFilters.leaveStatus);
+          params.append('token', token); // 携带 token 用于认证
+
+          window.location.href = `/api/admin/attendance/export?${params.toString()}`;
+        };
+
+        const openPunchDialog = () => { Object.assign(punchForm, { user_id: '', punch_date: '', remark: '' }); punchDialogVisible.value = true; };
+        const savePunch = async () => {
+          if (!punchForm.user_id || !punchForm.punch_date) { ElMessage.warning('请填写学号和打卡日期'); return; }
+          saving.value = true;
+          try {
+            await request.post('/admin/attendance-records', { user_id: punchForm.user_id, punch_date: punchForm.punch_date, remark: punchForm.remark });
+            ElMessage.success('补打卡成功');
+            punchDialogVisible.value = false;
+            loadAttendance();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+        const deleteAttendance = async (row) => {
+          try {
+            await ElMessageBox.confirm('确定要删除这条考勤记录吗？', '提示', { type: 'warning' });
+            await request.delete(`/admin/attendance-records/${row.id}`);
+            ElMessage.success('删除成功');
+            loadAttendance();
+          } catch (e) { if (e !== 'cancel') console.error(e); }
+        };
+
+        const loadGeofence = async () => {
+          try {
+            const data = await request.get('/admin/punch-location');
+            if (data) {
+              Object.assign(geofenceForm, data);
+              geofenceForm.enabled = !!data.enabled;
+            }
+          } catch (e) { console.error(e); }
+        };
+        const saveGeofence = async () => {
+          saving.value = true;
+          try {
+            await request.post('/admin/punch-location', { name: geofenceForm.name, latitude: geofenceForm.latitude, longitude: geofenceForm.longitude, radius: geofenceForm.radius, enabled: geofenceForm.enabled ? 1 : 0 });
+            ElMessage.success('保存成功');
+            loadGeofence();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+        const loadConfig = async () => {
+          try {
+            const data = await request.get('/admin/config');
+            if (data) Object.assign(configForm, data);
+          } catch (e) { console.error(e); }
+        };
+        const saveConfig = async () => {
+          saving.value = true;
+          try {
+            const toBool = (v) => {
+              if (v === true || v === false) return v;
+              if (v === 1 || v === '1') return true;
+              if (v === 0 || v === '0') return false;
+              return !!v;
+            };
+            const payload = {
+              global_time_check_enabled: toBool(configForm.global_time_check_enabled),
+              global_location_check_enabled: toBool(configForm.global_location_check_enabled),
+              allow_multi_punch: toBool(configForm.allow_multi_punch),
+              allow_makeup: toBool(configForm.allow_makeup),
+              holiday_ranges: Array.isArray(configForm.holiday_ranges) ? configForm.holiday_ranges : []
+            };
+            await request.put('/admin/config', payload);
+            ElMessage.success('保存成功');
+            loadConfig();
+          } catch (e) { console.error(e); }
+          saving.value = false;
+        };
+
+        const loadLogs = async () => {
+          loading.value = true;
+          try {
+            const params = { page: logPage.value, size: logSize.value };
+            if (logFilters.dateRange && logFilters.dateRange.length === 2) { params.start_date = logFilters.dateRange[0]; params.end_date = logFilters.dateRange[1]; }
+            if (logFilters.operationType) params.operation_type = logFilters.operationType;
+            if (logFilters.operatorId) params.operator_id = logFilters.operatorId;
+            const data = await request.get('/operation-logs', { params });
+            // 使用 data.items 统一格式
+            logs.value = data.items || [];
+            logTotal.value = data.total || 0;
+          } catch (e) { console.error(e); }
+          loading.value = false;
+        };
+        const resetLogFilters = () => { logFilters.dateRange = []; logFilters.operationType = ''; logFilters.operatorId = ''; loadLogs(); };
+        const formatTime = (t) => { if (!t) return '-'; return new Date(t).toLocaleString('zh-CN'); };
+
+        watch(currentTab, (val) => {
+          if (val === 'students') { loadStudents(); loadAllClassNames(); }
+          else if (val === 'teachers') { loadTeachers(); loadAllClassNames(); }
+          else if (val === 'teaching') { loadTeachingAssignments(); loadAllClassNames(); loadTeacherOptions(); }
+          else if (val === 'attendance') loadAttendance();
+          else if (val === 'config') { loadGeofence(); loadConfig(); }
+          else if (val === 'logs') loadLogs();
+          else if (val === 'campuses') loadCampuses();
+          else if (val === 'departments') loadDepartments();
+          else if (val === 'majors') loadMajors();
+          else if (val === 'grades') loadGrades();
+          else if (val === 'classes') loadClasses();
+          else if (val === 'time_slots') loadTimeSlots();
+          else if (val === 'geofences') loadGeofences();
+          else if (val === 'punch_rules') { loadPunchRules(); loadTimeSlots(); loadGeofences(); }
+        });
+
+        onMounted(() => {
+          loadDashboard();
+        });
+
+        return {
+          currentUser, currentTab, loading, saving, statsReady, logout, handleMenuSelect,
+          stats, trendChart,
+          students, studentPage, studentSize, studentTotal, studentFilters, studentDialogVisible, studentEditId, studentForm,
+          loadStudents, resetStudentFilters, openStudentDialog, saveStudent, resetStudentPwd, deleteStudent,
+          teachers, teacherPage, teacherSize, teacherTotal, teacherFilters, teacherDialogVisible, teacherEditId, teacherForm,
+          loadTeachers, resetTeacherFilters, openTeacherDialog, saveTeacher, resetTeacherPwd, deleteTeacher,
+          teachingAssignments, teachingPage, teachingSize, teachingTotal, teachingFilters, teachingDialogVisible, teachingEditKey, teachingForm, teacherOptions,
+          loadTeachingAssignments, resetTeachingFilters, openTeachingDialog, saveTeachingAssignment, deleteTeachingAssignment,
+          attendanceRecords, attendancePage, attendanceSize, attendanceTotal, attendanceFilters, punchDialogVisible, punchForm,
+          loadAttendance, resetAttendanceFilters, exportAttendance, openPunchDialog, savePunch, deleteAttendance,
+          geofenceForm, configForm, saveGeofence, loadGeofence, saveConfig, loadConfig,
+          logs, logPage, logSize, logTotal, logFilters, loadLogs, resetLogFilters, formatTime,
+          classList,
+          // 组织架构返回
+          campuses, campusPage, campusSize, campusTotal, campusFilters, campusDialogVisible, campusEditId, campusForm, campusOptions,
+          loadCampuses, openCampusDialog, saveCampus, deleteCampus,
+          departments, departmentPage, departmentSize, departmentTotal, departmentFilters, departmentDialogVisible, departmentEditId, departmentForm, departmentOptions,
+          loadDepartments, openDepartmentDialog, saveDepartment, deleteDepartment,
+          majors, majorPage, majorSize, majorTotal, majorFilters, majorDialogVisible, majorEditId, majorForm, majorOptions,
+          loadMajors, openMajorDialog, saveMajor, deleteMajor,
+          grades, gradePage, gradeSize, gradeTotal, gradeFilters, gradeDialogVisible, gradeEditId, gradeForm, gradeOptions,
+          loadGrades, openGradeDialog, saveGrade, deleteGrade,
+          classes, classPage, classSize, classTotal, classFilters, classDialogVisible, classEditId, classForm,
+          loadClasses, openClassDialog, saveClass, deleteClass,
+          // 考勤规则
+          timeSlots, timeSlotPage, timeSlotSize, timeSlotTotal, timeSlotFilters, timeSlotDialogVisible, timeSlotEditId, timeSlotForm, timeSlotOptions,
+          loadTimeSlots, openTimeSlotDialog, saveTimeSlot, deleteTimeSlot,
+          geofences, geofencePage, geofenceSize, geofenceTotal, geofenceFilters, geofenceDialogVisible, geofenceEditId, geofenceFormDialog, geofenceOptions,
+          loadGeofences, openGeofenceDialog, saveGeofenceRecord, deleteGeofence,
+          punchRules, punchRulePage, punchRuleSize, punchRuleTotal, punchRuleFilters, punchRuleDialogVisible, punchRuleEditId, punchRuleForm,
+          loadPunchRules, openPunchRuleDialog, savePunchRule, deletePunchRule,
+          // 级联过滤方法和数据
+          filteredDepartmentOptionsForMajorFilter, onMajorFilterCampusChange,
+          filteredDepartmentOptionsForMajorDialog, onMajorDialogCampusChange,
+          filteredDepartmentOptionsForGradeFilter, onGradeFilterCampusChange,
+          filteredMajorOptionsForGradeFilter, onGradeFilterDepartmentChange,
+          filteredDepartmentOptionsForGradeDialog, onGradeDialogCampusChange,
+          filteredMajorOptionsForGradeDialog, onGradeDialogDepartmentChange,
+          filteredGradeOptionsForClassFilter, onClassFilterMajorChange,
+          filteredGradeOptionsForClassDialog, onClassDialogMajorChange
+        };
+      }
+    });
+
+    app.use(ElementPlus);
+    app.mount('#app');
+  </script>
 </body>
 </html>

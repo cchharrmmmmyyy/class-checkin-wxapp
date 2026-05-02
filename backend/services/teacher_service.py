@@ -61,20 +61,66 @@ class TeacherService:
         }
 
     @staticmethod
-    def get_monitors(class_name):
-        monitors = user_dao.get_list(where="class_name = ? AND role = 'monitor' AND deleted_at IS NULL", params=(class_name,))
-        return [
+    def get_monitors(class_name, page=1, size=50):
+        where = "class_name = ? AND role = 'monitor' AND deleted_at IS NULL"
+        params = (class_name,)
+        
+        total = user_dao.count(where=where, params=params)
+        offset = (page - 1) * size
+        
+        monitors = user_dao.get_list(
+            where=where,
+            params=params,
+            order_by="user_id ASC",
+            limit=size,
+            offset=offset
+        )
+        
+        items = [
             {'username': m.username, 'user_id': m.user_id}
             for m in monitors
         ]
+        
+        total_pages = (total + size - 1) // size if total else 0
+        return {
+            'items': items,
+            'total': total,
+            'page': page,
+            'size': size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages
+        }
 
     @staticmethod
-    def get_students(class_name):
-        students = user_dao.get_list(where="class_name = ? AND deleted_at IS NULL", params=(class_name,))
-        return [
+    def get_students(class_name, page=1, size=50):
+        where = "class_name = ? AND deleted_at IS NULL"
+        params = (class_name,)
+        
+        total = user_dao.count(where=where, params=params)
+        offset = (page - 1) * size
+        
+        students = user_dao.get_list(
+            where=where,
+            params=params,
+            order_by="user_id ASC",
+            limit=size,
+            offset=offset
+        )
+        
+        items = [
             {'username': s.username, 'user_id': s.user_id, 'role': s.role}
             for s in students
         ]
+        
+        total_pages = (total + size - 1) // size if total else 0
+        return {
+            'items': items,
+            'total': total,
+            'page': page,
+            'size': size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages
+        }
 
     @staticmethod
     def get_class_list():

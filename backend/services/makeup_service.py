@@ -51,26 +51,72 @@ class MakeupService:
         }
 
     @staticmethod
-    def get_user_makeup_records(user_id):
+    def get_user_makeup_records(user_id, page=1, size=50):
         """获取用户的补卡记录"""
-        records = makeup_request_dao.get_by_user(user_id)
-        return [
+        where = "user_id = ? AND deleted_at IS NULL"
+        params = (user_id,)
+        
+        total = makeup_request_dao.count(where=where, params=params)
+        offset = (page - 1) * size
+        
+        records = makeup_request_dao.get_list(
+            where=where,
+            params=params,
+            order_by="created_at DESC",
+            limit=size,
+            offset=offset
+        )
+        
+        items = [
             {
-                'id': r['id'],
-                'user_id': r['user_id'],
-                'target_date': r['target_date'],
-                'reason': r['reason'],
-                'status': r['status'],
-                'created_at': r['created_at']
+                'id': r.id,
+                'user_id': r.user_id,
+                'target_date': r.target_date,
+                'reason': r.reason,
+                'status': r.status,
+                'created_at': r.created_at
             }
             for r in records
         ]
+        
+        total_pages = (total + size - 1) // size if total else 0
+        return {
+            'items': items,
+            'total': total,
+            'page': page,
+            'size': size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages
+        }
 
     @staticmethod
-    def get_pending_makeup_applications(class_name):
+    def get_pending_makeup_applications(class_name, page=1, size=50):
         """获取班级待审批的补卡申请"""
-        applications = makeup_request_dao.get_pending_by_class(class_name)
-        return [
+        where = "class_name = ? AND status = 'pending' AND deleted_at IS NULL"
+        params = (class_name,)
+        
+        total = makeup_request_dao.count(where=where, params=params)
+        offset = (page - 1) * size
+        
+        # 使用 raw sql 查询以获取 username
+        conn = makeup_request_dao.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT id, user_id, target_date, reason, status, created_at, username
+                FROM v_makeup_user_read
+                WHERE class_name = ? AND status = 'pending' AND deleted_at IS NULL
+                ORDER BY created_at DESC
+                LIMIT ? OFFSET ?
+                """,
+                (class_name, size, offset)
+            )
+            applications = cursor.fetchall()
+        finally:
+            conn.close()
+
+        items = [
             {
                 'id': app['id'],
                 'username': app['username'],
@@ -82,6 +128,16 @@ class MakeupService:
             }
             for app in applications
         ]
+        
+        total_pages = (total + size - 1) // size if total else 0
+        return {
+            'items': items,
+            'total': total,
+            'page': page,
+            'size': size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages
+        }
 
     @staticmethod
     def approve_makeup(request_id, class_name, status):

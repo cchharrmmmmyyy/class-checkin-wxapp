@@ -61,7 +61,7 @@ class PunchService:
         }
 
     @staticmethod
-    def get_user_punch_records(user_id, start_date=None, end_date=None, limit=50, offset=0):
+    def get_user_punch_records(user_id, start_date=None, end_date=None, page=1, size=50):
         conditions = ["user_id = ?"]
         params = [user_id]
 
@@ -73,14 +73,19 @@ class PunchService:
             params.append(end_date)
 
         where = " AND ".join(conditions)
+        
+        total = punch_dao.count(where=where, params=tuple(params))
+        offset = (page - 1) * size
+        
         records = punch_dao.get_list(
             where=where,
             params=tuple(params),
             order_by="punch_date DESC",
-            limit=limit,
+            limit=size,
             offset=offset
         )
-        return [
+        
+        items = [
             {
                 'id': r.id,
                 'user_id': r.user_id,
@@ -89,6 +94,16 @@ class PunchService:
             }
             for r in records
         ]
+        
+        total_pages = (total + size - 1) // size if total else 0
+        return {
+            'items': items,
+            'total': total,
+            'page': page,
+            'size': size,
+            'total_pages': total_pages,
+            'has_next': page < total_pages
+        }
 
     @staticmethod
     def get_class_punch_records(class_name):

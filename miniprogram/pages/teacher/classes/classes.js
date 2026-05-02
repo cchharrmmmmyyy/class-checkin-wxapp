@@ -25,17 +25,17 @@ Page({
           classes.map(async (cls) => {
             const className = typeof cls === 'string' ? cls : cls.class_name;
             try {
-              const [summary, leavePending, makeupPending] = await Promise.all([
+              const [summary, leaveRes, makeupRes] = await Promise.all([
                 request('/teacher/class/punch-summary', 'GET', {
                   class_name: className,
                   date: new Date().toISOString().split('T')[0]
                 }).catch(() => null),
                 request('/teacher/leave/pending', 'GET', {
                   class_name: className
-                }).catch(() => []),
+                }).catch(() => ({ items: [] })),
                 request('/teacher/makeup/pending', 'GET', {
                   class_name: className
-                }).catch(() => [])
+                }).catch(() => ({ items: [] }))
               ]);
 
               return {
@@ -43,7 +43,7 @@ Page({
                 attendance_rate: summary && summary.attendance_rate
                   ? (summary.attendance_rate * 100).toFixed(2)
                   : '0.00',
-                pending_count: (leavePending ? leavePending.length : 0) + (makeupPending ? makeupPending.length : 0)
+                pending_count: (leaveRes.total || 0) + (makeupRes.total || 0)
               };
             } catch {
               return { class_name: className, attendance_rate: '0.00', pending_count: 0 };

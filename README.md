@@ -177,7 +177,8 @@ graph TD
 {
     "code": 200,
     "message": "success",
-    "data": { ... }
+    "data": { ... },
+    "trace_id": "可选，链路追踪ID"
 }
 ```
 
@@ -185,9 +186,30 @@ graph TD
 ```json
 {
     "code": <错误码>,
-    "message": "<错误描述>"
+    "message": "<错误描述>",
+    "data": null,
+    "trace_id": "可选，链路追踪ID"
 }
 ```
+
+---
+
+## 兼容接口与下线计划
+
+当前标准路由统一为单数业务域前缀（`/api/student`、`/api/teacher`、`/api/admin`）。  
+为兼容历史调用，后端暂时保留以下旧同义接口：
+
+| 旧接口前缀 | 状态 | 下线时间 |
+|------------|------|----------|
+| `/api/students/*` | Deprecated（兼容期） | 2026-07-31 |
+| `/api/teachers/*` | Deprecated（兼容期） | 2026-07-31 |
+
+兼容期内旧接口会在响应头返回：
+- `Deprecation: true`
+- `Sunset: 2026-07-31`
+- `Link: </docs/deprecations#legacy-plural-routes>; rel="deprecation"`
+
+建议前端尽快迁移到标准路由，兼容窗口结束后旧接口将移除。
 
 ---
 

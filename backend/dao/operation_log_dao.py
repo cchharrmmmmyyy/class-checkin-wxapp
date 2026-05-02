@@ -4,7 +4,7 @@ from models.operation_log import OperationLog
 
 class OperationLogDAO:
     def __init__(self):
-        from db_connection import get_connection
+        from utils.db import get_connection
         self.get_connection = get_connection
 
     def _row_to_model(self, row):
@@ -21,6 +21,22 @@ class OperationLogDAO:
             ip_address=row['ip_address'],
             created_at=row['created_at']
         )
+
+    def count(self, where: str = None, params: tuple = (), conn=None) -> int:
+        should_close = False
+        if conn is None:
+            conn = self.get_connection()
+            should_close = True
+        try:
+            cursor = conn.cursor()
+            sql = "SELECT COUNT(*) FROM operation_logs"
+            if where:
+                sql += f" WHERE {where}"
+            cursor.execute(sql, params)
+            return cursor.fetchone()[0]
+        finally:
+            if should_close:
+                conn.close()
 
     def get_by_id(self, id: int, conn=None) -> Optional[OperationLog]:
         should_close = False

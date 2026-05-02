@@ -81,8 +81,15 @@ Page({
 
   onQueryClassRecords() {
     utils.showLoading();
+    const className = this.data.userInfo.class || this.data.userInfo.class_name || '';
 
-    api.student.getClassRecords(this.data.userInfo.class)
+    if (!className) {
+      utils.hideLoading();
+      utils.showToast('无法获取班级信息', 'none', 2000);
+      return;
+    }
+
+    api.student.getClassRecords(className)
       .then(res => {
         utils.hideLoading();
 

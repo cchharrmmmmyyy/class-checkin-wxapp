@@ -39,11 +39,13 @@ def get_class_students():
     """
     获取班级学生列表
     ---
-    查询参数: class_name
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: class_name, page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     teacher = request.current_user
     class_name = request.args.get('class_name', get_teacher_class(teacher))
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
     if not class_name:
         return jsonify({
@@ -51,11 +53,11 @@ def get_class_students():
             'message': '班级名称不能为空'
         }), 400
 
-    students = TeacherService.get_students(class_name)
+    result = TeacherService.get_students(class_name, page=page, size=size)
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': students
+        'data': result
     }), 200
 
 
@@ -97,11 +99,13 @@ def get_pending_leaves():
     """
     获取待审批的请假列表
     ---
-    查询参数: class_name
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: class_name, page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     teacher = request.current_user
     class_name = request.args.get('class_name', get_teacher_class(teacher))
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
     if not class_name:
         return jsonify({
@@ -109,11 +113,11 @@ def get_pending_leaves():
             'message': '班级名称不能为空'
         }), 400
 
-    applications = LeaveService.get_pending_applications(class_name)
+    result = LeaveService.get_pending_applications(class_name, page=page, size=size)
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': applications
+        'data': result
     }), 200
 
 
@@ -160,11 +164,13 @@ def get_pending_makeups():
     """
     获取待审批的补卡列表
     ---
-    查询参数: class_name
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: class_name, page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     teacher = request.current_user
     class_name = request.args.get('class_name', get_teacher_class(teacher))
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
     if not class_name:
         return jsonify({
@@ -172,11 +178,11 @@ def get_pending_makeups():
             'message': '班级名称不能为空'
         }), 400
 
-    applications = MakeupService.get_pending_makeup_applications(class_name)
+    result = MakeupService.get_pending_makeup_applications(class_name, page=page, size=size)
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': applications
+        'data': result
     }), 200
 
 
@@ -281,11 +287,13 @@ def get_monitors():
     """
     获取班级班委列表
     ---
-    查询参数: class_name
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: class_name, page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     teacher = request.current_user
     class_name = request.args.get('class_name', get_teacher_class(teacher))
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
     if not class_name:
         return jsonify({
@@ -293,9 +301,9 @@ def get_monitors():
             'message': '班级名称不能为空'
         }), 400
 
-    monitors = TeacherService.get_monitors(class_name)
+    result = TeacherService.get_monitors(class_name, page=page, size=size)
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': monitors
+        'data': result
     }), 200

@@ -40,26 +40,26 @@ def get_punch_records():
     """
     获取学生打卡记录
     ---
-    查询参数: start_date, end_date, limit, offset
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: start_date, end_date, page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     user_id = request.current_user['user_id']
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    limit = request.args.get('limit', 50, type=int)
-    offset = request.args.get('offset', 0, type=int)
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
-    records = PunchService.get_user_punch_records(
+    result = PunchService.get_user_punch_records(
         user_id,
         start_date=start_date,
         end_date=end_date,
-        limit=limit,
-        offset=offset
+        page=page,
+        size=size
     )
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': records
+        'data': result
     }), 200
 
 
@@ -95,19 +95,25 @@ def get_leave_records():
     """
     获取学生请假记录
     ---
-    查询参数: status (pending/approved/rejected)
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: status (pending/approved/rejected), page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     user_id = request.current_user['user_id']
     status = request.args.get('status')
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
-    records = LeaveService.get_user_leave_records(user_id)
-    if status:
-        records = [r for r in records if r.get('leave_status') == status]
+    result = LeaveService.get_user_leave_records(user_id, page=page, size=size)
+    # 注意：这里如果需要按状态过滤，应该在 service 层处理，但目前是在 route 层过滤
+    # 为了保持一致，我将过滤逻辑移到 service 层或者在这里简单处理
+    if status and 'items' in result:
+        result['items'] = [r for r in result['items'] if r.get('leave_status') == status]
+        result['total'] = len(result['items']) # 简单处理
+        
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': records
+        'data': result
     }), 200
 
 
@@ -147,14 +153,18 @@ def get_makeup_records():
     """
     获取学生补卡记录
     ---
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     user_id = request.current_user['user_id']
-    records = MakeupService.get_user_makeup_records(user_id)
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
+    
+    result = MakeupService.get_user_makeup_records(user_id, page=page, size=size)
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': records
+        'data': result
     }), 200
 
 
@@ -165,24 +175,24 @@ def get_notifications():
     """
     获取学生通知列表
     ---
-    查询参数: unread_only (true/false), limit, offset
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: unread_only (true/false), page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     user_id = request.current_user['user_id']
     unread_only = request.args.get('unread_only', 'false').lower() == 'true'
-    limit = request.args.get('limit', 50, type=int)
-    offset = request.args.get('offset', 0, type=int)
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
-    notifications = NotificationService.get_user_notifications(
+    result = NotificationService.get_user_notifications(
         user_id,
         is_read=not unread_only if unread_only else None,
-        limit=limit,
-        offset=offset
+        page=page,
+        size=size
     )
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': notifications
+        'data': result
     }), 200
 
 
@@ -222,10 +232,13 @@ def get_monitor_class_leaves():
     """
     班委获取班级待审批请假列表
     ---
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     user_id = request.current_user['user_id']
     class_name = request.current_user.get('class', '')
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
     if not class_name:
         return jsonify({
@@ -233,11 +246,11 @@ def get_monitor_class_leaves():
             'message': '班级信息不存在'
         }), 400
 
-    applications = LeaveService.get_pending_applications(class_name)
+    result = LeaveService.get_pending_applications(class_name, page=page, size=size)
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': applications
+        'data': result
     }), 200
 
 
@@ -248,10 +261,13 @@ def get_monitor_class_makeups():
     """
     班委获取班级待审批补卡列表
     ---
-    返回: {"code": 200, "message": "success", "data": [...]}
+    查询参数: page, size
+    返回: {"code": 200, "message": "success", "data": {...}}
     """
     user_id = request.current_user['user_id']
     class_name = request.current_user.get('class', '')
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 50, type=int)
 
     if not class_name:
         return jsonify({
@@ -259,9 +275,9 @@ def get_monitor_class_makeups():
             'message': '班级信息不存在'
         }), 400
 
-    applications = MakeupService.get_pending_makeup_applications(class_name)
+    result = MakeupService.get_pending_makeup_applications(class_name, page=page, size=size)
     return jsonify({
         'code': 200,
         'message': 'success',
-        'data': applications
+        'data': result
     }), 200

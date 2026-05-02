@@ -52,6 +52,28 @@ class TestAuthAPI:
         assert 'token' in data['data']
         assert data['data']['user']['role'] == 'admin'
 
+    def test_admin_page_prefers_query_token_over_stale_cookie(self, client):
+        """测试 /admin 优先使用最新 query token，而不是旧 cookie"""
+        login_response = client.post('/api/login', json={
+            'user_id': 'admin001',
+            'password': 'admin123'
+        })
+        assert login_response.status_code == 200
+        token = login_response.get_json()['data']['token']
+
+        client.set_cookie('adminToken', 'stale.invalid.token')
+        admin_response = client.get(f'/admin?token={token}')
+
+        assert admin_response.status_code == 200
+        assert '考勤系统 · 管理后台' in admin_response.get_data(as_text=True)
+
+    def test_admin_page_redirects_with_reason_when_token_invalid(self, client):
+        """测试 /admin 在 token 无效时带 reason 重定向到登录页"""
+        client.set_cookie('adminToken', 'stale.invalid.token')
+        resp = client.get('/admin', follow_redirects=False)
+        assert resp.status_code in (301, 302, 303, 307, 308)
+        assert resp.headers.get('Location', '').startswith('/login?reason=token_invalid')
+
     def test_login_invalid_password(self, client):
         """测试密码错误登录失败"""
         response = client.post('/api/login', json={

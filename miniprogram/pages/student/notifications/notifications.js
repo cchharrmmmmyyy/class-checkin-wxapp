@@ -21,8 +21,8 @@ Page({
     this.setData({ loading: true });
 
     request('/student/notifications', 'GET')
-      .then(notifications => {
-        this.setData({ notifications });
+      .then(data => {
+        this.setData({ notifications: data.items || [] });
       })
       .catch(err => {
         console.error('加载通知失败', err);
@@ -38,7 +38,7 @@ Page({
 
     if (notification.is_read) return;
 
-    request('/notifications/mark-read', 'POST', { id: notification.id })
+    request('/notifications/mark-read', 'POST', { notification_id: notification.id })
       .then(() => {
         const notifications = this.data.notifications;
         notifications[index].is_read = true;
@@ -50,7 +50,13 @@ Page({
   },
 
   onMarkAllRead() {
-    request('/notifications/mark-all-read', 'POST')
+    const unreadList = this.data.notifications.filter(n => !n.is_read);
+    if (unreadList.length === 0) {
+      wx.showToast({ title: '暂无未读通知', icon: 'none' });
+      return;
+    }
+
+    Promise.all(unreadList.map(item => request('/notifications/mark-read', 'POST', { notification_id: item.id }, { showError: false })))
       .then(() => {
         const notifications = this.data.notifications.map(n => ({ ...n, is_read: true }));
         this.setData({ notifications });

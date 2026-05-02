@@ -62,7 +62,7 @@ class BaseDAO(Generic[T]):
         self.supports_soft_delete = table_name in TABLES_WITH_SOFT_DELETE
 
     def _get_connection(self):
-        from db_connection import get_connection
+        from utils.db import get_connection
         return get_connection()
 
     def _row_to_model(self, row: sqlite3.Row) -> Optional[T]:
@@ -83,6 +83,24 @@ class BaseDAO(Generic[T]):
         if not pattern.match(identifier):
             raise ValueError(f"Invalid {identifier_type}: {identifier}")
         return True
+
+    def count(self, where: str = None, params: tuple = (), conn: sqlite3.Connection = None) -> int:
+        if where and not SAFE_WHERE_PATTERN.match(where):
+            raise ValueError(f"Invalid where parameter: {where}")
+        should_close = False
+        if conn is None:
+            conn = self._get_connection()
+            should_close = True
+        try:
+            cursor = conn.cursor()
+            sql = f"SELECT COUNT(*) FROM {self.table_name}"
+            if where:
+                sql += f" WHERE {where}"
+            cursor.execute(sql, params)
+            return cursor.fetchone()[0]
+        finally:
+            if should_close:
+                conn.close()
 
     def get_by_id(self, id, conn: sqlite3.Connection = None) -> Optional[T]:
         should_close = False

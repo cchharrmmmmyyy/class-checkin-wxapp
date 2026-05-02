@@ -4,7 +4,7 @@ from models.punch_geofence import PunchGeofence
 
 class PunchGeofenceDAO:
     def __init__(self):
-        from db_connection import get_connection
+        from utils.db import get_connection
         self.get_connection = get_connection
 
     def _row_to_model(self, row):
@@ -113,5 +113,15 @@ class PunchGeofenceDAO:
             cursor.execute("SELECT * FROM punch_geofences WHERE enabled = 1 AND deleted_at IS NULL")
             rows = cursor.fetchall()
             return [self._row_to_model(row) for row in rows]
+        finally:
+            conn.close()
+
+    def get_first_enabled(self) -> Optional[PunchGeofence]:
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM punch_geofences WHERE enabled = 1 AND deleted_at IS NULL LIMIT 1")
+            row = cursor.fetchone()
+            return self._row_to_model(row)
         finally:
             conn.close()
