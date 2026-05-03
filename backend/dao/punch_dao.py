@@ -1,5 +1,6 @@
 from typing import List, Optional
 from models.punch import Punch
+from config import Config
 
 
 class PunchDAO:
@@ -114,7 +115,9 @@ class PunchDAO:
         finally:
             conn.close()
 
-    def get_punches_by_user(self, user_id: str, limit: int = 30) -> List[Punch]:
+    def get_punches_by_user(self, user_id: str, limit: int = None) -> List[Punch]:
+        if limit is None:
+            limit = Config.PUNCH_RECORDS_LIMIT
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
