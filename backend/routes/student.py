@@ -1,283 +1,141 @@
 """
 学生路由模块
-提供学生打卡、请假、补卡、通知等功能的接口
+提供学生打卡、请假、补卡等功能的接口（通知相关接口已统一至 common 模块）
 """
-from flask import Blueprint, jsonify, request
-from services import PunchService, LeaveService, MakeupService, NotificationService
+from flask import Blueprint, request
+from services import PunchService, LeaveService, MakeupService, StatisticsService
 from utils.jwt import token_required, role_required
+from utils.api_response import success, error
 
 student_bp = Blueprint('student', __name__, url_prefix='/api/student')
+
+
+def _get_class_name():
+    """从当前用户 token 中获取班级名称，若不存在返回 None"""
+    return request.current_user.get('class', '') or None
 
 
 @student_bp.route('/punch', methods=['POST'])
 @token_required
 @role_required(['student', 'monitor'])
 def punch():
-    """
-    学生打卡接口
-    ---
-    请求体: {"latitude": 1.0, "longitude": 1.0, "device_id": "xxx"}
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
     user_id = request.current_user['user_id']
     data = request.get_json()
-    latitude = data.get('latitude')
-    longitude = data.get('longitude')
-    device_id = data.get('device_id')
-
-    result = PunchService.punch(user_id, latitude, longitude)
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }), 200
+    result = PunchService.punch(user_id, data.get('latitude'), data.get('longitude'))
+    return success(result)
 
 
 @student_bp.route('/punch-records', methods=['GET'])
 @token_required
 @role_required(['student', 'monitor'])
 def get_punch_records():
-    """
-    获取学生打卡记录
-    ---
-    查询参数: start_date, end_date, page, size
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
     user_id = request.current_user['user_id']
-    start_date = request.args.get('start_date')
-    end_date = request.args.get('end_date')
-    page = request.args.get('page', 1, type=int)
-    size = request.args.get('size', 50, type=int)
-
     result = PunchService.get_user_punch_records(
         user_id,
-        start_date=start_date,
-        end_date=end_date,
-        page=page,
-        size=size
+        start_date=request.args.get('start_date'),
+        end_date=request.args.get('end_date'),
+        page=request.args.get('page', 1, type=int),
+        size=request.args.get('size', 50, type=int)
     )
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }), 200
+    return success(result)
 
 
 @student_bp.route('/leave/apply', methods=['POST'])
 @token_required
 @role_required(['student', 'monitor'])
 def apply_leave():
-    """
-    学生提交请假申请
-    ---
-    请求体: {"start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD", "leave_type": "xxx", "reason": "xxx"}
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
     user_id = request.current_user['user_id']
     data = request.get_json()
-    start_date = data.get('start_date', '').strip()
-    end_date = data.get('end_date', '').strip()
-    leave_type = data.get('leave_type', 'personal')
-    reason = data.get('reason', '')
-
-    result = LeaveService.apply_leave(user_id, start_date, end_date, leave_type, reason)
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }), 200
+    result = LeaveService.apply_leave(
+        user_id,
+        data.get('start_date', '').strip(),
+        data.get('end_date', '').strip(),
+        data.get('leave_type', 'personal'),
+        data.get('reason', '')
+    )
+    return success(result)
 
 
 @student_bp.route('/leave/records', methods=['GET'])
 @token_required
 @role_required(['student', 'monitor'])
 def get_leave_records():
-    """
-    获取学生请假记录
-    ---
-    查询参数: status (pending/approved/rejected), page, size
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
     user_id = request.current_user['user_id']
-    status = request.args.get('status')
-    page = request.args.get('page', 1, type=int)
-    size = request.args.get('size', 50, type=int)
-
-    result = LeaveService.get_user_leave_records(user_id, page=page, size=size)
-    # 注意：这里如果需要按状态过滤，应该在 service 层处理，但目前是在 route 层过滤
-    # 为了保持一致，我将过滤逻辑移到 service 层或者在这里简单处理
-    if status and 'items' in result:
-        result['items'] = [r for r in result['items'] if r.get('leave_status') == status]
-        result['total'] = len(result['items']) # 简单处理
-        
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }), 200
+    result = LeaveService.get_user_leave_records(
+        user_id,
+        status=request.args.get('status'),
+        page=request.args.get('page', 1, type=int),
+        size=request.args.get('size', 50, type=int)
+    )
+    return success(result)
 
 
 @student_bp.route('/makeup/apply', methods=['POST'])
 @token_required
 @role_required(['student', 'monitor'])
 def apply_makeup():
-    """
-    学生提交补卡申请
-    ---
-    请求体: {"target_date": "YYYY-MM-DD", "reason": "xxx"}
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
     user_id = request.current_user['user_id']
     data = request.get_json()
-    target_date = data.get('target_date', '').strip()
-    reason = data.get('reason', '').strip()
-
-    if not target_date or not reason:
-        return jsonify({
-            'code': 4001,
-            'message': '补卡日期和原因不能为空'
-        }), 400
-
-    result = MakeupService.apply_makeup(user_id, target_date, reason)
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }), 200
+    result = MakeupService.apply_makeup(
+        user_id,
+        data.get('target_date', '').strip(),
+        data.get('reason', '').strip()
+    )
+    return success(result)
 
 
 @student_bp.route('/makeup/records', methods=['GET'])
 @token_required
 @role_required(['student', 'monitor'])
 def get_makeup_records():
-    """
-    获取学生补卡记录
-    ---
-    查询参数: page, size
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
     user_id = request.current_user['user_id']
-    page = request.args.get('page', 1, type=int)
-    size = request.args.get('size', 50, type=int)
-    
-    result = MakeupService.get_user_makeup_records(user_id, page=page, size=size)
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }), 200
-
-
-@student_bp.route('/notifications', methods=['GET'])
-@token_required
-@role_required(['student', 'monitor'])
-def get_notifications():
-    """
-    获取学生通知列表
-    ---
-    查询参数: unread_only (true/false), page, size
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
-    user_id = request.current_user['user_id']
-    unread_only = request.args.get('unread_only', 'false').lower() == 'true'
-    page = request.args.get('page', 1, type=int)
-    size = request.args.get('size', 50, type=int)
-
-    result = NotificationService.get_user_notifications(
+    result = MakeupService.get_user_makeup_records(
         user_id,
-        is_read=not unread_only if unread_only else None,
-        page=page,
-        size=size
+        page=request.args.get('page', 1, type=int),
+        size=request.args.get('size', 50, type=int)
     )
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }), 200
+    return success(result)
 
 
 @student_bp.route('/monitor/class-punch-status', methods=['GET'])
 @token_required
 @role_required(['monitor'])
 def get_monitor_class_punch_status():
-    """
-    班委获取班级打卡状态
-    ---
-    查询参数: date
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
-    user_id = request.current_user['user_id']
-    class_name = request.current_user.get('class', '')
-    date_str = request.args.get('date')
-
+    class_name = _get_class_name()
     if not class_name:
-        return jsonify({
-            'code': 4001,
-            'message': '班级信息不存在'
-        }), 400
+        return error('班级信息不存在', code=4001, http_status=400)
 
-    from services import StatisticsService
-    summary = StatisticsService.get_daily_statistics(class_name, date_str)
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': summary
-    }), 200
+    summary = StatisticsService.get_daily_statistics(class_name, request.args.get('date'))
+    return success(summary)
 
 
 @student_bp.route('/monitor/class-leaves', methods=['GET'])
 @token_required
 @role_required(['monitor'])
 def get_monitor_class_leaves():
-    """
-    班委获取班级待审批请假列表
-    ---
-    查询参数: page, size
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
-    user_id = request.current_user['user_id']
-    class_name = request.current_user.get('class', '')
-    page = request.args.get('page', 1, type=int)
-    size = request.args.get('size', 50, type=int)
-
+    class_name = _get_class_name()
     if not class_name:
-        return jsonify({
-            'code': 4001,
-            'message': '班级信息不存在'
-        }), 400
+        return error('班级信息不存在', code=4001, http_status=400)
 
-    result = LeaveService.get_pending_applications(class_name, page=page, size=size)
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }), 200
+    result = LeaveService.get_pending_applications(
+        class_name,
+        page=request.args.get('page', 1, type=int),
+        size=request.args.get('size', 50, type=int)
+    )
+    return success(result)
 
 
 @student_bp.route('/monitor/class-makeups', methods=['GET'])
 @token_required
 @role_required(['monitor'])
 def get_monitor_class_makeups():
-    """
-    班委获取班级待审批补卡列表
-    ---
-    查询参数: page, size
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
-    user_id = request.current_user['user_id']
-    class_name = request.current_user.get('class', '')
-    page = request.args.get('page', 1, type=int)
-    size = request.args.get('size', 50, type=int)
-
+    class_name = _get_class_name()
     if not class_name:
-        return jsonify({
-            'code': 4001,
-            'message': '班级信息不存在'
-        }), 400
+        return error('班级信息不存在', code=4001, http_status=400)
 
-    result = MakeupService.get_pending_makeup_applications(class_name, page=page, size=size)
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }), 200
+    result = MakeupService.get_pending_makeup_applications(
+        class_name,
+        page=request.args.get('page', 1, type=int),
+        size=request.args.get('size', 50, type=int)
+    )
+    return success(result)

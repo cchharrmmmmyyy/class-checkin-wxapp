@@ -43,23 +43,28 @@ class LeaveService:
         }
 
     @staticmethod
-    def get_user_leave_records(user_id, page=1, size=50):
+    def get_user_leave_records(user_id, status=None, page=1, size=50):
         where = "user_id = ? AND deleted_at IS NULL"
-        params = (user_id,)
-        
-        total = leave_dao.count(where=where, params=params)
+        params = [user_id]
+
+        if status:
+            where += " AND leave_status = ?"
+            params.append(status)
+
+        total = leave_dao.count(where=where, params=tuple(params))
         offset = (page - 1) * size
-        
+        params += [size, offset]
+
         conn = leave_dao.get_connection()
         try:
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT id, user_id, leave_start_date, leave_end_date, leave_type, leave_reason, leave_status, username "
                 "FROM v_leave_user_read "
-                "WHERE user_id = ? AND deleted_at IS NULL "
+                f"WHERE {where} "
                 "ORDER BY created_at DESC "
                 "LIMIT ? OFFSET ?",
-                (user_id, size, offset)
+                tuple(params)
             )
             records = cursor.fetchall()
         finally:
