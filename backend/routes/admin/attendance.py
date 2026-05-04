@@ -45,16 +45,16 @@ def export_attendance():
     records = result.get('items', [])
 
     output = io.StringIO()
-    output.write('﻿')
+    output.write('\ufeff')
     writer = csv.writer(output)
-    writer.writerow(['ID', '学号', '姓名', '打卡日期', '请假开始', '请假结束', '状态'])
+    writer.writerow(['ID', '学号', '姓名', '打卡日期', '请假开始日期', '请假结束日期', '状态'])
 
     for r in records:
         status = '-'
         if r['leave_status'] == 'pending':
             status = '待审批'
         elif r['leave_status'] == 'approved':
-            status = '已批准'
+            status = '已审批'
         elif r['leave_status'] == 'rejected':
             status = '已拒绝'
         elif r['punch_date']:
@@ -93,7 +93,7 @@ def create_attendance_record():
     )
     response = jsonify({
         'code': 200, 'message': 'success',
-        'data': {**result, 'migration_hint': 'è¯¥æ¥å£ä¸ºå¼å®¹å±ï¼è¯·è¿ç§»è³ /api/admin/attendance/punch-records æ /api/admin/attendance/leave-records'}
+        'data': {**result, 'migration_hint': '该接口为兼容层，请迁移至 /api/admin/attendance/punch-records �?/api/admin/attendance/leave-records'}
     })
     response.status_code = 200
     return mark_legacy_route(response)
