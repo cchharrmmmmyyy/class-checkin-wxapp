@@ -4,6 +4,7 @@
 """
 from flask import Blueprint, jsonify, request
 from services import AuthService
+from utils.api_response import success, error
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 
@@ -11,40 +12,37 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 @auth_bp.route('/login', methods=['POST'])
 def login():
     """
-    用户登录接口
+    统一登录接口（小程序 + 网页管理后台）
     ---
+    请求头: X-Client-Type: miniprogram（小程序端必传，网页端不传）
     请求体: {"user_id": "xxx", "password": "xxx"}
-    返回: {"code": 200, "message": "success", "data": {"token": "...", "user": {...}, "redirect_url": "..."}}
     """
     data = request.get_json()
     user_id = data.get('user_id', '').strip()
     password = data.get('password', '').strip()
+    is_web = request.headers.get('X-Client-Type') != 'miniprogram'
 
     if not user_id or not password:
-        return jsonify({
-            'code': 1000,
-            'message': '学号/工号和密码不能为空'
-        }), 400
+        return error('学号/工号和密码不能为空', 1000, 400)
 
     if len(user_id) < 6 or len(user_id) > 12:
-        return jsonify({
-            'code': 1000,
-            'message': '学号/工号或密码错误'
-        }), 400
+        return error('学号/工号或密码错误', 1000, 400)
 
     if len(password) < 6 or len(password) > 20:
-        return jsonify({
-            'code': 1000,
-            'message': '学号/工号或密码错误'
-        }), 400
+        return error('学号/工号或密码错误', 1000, 400)
 
     result = AuthService.login(user_id, password)
 
-    return jsonify({
-        'code': 200,
-        'message': 'success',
-        'data': result
-    }), 200
+    if is_web and result['user']['role'] != 'admin':
+        return error('无管理员权限', 2003, 403)
+
+    resp, status = success(result)
+
+    if is_web:
+        resp.set_cookie('adminToken', result['token'],
+                        httponly=True, max_age=86400)
+
+    return resp, status
 
 
 @auth_bp.route('/change-password', methods=['POST'])

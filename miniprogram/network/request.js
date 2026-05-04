@@ -59,6 +59,7 @@ const requestCore = (path, method = 'GET', data = {}, options = {}) => {
       data: shouldQuery ? undefined : data,
       header: {
         'Content-Type': 'application/json',
+        'X-Client-Type': 'miniprogram',
         Authorization: token ? `Bearer ${token}` : '',
         ...(options.headers || {})
       },

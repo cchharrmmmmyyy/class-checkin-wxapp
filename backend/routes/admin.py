@@ -20,26 +20,6 @@ def _parse_bool_arg(name, default=False):
     return str(raw).lower() in ('1', 'true', 'yes', 'on')
 
 
-@admin_bp.route('/login', methods=['POST'])
-def admin_login():
-    """
-    管理员登录接口
-    ---
-    请求体: {"user_id": "xxx", "password": "xxx"}
-    返回: {"code": 200, "message": "success", "data": {"token": "...", "user": {...}, "redirect_url": "..."}}
-    """
-    from services import AuthService
-    data = request.get_json()
-    user_id = data.get('user_id', '').strip()
-    password = data.get('password', '').strip()
-
-    if not user_id or not password:
-        return jsonify({'code': 1000, 'message': '账号和密码不能为空'}), 400
-
-    result = AuthService.login(user_id, password)
-    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
-
-
 @admin_bp.route('/users', methods=['GET'])
 @token_required
 @role_required(['admin'])

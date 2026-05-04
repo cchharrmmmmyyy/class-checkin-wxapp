@@ -114,14 +114,13 @@
           loading.value = true;
 
           try {
-            const { data } = await axios.post('/api/admin/login', {
+            const resp = await axios.post('/api/login', {
               user_id: form.user_id.trim(),
               password: form.password
             });
 
-            localStorage.setItem('token', data.data.token);
-            document.cookie = 'adminToken=' + data.data.token + ';path=/;max-age=86400;SameSite=Lax';
-            window.location.href = data.data.redirect_url;
+            localStorage.setItem('token', resp.data.data.token);
+            window.location.href = resp.data.data.redirect_url;
 
           } catch (error) {
             globalError.value = error.response?.data?.message || error.message || '登录失败';
