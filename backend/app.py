@@ -1,6 +1,11 @@
 from flask import Flask, send_from_directory, request
 from werkzeug.exceptions import HTTPException
-from routes import auth_bp, student_bp, teacher_bp, admin_bp, common_bp
+from routes import (
+    auth_bp, student_bp, teacher_bp,
+    admin_user_bp, admin_org_bp, admin_teaching_bp,
+    admin_rule_bp, admin_attendance_bp, admin_dashboard_bp,
+    common_bp
+)
 from db import check_and_init_database
 from config import Config
 from utils.exceptions import ServiceException
@@ -14,7 +19,12 @@ app.secret_key = Config.SECRET_KEY
 app.register_blueprint(auth_bp)
 app.register_blueprint(student_bp)
 app.register_blueprint(teacher_bp)
-app.register_blueprint(admin_bp)
+app.register_blueprint(admin_user_bp)
+app.register_blueprint(admin_org_bp)
+app.register_blueprint(admin_teaching_bp)
+app.register_blueprint(admin_rule_bp)
+app.register_blueprint(admin_attendance_bp)
+app.register_blueprint(admin_dashboard_bp)
 app.register_blueprint(common_bp)
 
 

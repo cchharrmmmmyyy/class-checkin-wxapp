@@ -1,6 +1,6 @@
 """
 认证路由模块
-提供登录、修改密码、获取当前用户信息等接口
+提供登录、修改密码
 """
 from flask import Blueprint, jsonify, request
 from services import AuthService
@@ -77,29 +77,3 @@ def change_password():
         }), 200
 
     return _change_password()
-
-
-@auth_bp.route('/current-user', methods=['GET'])
-def get_current_user():
-    """
-    获取当前用户信息（需要登录）
-    ---
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
-    from utils.jwt import token_required
-
-    @token_required
-    def _get_current_user():
-        user = request.current_user
-        return jsonify({
-            'code': 200,
-            'message': 'success',
-            'data': {
-                'user_id': user.get('user_id'),
-                'username': user.get('username'),
-                'role': user.get('role'),
-                'class': user.get('class')
-            }
-        }), 200
-
-    return _get_current_user()

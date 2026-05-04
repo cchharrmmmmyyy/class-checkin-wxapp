@@ -1,0 +1,235 @@
+from flask import Blueprint, jsonify, request
+from services import AdminService
+from utils.jwt import token_required, role_required
+from utils.parse_args import parse_bool_arg
+
+admin_org_bp = Blueprint('admin_org', __name__, url_prefix='/api/admin')
+
+
+# ---- 校区 ----
+
+@admin_org_bp.route('/org/campuses', methods=['GET'])
+@token_required
+@role_required(['admin'])
+def list_campuses():
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 20, type=int)
+    name = request.args.get('name', '').strip() or None
+    result = AdminService.list_campuses(name=name, page=page, size=size)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/campuses', methods=['POST'])
+@token_required
+@role_required(['admin'])
+def create_campus():
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()
+    address = data.get('address')
+    result = AdminService.save_campus(None, name, address)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/campuses/<int:campus_id>', methods=['PUT'])
+@token_required
+@role_required(['admin'])
+def update_campus(campus_id):
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()
+    address = data.get('address')
+    result = AdminService.save_campus(campus_id, name, address)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/campuses/<int:campus_id>', methods=['DELETE'])
+@token_required
+@role_required(['admin'])
+def delete_campus(campus_id):
+    result = AdminService.delete_campus(campus_id)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+# ---- 院系 ----
+
+@admin_org_bp.route('/org/departments', methods=['GET'])
+@token_required
+@role_required(['admin'])
+def list_departments():
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 20, type=int)
+    campus_id = request.args.get('campus_id', type=int)
+    name = request.args.get('name', '').strip() or None
+    result = AdminService.list_departments(campus_id=campus_id, name=name, page=page, size=size)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/departments', methods=['POST'])
+@token_required
+@role_required(['admin'])
+def create_department():
+    data = request.get_json() or {}
+    campus_id = data.get('campus_id')
+    name = (data.get('name') or '').strip()
+    code = data.get('code')
+    result = AdminService.save_department(None, campus_id, name, code)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/departments/<int:department_id>', methods=['PUT'])
+@token_required
+@role_required(['admin'])
+def update_department(department_id):
+    data = request.get_json() or {}
+    campus_id = data.get('campus_id')
+    name = (data.get('name') or '').strip()
+    code = data.get('code')
+    result = AdminService.save_department(department_id, campus_id, name, code)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/departments/<int:department_id>', methods=['DELETE'])
+@token_required
+@role_required(['admin'])
+def delete_department(department_id):
+    result = AdminService.delete_department(department_id)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+# ---- 专业 ----
+
+@admin_org_bp.route('/org/majors', methods=['GET'])
+@token_required
+@role_required(['admin'])
+def list_majors():
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 20, type=int)
+    department_id = request.args.get('department_id', type=int)
+    name = request.args.get('name', '').strip() or None
+    result = AdminService.list_majors(department_id=department_id, name=name, page=page, size=size)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/majors', methods=['POST'])
+@token_required
+@role_required(['admin'])
+def create_major():
+    data = request.get_json() or {}
+    department_id = data.get('department_id')
+    name = (data.get('name') or '').strip()
+    code = data.get('code')
+    result = AdminService.save_major(None, department_id, name, code)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/majors/<int:major_id>', methods=['PUT'])
+@token_required
+@role_required(['admin'])
+def update_major(major_id):
+    data = request.get_json() or {}
+    department_id = data.get('department_id')
+    name = (data.get('name') or '').strip()
+    code = data.get('code')
+    result = AdminService.save_major(major_id, department_id, name, code)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/majors/<int:major_id>', methods=['DELETE'])
+@token_required
+@role_required(['admin'])
+def delete_major(major_id):
+    result = AdminService.delete_major(major_id)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+# ---- 年级 ----
+
+@admin_org_bp.route('/org/grades', methods=['GET'])
+@token_required
+@role_required(['admin'])
+def list_grades():
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 20, type=int)
+    major_id = request.args.get('major_id', type=int)
+    year = request.args.get('year', type=int)
+    result = AdminService.list_grades(major_id=major_id, year=year, page=page, size=size)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/grades', methods=['POST'])
+@token_required
+@role_required(['admin'])
+def create_grade():
+    data = request.get_json() or {}
+    major_id = data.get('major_id')
+    year = data.get('year')
+    name = (data.get('name') or '').strip()
+    result = AdminService.save_grade(None, major_id, year, name)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/grades/<int:grade_id>', methods=['PUT'])
+@token_required
+@role_required(['admin'])
+def update_grade(grade_id):
+    data = request.get_json() or {}
+    major_id = data.get('major_id')
+    year = data.get('year')
+    name = (data.get('name') or '').strip()
+    result = AdminService.save_grade(grade_id, major_id, year, name)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/grades/<int:grade_id>', methods=['DELETE'])
+@token_required
+@role_required(['admin'])
+def delete_grade(grade_id):
+    result = AdminService.delete_grade(grade_id)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+# ---- 班级 ----
+
+@admin_org_bp.route('/org/classes', methods=['GET'])
+@token_required
+@role_required(['admin'])
+def list_classes():
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 20, type=int)
+    grade_id = request.args.get('grade_id', type=int)
+    class_name = request.args.get('class_name', '').strip() or None
+    include_deleted = parse_bool_arg('include_deleted', False)
+    result = AdminService.list_classes(
+        grade_id=grade_id, class_name=class_name, page=page, size=size,
+        include_deleted=include_deleted
+    )
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/classes', methods=['POST'])
+@token_required
+@role_required(['admin'])
+def create_class():
+    data = request.get_json() or {}
+    class_name = (data.get('class_name') or '').strip()
+    grade_id = data.get('grade_id')
+    result = AdminService.save_class(None, class_name, grade_id)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/classes/<class_name>', methods=['PUT'])
+@token_required
+@role_required(['admin'])
+def update_class(class_name):
+    data = request.get_json() or {}
+    new_class_name = (data.get('class_name') or class_name).strip()
+    grade_id = data.get('grade_id')
+    result = AdminService.save_class(class_name, new_class_name, grade_id)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
+
+
+@admin_org_bp.route('/org/classes/<class_name>', methods=['DELETE'])
+@token_required
+@role_required(['admin'])
+def delete_class(class_name):
+    result = AdminService.delete_class(class_name)
+    return jsonify({'code': 200, 'message': 'success', 'data': result}), 200
