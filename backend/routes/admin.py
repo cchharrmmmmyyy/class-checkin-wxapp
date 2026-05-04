@@ -7,7 +7,7 @@ import io
 from datetime import date
 from flask import Blueprint, jsonify, request, send_file
 from services import AdminService, ConfigService, StatisticsService
-from utils.auth import token_required, role_required
+from utils.jwt import token_required, role_required
 from utils.api_response import mark_legacy_route
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')

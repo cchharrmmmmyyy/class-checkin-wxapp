@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from utils.db import verify_password, execute_update
 from dao import UserDAO, ClassTeacherDAO
-from utils.auth import generate_token
+from utils.jwt import generate_token
 from utils.exceptions import ServiceException
 
 # 创建DAO实例

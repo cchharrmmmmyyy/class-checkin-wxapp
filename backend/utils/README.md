@@ -28,8 +28,8 @@
 - `execute_query_one(sql, params)` — 执行查询，返回单行
 - `execute_update(sql, params)` — 执行写操作（INSERT/UPDATE/DELETE），返回影响行数
 
-### `auth.py`
-**认证工具** — JWT Token 管理与装饰器。
+### `jwt.py`
+**JWT 工具** — Token 管理与装饰器。
 
 - `generate_token(user_id, username, role, user_class)` — 生成 HS256 签名的 JWT
 - `decode_token(token)` — 解码并验证 Token

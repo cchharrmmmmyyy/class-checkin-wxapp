@@ -1,11 +1,11 @@
 from flask import Flask, send_from_directory, request
 from werkzeug.exceptions import HTTPException
-from routes import auth_bp, student_bp, teacher_bp, admin_bp, common_bp, compat_bp
+from routes import auth_bp, student_bp, teacher_bp, admin_bp, common_bp
 from db import check_and_init_database
 from config import Config
 from utils.exceptions import ServiceException
 from utils.api_response import error, success
-from utils.auth import decode_token
+from utils.jwt import decode_token
 
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -16,7 +16,6 @@ app.register_blueprint(student_bp)
 app.register_blueprint(teacher_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(common_bp)
-app.register_blueprint(compat_bp)
 
 
 @app.errorhandler(ServiceException)

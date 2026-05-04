@@ -4,7 +4,7 @@
 """
 from flask import Blueprint, jsonify, request
 from services import NotificationService, LogService
-from utils.auth import token_required, role_required
+from utils.jwt import token_required, role_required
 
 common_bp = Blueprint('common', __name__, url_prefix='/api')
 

@@ -55,7 +55,7 @@ def change_password():
     请求体: {"old_password": "xxx", "new_password": "xxx"}
     返回: {"code": 200, "message": "success", "data": {...}}
     """
-    from utils.auth import token_required
+    from utils.jwt import token_required
 
     @token_required
     def _change_password():
@@ -88,7 +88,7 @@ def get_current_user():
     ---
     返回: {"code": 200, "message": "success", "data": {...}}
     """
-    from utils.auth import token_required
+    from utils.jwt import token_required
 
     @token_required
     def _get_current_user():

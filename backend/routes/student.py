@@ -4,7 +4,7 @@
 """
 from flask import Blueprint, jsonify, request
 from services import PunchService, LeaveService, MakeupService, NotificationService
-from utils.auth import token_required, role_required
+from utils.jwt import token_required, role_required
 
 student_bp = Blueprint('student', __name__, url_prefix='/api/student')
 

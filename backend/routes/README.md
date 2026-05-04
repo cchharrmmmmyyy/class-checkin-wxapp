@@ -5,7 +5,7 @@ HTTP 接口暴露层，每个文件是一个 Flask Blueprint。只做参数校�
 ## 文件说明
 
 ### `__init__.py`
-集中注册并导出所有 Blueprint：`auth_bp`、`student_bp`、`teacher_bp`、`admin_bp`、`common_bp`、`compat_bp`。
+集中注册并导出所有 Blueprint：`auth_bp`、`student_bp`、`teacher_bp`、`admin_bp`、`common_bp`。
 
 ### `auth.py`
 认证相关接口，挂载在 `/api` 下。
@@ -68,5 +68,5 @@ HTTP 接口暴露层，每个文件是一个 Flask Blueprint。只做参数校�
 | `GET /notifications/unread-count` | 获取未读通知数量 |
 | `GET /operation-logs` | 查看操作日志 |
 
-### `compat.py`
-旧版 API 兼容层，挂载在 `/api` 下。将旧版复数路由（如 `/api/student/punches`）映射到新版 Service，并在响应头中加入 `Deprecation` 和 `Sunset`（2026-07-31）提示。过渡期结束后可删除此文件。
+### `compat.py`（已删除）
+旧版 API 兼容层已于 2026-05-04 移除，小程序未引用任何旧路径。
