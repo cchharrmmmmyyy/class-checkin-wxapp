@@ -103,7 +103,7 @@ def get_makeup_records():
 def get_monitor_class_punch_status():
     class_name = _get_class_name()
     if not class_name:
-        return error('班级信息不存在', code=4001, http_status=400)
+        return error(message='班级信息不存在', code=4001, http_status=400)
 
     summary = StatisticsService.get_daily_statistics(class_name, request.args.get('date'))
     return success(summary)
@@ -115,7 +115,7 @@ def get_monitor_class_punch_status():
 def get_monitor_class_leaves():
     class_name = _get_class_name()
     if not class_name:
-        return error('班级信息不存在', code=4001, http_status=400)
+        return error(message='班级信息不存在', code=4001, http_status=400)
 
     result = LeaveService.get_pending_applications(
         class_name,
@@ -131,7 +131,7 @@ def get_monitor_class_leaves():
 def get_monitor_class_makeups():
     class_name = _get_class_name()
     if not class_name:
-        return error('班级信息不存在', code=4001, http_status=400)
+        return error(message='班级信息不存在', code=4001, http_status=400)
 
     result = MakeupService.get_pending_makeup_applications(
         class_name,

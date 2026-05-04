@@ -7,7 +7,7 @@ admin_dashboard_bp = Blueprint('admin_dashboard', __name__, url_prefix='/api/adm
 
 
 @admin_dashboard_bp.route('/dashboard/stats', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def dashboard_stats():
     result = AdminService.get_dashboard_stats()
@@ -15,7 +15,7 @@ def dashboard_stats():
 
 
 @admin_dashboard_bp.route('/dashboard/trend', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def dashboard_trend():
     days = request.args.get('days', 7, type=int)
@@ -24,7 +24,7 @@ def dashboard_trend():
 
 
 @admin_dashboard_bp.route('/config', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def get_config():
     config = ConfigService.get_punch_config()
@@ -32,7 +32,7 @@ def get_config():
 
 
 @admin_dashboard_bp.route('/config', methods=['PUT'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def update_config():
     data = request.get_json()
@@ -41,7 +41,7 @@ def update_config():
 
 
 @admin_dashboard_bp.route('/punch-location', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def get_punch_location():
     result = AdminService.get_punch_location()
@@ -54,7 +54,7 @@ def get_punch_location():
 
 
 @admin_dashboard_bp.route('/punch-location', methods=['POST'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def set_punch_location():
     data = request.get_json() or {}

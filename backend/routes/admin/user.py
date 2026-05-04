@@ -6,7 +6,7 @@ admin_user_bp = Blueprint('admin_user', __name__, url_prefix='/api/admin')
 
 
 @admin_user_bp.route('/users', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def get_users():
     class_name = request.args.get('class_name', '').strip() or None
@@ -21,7 +21,7 @@ def get_users():
 
 
 @admin_user_bp.route('/users', methods=['POST'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def create_user():
     data = request.get_json()
@@ -39,7 +39,7 @@ def create_user():
 
 
 @admin_user_bp.route('/users/<user_id>', methods=['PUT'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def update_user(user_id):
     data = request.get_json()
@@ -53,7 +53,7 @@ def update_user(user_id):
 
 
 @admin_user_bp.route('/users/<user_id>', methods=['DELETE'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def delete_user(user_id):
     result = AdminService.delete_user(user_id)
@@ -61,7 +61,7 @@ def delete_user(user_id):
 
 
 @admin_user_bp.route('/users/reset-password', methods=['POST'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def admin_reset_password():
     data = request.get_json()

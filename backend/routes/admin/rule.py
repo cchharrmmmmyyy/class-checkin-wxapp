@@ -9,7 +9,7 @@ admin_rule_bp = Blueprint('admin_rule', __name__, url_prefix='/api/admin')
 # ---- 时间段 ----
 
 @admin_rule_bp.route('/rules/time-slots', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def list_time_slots():
     page = request.args.get('page', 1, type=int)
@@ -24,7 +24,7 @@ def list_time_slots():
 
 
 @admin_rule_bp.route('/rules/time-slots', methods=['POST'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def create_time_slot():
     data = request.get_json() or {}
@@ -36,7 +36,7 @@ def create_time_slot():
 
 
 @admin_rule_bp.route('/rules/time-slots/<int:slot_id>', methods=['PUT'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def update_time_slot(slot_id):
     data = request.get_json() or {}
@@ -48,7 +48,7 @@ def update_time_slot(slot_id):
 
 
 @admin_rule_bp.route('/rules/time-slots/<int:slot_id>', methods=['DELETE'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def delete_time_slot(slot_id):
     result = AdminService.delete_time_slot(slot_id)
@@ -58,7 +58,7 @@ def delete_time_slot(slot_id):
 # ---- 围栏 ----
 
 @admin_rule_bp.route('/rules/punch-geofences', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def list_punch_geofences():
     page = request.args.get('page', 1, type=int)
@@ -75,7 +75,7 @@ def list_punch_geofences():
 
 
 @admin_rule_bp.route('/rules/punch-geofences', methods=['POST'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def create_punch_geofence():
     data = request.get_json() or {}
@@ -93,7 +93,7 @@ def create_punch_geofence():
 
 
 @admin_rule_bp.route('/rules/punch-geofences/<int:geofence_id>', methods=['PUT'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def update_punch_geofence(geofence_id):
     data = request.get_json() or {}
@@ -111,7 +111,7 @@ def update_punch_geofence(geofence_id):
 
 
 @admin_rule_bp.route('/rules/punch-geofences/<int:geofence_id>', methods=['DELETE'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def delete_punch_geofence(geofence_id):
     result = AdminService.delete_geofence(geofence_id)
@@ -121,7 +121,7 @@ def delete_punch_geofence(geofence_id):
 # ---- 打卡规则 ----
 
 @admin_rule_bp.route('/rules/punch-rules', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def list_punch_rules():
     page = request.args.get('page', 1, type=int)
@@ -138,7 +138,7 @@ def list_punch_rules():
 
 
 @admin_rule_bp.route('/rules/punch-rules', methods=['POST'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def create_punch_rule():
     data = request.get_json() or {}
@@ -155,7 +155,7 @@ def create_punch_rule():
 
 
 @admin_rule_bp.route('/rules/punch-rules/<int:rule_id>', methods=['PUT'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def update_punch_rule(rule_id):
     data = request.get_json() or {}
@@ -172,7 +172,7 @@ def update_punch_rule(rule_id):
 
 
 @admin_rule_bp.route('/rules/punch-rules/<int:rule_id>', methods=['DELETE'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def delete_punch_rule(rule_id):
     result = AdminService.delete_punch_rule(rule_id)

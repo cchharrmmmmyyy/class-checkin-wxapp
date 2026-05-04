@@ -18,7 +18,7 @@ def success(data=None, message='success', code=200, http_status=200):
     return jsonify(payload), http_status
 
 
-def error(message, code, http_status=400, data=None):
+def error(data=None, message='', code=0, http_status=400):
     payload = {
         'code': code,
         'message': message,

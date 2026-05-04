@@ -10,7 +10,7 @@ admin_attendance_bp = Blueprint('admin_attendance', __name__, url_prefix='/api/a
 
 
 @admin_attendance_bp.route('/attendance-records', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def get_attendance_records():
     username = request.args.get('username', '').strip() or None
@@ -29,7 +29,7 @@ def get_attendance_records():
 
 
 @admin_attendance_bp.route('/attendance/export', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def export_attendance():
     username = request.args.get('username', '').strip() or None
@@ -73,7 +73,7 @@ def export_attendance():
 
 
 @admin_attendance_bp.route('/attendance-records', methods=['POST'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def create_attendance_record():
     data = request.get_json() or {}
@@ -93,14 +93,14 @@ def create_attendance_record():
     )
     response = jsonify({
         'code': 200, 'message': 'success',
-        'data': {**result, 'migration_hint': '该接口为兼容层，请迁移至 /api/admin/attendance/punch-records 或 /api/admin/attendance/leave-records'}
+        'data': {**result, 'migration_hint': 'è¯¥æ¥å£ä¸ºå¼å®¹å±ï¼è¯·è¿ç§»è³ /api/admin/attendance/punch-records æ /api/admin/attendance/leave-records'}
     })
     response.status_code = 200
     return mark_legacy_route(response)
 
 
 @admin_attendance_bp.route('/attendance-records/<int:record_id>', methods=['DELETE'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def delete_attendance_record(record_id):
     result = AdminService.delete_attendance_record(record_id)
@@ -110,7 +110,7 @@ def delete_attendance_record(record_id):
 # ---- 打卡记录 ----
 
 @admin_attendance_bp.route('/attendance/punch-records', methods=['POST'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def create_punch_record():
     data = request.get_json() or {}
@@ -127,7 +127,7 @@ def create_punch_record():
 
 
 @admin_attendance_bp.route('/attendance/punch-records/<int:record_id>', methods=['PUT'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def update_punch_record(record_id):
     data = request.get_json() or {}
@@ -144,7 +144,7 @@ def update_punch_record(record_id):
 
 
 @admin_attendance_bp.route('/attendance/punch-records/<int:record_id>', methods=['DELETE'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def delete_punch_record(record_id):
     result = AdminService.delete_punch_record(record_id)
@@ -154,7 +154,7 @@ def delete_punch_record(record_id):
 # ---- 请假记录 ----
 
 @admin_attendance_bp.route('/attendance/leave-records', methods=['POST'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def create_leave_record():
     data = request.get_json() or {}
@@ -173,7 +173,7 @@ def create_leave_record():
 
 
 @admin_attendance_bp.route('/attendance/leave-records/<int:record_id>', methods=['PUT'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def update_leave_record(record_id):
     data = request.get_json() or {}
@@ -185,7 +185,7 @@ def update_leave_record(record_id):
 
 
 @admin_attendance_bp.route('/attendance/leave-records/<int:record_id>', methods=['DELETE'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def delete_leave_record(record_id):
     result = AdminService.delete_leave_record(record_id)

@@ -7,7 +7,7 @@ admin_teaching_bp = Blueprint('admin_teaching', __name__, url_prefix='/api/admin
 
 
 @admin_teaching_bp.route('/teaching/assignments', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def list_teaching_assignments():
     page = request.args.get('page', 1, type=int)
@@ -24,7 +24,7 @@ def list_teaching_assignments():
 
 
 @admin_teaching_bp.route('/teaching/assignments', methods=['POST'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def create_teaching_assignment():
     data = request.get_json() or {}
@@ -36,7 +36,7 @@ def create_teaching_assignment():
 
 
 @admin_teaching_bp.route('/teaching/assignments/<class_name>/<teacher_id>', methods=['PUT'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def update_teaching_assignment(class_name, teacher_id):
     data = request.get_json() or {}
@@ -46,7 +46,7 @@ def update_teaching_assignment(class_name, teacher_id):
 
 
 @admin_teaching_bp.route('/teaching/assignments/<class_name>/<teacher_id>', methods=['DELETE'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin'])
 def delete_teaching_assignment(class_name, teacher_id):
     result = AdminService.delete_teaching_assignment(class_name, teacher_id)

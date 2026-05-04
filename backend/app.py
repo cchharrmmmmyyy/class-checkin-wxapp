@@ -8,7 +8,7 @@ from routes import (
 )
 from db import check_and_init_database
 from config import Config
-from utils.exceptions import ServiceException
+from utils.exceptions import ServiceException, AuthenticationException
 from utils.api_response import error, success
 from utils.jwt import decode_token
 
@@ -27,24 +27,29 @@ app.register_blueprint(admin_attendance_bp)
 app.register_blueprint(admin_dashboard_bp)
 app.register_blueprint(common_bp)
 
+# 全局异常处理函数，拦截整个应用中未被手动捕获的异常，统一转换为 API 响应格式。
+@app.errorhandler(AuthenticationException)# 处理认证异常
+def handle_auth_exception(e):
+    return error(message=e.message, code=e.code, http_status=e.http_status)
 
-@app.errorhandler(ServiceException)
+
+@app.errorhandler(ServiceException)# 处理服务异常
 def handle_service_exception(e):
-    return error(e.message, e.code, e.http_status)
+    return error(message=e.message, code=e.code, http_status=e.http_status)
 
-
+# 拦截所有异常，包括 HTTPException，返回统一的错误响应。
 @app.errorhandler(Exception)
 def handle_generic_exception(e):
     if isinstance(e, HTTPException):
-        return error(e.description, e.code, e.code)
+        return error(message=e.description, code=e.code, http_status=e.code)
     if Config.FLASK_DEBUG:
-        return error(f'服务器内部错误: {str(e)}', 500, 500)
-    return error('服务器内部错误', 500, 500)
+        return error(message=f'服务器内部错误: {str(e)}', code=500, http_status=500)
+    return error(message='服务器内部错误', code=500, http_status=500)
 
 
 @app.route('/admin')
 def admin_page():
-    token = request.cookies.get('adminToken')
+    token = request.cookies.get('token')
     if token:
         payload = decode_token(token)
         if payload and payload.get('role') == 'admin':
@@ -60,7 +65,7 @@ def health_check():
 @app.route('/<path:path>')
 def fallback(path):
     if path.startswith('api/'):
-        return error('接口不存在', 404, 404)
+        return error(message='接口不存在', code=404, http_status=404)
     return send_from_directory('templates', 'login.html')
 
 

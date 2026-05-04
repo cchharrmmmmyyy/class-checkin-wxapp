@@ -23,23 +23,23 @@ def login():
     is_web = request.headers.get('X-Client-Type') != 'miniprogram'
 
     if not user_id or not password:
-        return error('学号/工号和密码不能为空', 1000, 400)
+        return error(message='学号/工号和密码不能为空', code=1000, http_status=400)
 
     if len(user_id) < 6 or len(user_id) > 12:
-        return error('学号/工号或密码错误', 1000, 400)
+        return error(message='学号/工号或密码错误', code=1000, http_status=400)
 
     if len(password) < 6 or len(password) > 20:
-        return error('学号/工号或密码错误', 1000, 400)
+        return error(message='学号/工号或密码错误', code=1000, http_status=400)
 
     result = AuthService.login(user_id, password)
 
     if is_web and result['user']['role'] != 'admin':
-        return error('无管理员权限', 2003, 403)
+        return error(message='无管理员权限', code=2003, http_status=403)
 
     resp, status = success(result)
 
     if is_web:
-        resp.set_cookie('adminToken', result['token'],
+        resp.set_cookie('token', result['token'],
                         httponly=True, max_age=86400)
 
     return resp, status

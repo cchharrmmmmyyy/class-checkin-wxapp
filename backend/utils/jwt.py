@@ -9,7 +9,7 @@ from datetime import timezone
 from functools import wraps
 from flask import request
 from config import Config
-from utils.api_response import error
+from utils.exceptions import AuthenticationException
 
 SECRET_KEY = Config.SECRET_KEY
 TOKEN_EXPIRE_HOURS = Config.TOKEN_EXPIRE_HOURS
@@ -41,34 +41,42 @@ def decode_token(token):
     except jwt.InvalidTokenError:
         return None
 
-def token_required(f):
+def token_required(f=None, *, allow_cookie=False):
     """
     装饰器：验证JWT令牌
+    allow_cookie: 是否支持从Cookie获取token（网页端用）
     """
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            token = None
 
-        if 'Authorization' in request.headers:
-            auth_header = request.headers['Authorization']
-            try:
-                token = auth_header.split(' ')[1]
-            except IndexError:
-                return error('令牌格式错误', 401, 401)
-        elif 'token' in request.args:
-            token = request.args['token']
+            if 'Authorization' in request.headers:
+                auth_header = request.headers['Authorization']
+                try:
+                    token = auth_header.split(' ')[1]
+                except IndexError:
+                    raise AuthenticationException('令牌格式错误')
+            elif 'token' in request.args:
+                token = request.args['token']
+            elif allow_cookie and 'token' in request.cookies:
+                token = request.cookies.get('token')
 
-        if not token:
-            return error('缺少令牌', 401, 401)
+            if not token:
+                raise AuthenticationException('缺少令牌')
 
-        payload = decode_token(token)
-        if not payload:
-            return error('令牌无效或已过期', 401, 401)
+            payload = decode_token(token)
+            if not payload:
+                raise AuthenticationException('令牌无效或已过期')
 
-        request.current_user = payload
-        return f(*args, **kwargs)
+            request.current_user = payload
+            return f(*args, **kwargs)
 
-    return decorated
+        return decorated
+
+    if f is not None:
+        return decorator(f)
+    return decorator
 
 def role_required(allowed_roles):
     """
@@ -82,43 +90,16 @@ def role_required(allowed_roles):
         @wraps(f)
         def decorated(*args, **kwargs):
             if not hasattr(request, 'current_user'):
-                return error('请先登录', 401, 401)
+                raise AuthenticationException('请先登录')
 
             user_role = request.current_user.get('role')
             if user_role not in allowed_roles:
-                return error(f'权限不足，需要角色: {", ".join(allowed_roles)}', 403, 403)
+                raise AuthenticationException(
+                    f'权限不足，需要角色: {", ".join(allowed_roles)}',
+                    code=403,
+                    http_status=403
+                )
 
             return f(*args, **kwargs)
         return decorated
     return decorator
-
-def web_token_required(f):
-    """
-    装饰器：验证JWT令牌（网页端专用，支持从Cookie获取token）
-    """
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-
-        if 'Authorization' in request.headers:
-            auth_header = request.headers['Authorization']
-            try:
-                token = auth_header.split(' ')[1]
-            except IndexError:
-                return error('令牌格式错误', 401, 401)
-        elif 'token' in request.args:
-            token = request.args['token']
-        elif not token and 'adminToken' in request.cookies:
-            token = request.cookies.get('adminToken')
-
-        if not token:
-            return error('缺少令牌', 401, 401)
-
-        payload = decode_token(token)
-        if not payload:
-            return error('令牌无效或已过期', 401, 401)
-
-        request.current_user = payload
-        return f(*args, **kwargs)
-
-    return decorated

@@ -119,7 +119,6 @@
               password: form.password
             });
 
-            localStorage.setItem('token', resp.data.data.token);
             window.location.href = resp.data.data.redirect_url;
 
           } catch (error) {

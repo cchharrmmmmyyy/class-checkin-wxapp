@@ -923,29 +923,16 @@
     const { createApp, ref, reactive, onMounted, watch, nextTick, computed } = Vue;
     const { ElMessage, ElMessageBox } = ElementPlus;
 
-    let token = localStorage.getItem('token');
-
-    if (token) {
-      window.history.replaceState({}, '', window.location.pathname);
-    } else {
-      window.location.href = '/login.html';
-    }
-
     const app = createApp({
       setup() {
-        const userStr = localStorage.getItem('admin_user');
-        const currentUser = ref(userStr ? JSON.parse(userStr).username : '管理员');
+        const currentUser = ref('管理员');
 
         const currentTab = ref('dashboard');
         const loading = ref(false);
         const saving = ref(false);
         const statsReady = ref(false);
 
-        const request = axios.create({ baseURL: '/api', timeout: 20000 });
-        request.interceptors.request.use(config => {
-          config.headers.Authorization = `Bearer ${token}`;
-          return config;
-        });
+        const request = axios.create({ baseURL: '/api', timeout: 20000, withCredentials: true });
         request.interceptors.response.use(
           response => {
             const res = response.data;
@@ -964,10 +951,9 @@
           },
           error => {
             if (error.response?.status === 401) {
-              localStorage.clear();
-              document.cookie = 'adminToken=;path=/;max-age=0';
+              document.cookie = 'token=;path=/;max-age=0';
               ElMessage.error('登录已过期，请重新登录');
-              setTimeout(() => { window.location.href = '/login.html'; }, 1000);
+              setTimeout(() => { window.location.href = '/admin'; }, 1000);
             } else {
               ElMessage.error(error.response?.data?.message || error.message || '网络错误');
             }
@@ -978,9 +964,8 @@
         const logout = async () => {
           try {
             await ElMessageBox.confirm('确定退出吗？', '提示', { type: 'warning' });
-            localStorage.clear();
-            document.cookie = 'adminToken=;path=/;max-age=0';
-            window.location.href = '/login.html';
+            document.cookie = 'token=;path=/;max-age=0';
+            window.location.href = '/admin';
           } catch (e) {}
         };
 
@@ -1908,7 +1893,6 @@
             params.append('end_date', attendanceFilters.dateRange[1]);
           }
           if (attendanceFilters.leaveStatus) params.append('leave_status', attendanceFilters.leaveStatus);
-          params.append('token', token); // 携带 token 用于认证
 
           window.location.href = `/api/admin/attendance/export?${params.toString()}`;
         };
