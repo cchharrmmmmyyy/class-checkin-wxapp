@@ -3,11 +3,12 @@ from services import AdminService
 from utils.jwt import token_required, role_required
 from utils.api_response import success
 from utils.exceptions import ServiceException
+from utils.error_codes import JSON_INVALID, USER_INFO_INCOMPLETE
 
 admin_user_bp = Blueprint('admin_user', __name__, url_prefix='/api/admin')
 
 
-# 获取用户列表，支持分页查询
+# 获取用户列表
 @admin_user_bp.route('/users', methods=['GET'])
 @token_required(allow_cookie=True)
 @role_required(['admin'])
@@ -30,7 +31,7 @@ def get_users():
 def create_user():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     username = (data.get('username') or '').strip()
     user_id = (data.get('user_id') or '').strip()
     password = (data.get('password') or '').strip()
@@ -38,7 +39,7 @@ def create_user():
     class_name = (data.get('class') or '').strip()
 
     if not username or not user_id or not password or not role or not class_name:
-        raise ServiceException('用户名、用户ID、密码、角色和班级不能为空', code=5000)
+        raise ServiceException('用户名、用户ID、密码、角色和班级不能为空', code=USER_INFO_INCOMPLETE)
 
     result = AdminService.save_user(username, user_id, password, role, class_name)
     return success(data=result)
@@ -51,7 +52,7 @@ def create_user():
 def update_user(user_id):
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     username = (data.get('username') or '').strip()
     password = (data.get('password') or '').strip()
     role = (data.get('role') or '').strip()
@@ -77,11 +78,11 @@ def delete_user(user_id):
 def admin_reset_password():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     user_id = (data.get('user_id') or '').strip()
 
     if not user_id:
-        raise ServiceException('用户ID不能为空', code=5000)
+        raise ServiceException('用户ID不能为空', code=USER_INFO_INCOMPLETE)
 
     result = AdminService.reset_password(user_id)
     return success(data=result)

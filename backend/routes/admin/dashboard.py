@@ -3,6 +3,7 @@ from services import AdminService, ConfigService, StatisticsService
 from utils.jwt import token_required, role_required
 from utils.api_response import success
 from utils.exceptions import ServiceException
+from utils.error_codes import JSON_INVALID
 
 admin_dashboard_bp = Blueprint('admin_dashboard', __name__, url_prefix='/api/admin')
 
@@ -42,6 +43,6 @@ def get_config():
 def update_config():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     result = ConfigService.update_punch_config(data)
     return success(data=result)

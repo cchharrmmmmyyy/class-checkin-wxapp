@@ -4,6 +4,7 @@ from utils.jwt import token_required, role_required
 from utils.parse_args import parse_bool_arg
 from utils.api_response import success
 from utils.exceptions import ServiceException
+from utils.error_codes import JSON_INVALID
 
 admin_org_bp = Blueprint('admin_org', __name__, url_prefix='/api/admin')
 
@@ -29,7 +30,7 @@ def list_campuses():
 def create_campus():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     name = (data.get('name') or '').strip()
     address = data.get('address')
     result = AdminService.save_campus(None, name, address)
@@ -43,7 +44,7 @@ def create_campus():
 def update_campus(campus_id):
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     name = (data.get('name') or '').strip()
     address = data.get('address')
     result = AdminService.save_campus(campus_id, name, address)
@@ -81,7 +82,7 @@ def list_departments():
 def create_department():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     campus_id = data.get('campus_id')
     name = (data.get('name') or '').strip()
     code = data.get('code')
@@ -96,7 +97,7 @@ def create_department():
 def update_department(department_id):
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     campus_id = data.get('campus_id')
     name = (data.get('name') or '').strip()
     code = data.get('code')
@@ -135,7 +136,7 @@ def list_majors():
 def create_major():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     department_id = data.get('department_id')
     name = (data.get('name') or '').strip()
     code = data.get('code')
@@ -150,7 +151,7 @@ def create_major():
 def update_major(major_id):
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     department_id = data.get('department_id')
     name = (data.get('name') or '').strip()
     code = data.get('code')
@@ -189,7 +190,7 @@ def list_grades():
 def create_grade():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     major_id = data.get('major_id')
     year = data.get('year')
     name = (data.get('name') or '').strip()
@@ -204,7 +205,7 @@ def create_grade():
 def update_grade(grade_id):
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     major_id = data.get('major_id')
     year = data.get('year')
     name = (data.get('name') or '').strip()
@@ -247,7 +248,7 @@ def list_classes():
 def create_class():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     class_name = (data.get('class_name') or '').strip()
     grade_id = data.get('grade_id')
     result = AdminService.save_class(None, class_name, grade_id)
@@ -261,7 +262,7 @@ def create_class():
 def update_class(class_name):
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     new_class_name = (data.get('class_name') or class_name).strip()
     grade_id = data.get('grade_id')
     result = AdminService.save_class(class_name, new_class_name, grade_id)

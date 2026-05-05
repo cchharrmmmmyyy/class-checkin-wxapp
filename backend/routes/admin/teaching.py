@@ -4,6 +4,7 @@ from utils.jwt import token_required, role_required
 from utils.api_response import success
 from utils.exceptions import ServiceException
 from utils.parse_args import parse_bool_arg
+from utils.error_codes import JSON_INVALID
 
 admin_teaching_bp = Blueprint('admin_teaching', __name__, url_prefix='/api/admin')
 
@@ -33,7 +34,7 @@ def list_teaching_assignments():
 def create_teaching_assignment():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     class_name = (data.get('class_name') or '').strip()
     teacher_id = (data.get('teacher_id') or '').strip()
     semester = (data.get('semester') or '').strip() or None
@@ -48,7 +49,7 @@ def create_teaching_assignment():
 def update_teaching_assignment(class_name, teacher_id):
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     semester = (data.get('semester') or '').strip() or None
     result = AdminService.update_teaching_assignment(class_name, teacher_id, semester)
     return success(data=result)

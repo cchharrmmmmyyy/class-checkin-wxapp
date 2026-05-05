@@ -5,6 +5,7 @@ from utils.parse_args import parse_bool_arg
 from utils.api_response import success
 from utils.exceptions import ServiceException
 from utils.constants import ENABLED, DISABLED, DEFAULT_PRIORITY
+from utils.error_codes import JSON_INVALID
 
 admin_rule_bp = Blueprint('admin_rule', __name__, url_prefix='/api/admin')
 
@@ -34,7 +35,7 @@ def list_time_slots():
 def create_time_slot():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     result = AdminService.save_time_slot(
         None, (data.get('name') or '').strip(),
         data.get('start_time'), data.get('end_time'), data.get('enabled', ENABLED)
@@ -49,7 +50,7 @@ def create_time_slot():
 def update_time_slot(slot_id):
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     result = AdminService.save_time_slot(
         slot_id, (data.get('name') or '').strip(),
         data.get('start_time'), data.get('end_time'), data.get('enabled', ENABLED)
@@ -93,7 +94,7 @@ def list_punch_geofences():
 def create_punch_geofence():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     result = AdminService.save_geofence(
         geofence_id=None,
         name=(data.get('name') or '').strip(),
@@ -114,7 +115,7 @@ def create_punch_geofence():
 def update_punch_geofence(geofence_id):
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     result = AdminService.save_geofence(
         geofence_id=geofence_id,
         name=(data.get('name') or '').strip(),
@@ -164,7 +165,7 @@ def list_punch_rules():
 def create_punch_rule():
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     result = AdminService.save_punch_rule(
         rule_id=None,
         time_slot_id=data.get('time_slot_id'),
@@ -184,7 +185,7 @@ def create_punch_rule():
 def update_punch_rule(rule_id):
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     result = AdminService.save_punch_rule(
         rule_id=rule_id,
         time_slot_id=data.get('time_slot_id'),

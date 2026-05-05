@@ -7,6 +7,7 @@ from services import NotificationService, LogService
 from utils.jwt import token_required, role_required
 from utils.api_response import success
 from utils.exceptions import ServiceException
+from utils.error_codes import JSON_INVALID, NOTIFICATION_ID_MISSING
 
 common_bp = Blueprint('common', __name__, url_prefix='/api')
 
@@ -38,11 +39,11 @@ def mark_notification_read():
     user_id = request.current_user['user_id']
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     notification_id = data.get('notification_id')
 
     if not notification_id:
-        raise ServiceException('通知ID不能为空', code=8001)
+        raise ServiceException('通知ID不能为空', code=NOTIFICATION_ID_MISSING)
 
     result = NotificationService.mark_as_read(notification_id, user_id)
     return success(data={'marked': result})

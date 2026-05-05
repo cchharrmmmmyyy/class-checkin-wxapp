@@ -7,6 +7,12 @@ from services import TeacherService, LeaveService, MakeupService, StatisticsServ
 from utils.jwt import token_required, role_required
 from utils.api_response import success
 from utils.exceptions import ServiceException
+from utils.error_codes import (
+    JSON_INVALID, CLASS_NAME_MISSING,
+    LEAVE_RECORD_ID_MISSING, LEAVE_STATUS_MISSING,
+    MAKEUP_RECORD_ID_MISSING, MAKEUP_STATUS_MISSING,
+    USER_STUDENT_ID_MISSING
+)
 from datetime import date
 
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/api/teacher')
@@ -37,7 +43,7 @@ def get_class_students():
     size = request.args.get('size', 50, type=int)
 
     if not class_name:
-        raise ServiceException('班级名称不能为空', code=4001)
+        raise ServiceException('班级名称不能为空', code=CLASS_NAME_MISSING)
 
     result = TeacherService.get_students(class_name, page=page, size=size)
     return success(result)
@@ -53,7 +59,7 @@ def get_class_punch_summary():
     date_str = request.args.get('date', date.today().strftime('%Y-%m-%d'))
 
     if not class_name:
-        raise ServiceException('班级名称不能为空', code=4001)
+        raise ServiceException('班级名称不能为空', code=CLASS_NAME_MISSING)
 
     summary = StatisticsService.get_daily_statistics(class_name, date_str)
     return success(summary)
@@ -70,7 +76,7 @@ def get_pending_leaves():
     size = request.args.get('size', 50, type=int)
 
     if not class_name:
-        raise ServiceException('班级名称不能为空', code=4001)
+        raise ServiceException('班级名称不能为空', code=CLASS_NAME_MISSING)
 
     result = LeaveService.get_pending_applications(class_name, page=page, size=size)
     return success(result)
@@ -84,15 +90,15 @@ def approve_leave():
     teacher = request.current_user
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     leave_id = data.get('leave_id')
     status = (data.get('status') or '').strip()
 
     if not leave_id:
-        raise ServiceException('请假记录ID不能为空', code=4002)
+        raise ServiceException('请假记录ID不能为空', code=LEAVE_RECORD_ID_MISSING)
 
     if not status:
-        raise ServiceException('审批状态不能为空', code=4003)
+        raise ServiceException('审批状态不能为空', code=LEAVE_STATUS_MISSING)
 
     class_name = _get_teacher_class(teacher)
     result = LeaveService.approve_leave(leave_id, class_name, status)
@@ -110,7 +116,7 @@ def get_pending_makeups():
     size = request.args.get('size', 50, type=int)
 
     if not class_name:
-        raise ServiceException('班级名称不能为空', code=4001)
+        raise ServiceException('班级名称不能为空', code=CLASS_NAME_MISSING)
 
     result = MakeupService.get_pending_makeup_applications(class_name, page=page, size=size)
     return success(result)
@@ -124,16 +130,16 @@ def approve_makeup():
     teacher = request.current_user
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     makeup_id = data.get('makeup_id')
     status = (data.get('status') or '').strip()
     punch_time = (data.get('punch_time') or '12:00:00').strip()
 
     if not makeup_id:
-        raise ServiceException('补卡记录ID不能为空', code=4004)
+        raise ServiceException('补卡记录ID不能为空', code=MAKEUP_RECORD_ID_MISSING)
 
     if not status:
-        raise ServiceException('审批状态不能为空', code=4005)
+        raise ServiceException('审批状态不能为空', code=MAKEUP_STATUS_MISSING)
 
     class_name = _get_teacher_class(teacher)
     result = MakeupService.approve_makeup(makeup_id, class_name, status, punch_time)
@@ -148,11 +154,11 @@ def appoint_monitor():
     teacher = request.current_user
     data = request.get_json(silent=True)
     if data is None:
-        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+        raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     student_id = (data.get('student_id') or '').strip()
 
     if not student_id:
-        raise ServiceException('学生学号不能为空', code=4006)
+        raise ServiceException('学生学号不能为空', code=USER_STUDENT_ID_MISSING)
 
     teacher_class = _get_teacher_class(teacher)
     result = TeacherService.appoint_monitor(student_id, teacher_class)
@@ -168,7 +174,7 @@ def remove_monitor():
     student_id = request.args.get('student_id', '').strip()
 
     if not student_id:
-        raise ServiceException('学生学号不能为空', code=4007)
+        raise ServiceException('学生学号不能为空', code=USER_STUDENT_ID_MISSING)
 
     teacher_class = _get_teacher_class(teacher)
     result = TeacherService.remove_monitor(student_id, teacher_class)
@@ -186,7 +192,7 @@ def get_monitors():
     size = request.args.get('size', 50, type=int)
 
     if not class_name:
-        raise ServiceException('班级名称不能为空', code=4001)
+        raise ServiceException('班级名称不能为空', code=CLASS_NAME_MISSING)
 
     result = TeacherService.get_monitors(class_name, page=page, size=size)
     return success(result)
