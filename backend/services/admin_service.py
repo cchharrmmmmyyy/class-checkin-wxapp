@@ -1,3 +1,5 @@
+import csv
+import io
 import json
 import random
 import sqlite3
@@ -45,12 +47,22 @@ def _generate_random_password(length=None):
 class AdminService:
     @staticmethod
     def _normalize_pagination(page, size):
+        if size is None:
+            return page, None, None
         if page < 1 or size < 1:
             raise ServiceException('分页参数不合法', code=6001)
         return page, size, (page - 1) * size
 
     @staticmethod
     def _build_page(items, total, page, size):
+        if size is None:
+            return {
+                'items': items,
+                'total': total,
+                'page': page,
+                'size': total,
+                'total_pages': 1
+            }
         total_pages = (total + size - 1) // size if total else 0
         return {
             'items': items,
@@ -934,9 +946,41 @@ class AdminService:
         all_records.sort(key=lambda x: x['punch_date'] or x['leave_start_date'], reverse=True)
 
         total = len(all_records)
-        items = all_records[offset:offset + size]
-
+        items = all_records if size is None else all_records[offset:offset + size]
         return AdminService._build_page(items, total, page, size)
+
+    @staticmethod
+    def export_attendance_records(username=None, user_id=None, start_date=None, end_date=None, leave_status=None):
+        records = AdminService.get_attendance_records(
+            username=username, user_id=user_id, start_date=start_date,
+            end_date=end_date, leave_status=leave_status, page=1, size=None
+        ).get('items', [])
+
+        output = io.StringIO()
+        output.write('\ufeff')
+        writer = csv.writer(output)
+        writer.writerow(['ID', '学号', '姓名', '打卡日期', '请假开始日期', '请假结束日期', '状态'])
+
+        for r in records:
+            status = '-'
+            if r['leave_status'] == 'pending':
+                status = '待审批'
+            elif r['leave_status'] == 'approved':
+                status = '已审批'
+            elif r['leave_status'] == 'rejected':
+                status = '已拒绝'
+            elif r['punch_date']:
+                status = '已打卡'
+
+            writer.writerow([
+                r['id'], r['user_id'], r['username'],
+                r['punch_date'] or '-', r['leave_start_date'] or '-',
+                r['leave_end_date'] or '-', status
+            ])
+
+        output.seek(0)
+        filename = f"attendance_export_{date.today().isoformat()}.csv"
+        return output.getvalue().encode('utf-8-sig'), filename
 
     @staticmethod
     def save_punch_record(record_id, user_id, punch_date, punch_time='12:00:00', latitude=0.0, longitude=0.0):
