@@ -5,26 +5,30 @@
 from flask import Blueprint, request
 from services import PunchService, LeaveService, MakeupService, StatisticsService
 from utils.jwt import token_required, role_required
-from utils.api_response import success, error
+from utils.api_response import success
+from utils.exceptions import ServiceException
 
 student_bp = Blueprint('student', __name__, url_prefix='/api/student')
 
 
 def _get_class_name():
-    """从当前用户 token 中获取班级名称，若不存在返回 None"""
     return request.current_user.get('class', '') or None
 
 
+# 打卡
 @student_bp.route('/punch', methods=['POST'])
 @token_required
 @role_required(['student', 'monitor'])
 def punch():
     user_id = request.current_user['user_id']
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if data is None:
+        raise ServiceException('请求体不是有效的JSON格式', code=4999)
     result = PunchService.punch(user_id, data.get('latitude'), data.get('longitude'))
     return success(result)
 
 
+# 获取打卡记录
 @student_bp.route('/punch-records', methods=['GET'])
 @token_required
 @role_required(['student', 'monitor'])
@@ -40,22 +44,26 @@ def get_punch_records():
     return success(result)
 
 
+# 申请请假
 @student_bp.route('/leave/apply', methods=['POST'])
 @token_required
 @role_required(['student', 'monitor'])
 def apply_leave():
     user_id = request.current_user['user_id']
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if data is None:
+        raise ServiceException('请求体不是有效的JSON格式', code=4999)
     result = LeaveService.apply_leave(
         user_id,
-        data.get('start_date', '').strip(),
-        data.get('end_date', '').strip(),
-        data.get('leave_type', 'personal'),
-        data.get('reason', '')
+        (data.get('start_date') or '').strip(),
+        (data.get('end_date') or '').strip(),
+        (data.get('leave_type') or 'personal').strip(),
+        (data.get('reason') or '').strip()
     )
     return success(result)
 
 
+# 获取请假记录
 @student_bp.route('/leave/records', methods=['GET'])
 @token_required
 @role_required(['student', 'monitor'])
@@ -70,20 +78,24 @@ def get_leave_records():
     return success(result)
 
 
+# 申请补卡
 @student_bp.route('/makeup/apply', methods=['POST'])
 @token_required
 @role_required(['student', 'monitor'])
 def apply_makeup():
     user_id = request.current_user['user_id']
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if data is None:
+        raise ServiceException('请求体不是有效的JSON格式', code=4999)
     result = MakeupService.apply_makeup(
         user_id,
-        data.get('target_date', '').strip(),
-        data.get('reason', '').strip()
+        (data.get('target_date') or '').strip(),
+        (data.get('reason') or '').strip()
     )
     return success(result)
 
 
+# 获取补卡记录
 @student_bp.route('/makeup/records', methods=['GET'])
 @token_required
 @role_required(['student', 'monitor'])
@@ -97,25 +109,27 @@ def get_makeup_records():
     return success(result)
 
 
+# 获取班级打卡情况（班长）
 @student_bp.route('/monitor/class-punch-status', methods=['GET'])
 @token_required
 @role_required(['monitor'])
 def get_monitor_class_punch_status():
     class_name = _get_class_name()
     if not class_name:
-        return error(message='班级信息不存在', code=4001, http_status=400)
+        raise ServiceException('班级信息不存在', code=4001)
 
     summary = StatisticsService.get_daily_statistics(class_name, request.args.get('date'))
     return success(summary)
 
 
+# 获取班级请假情况（班长）
 @student_bp.route('/monitor/class-leaves', methods=['GET'])
 @token_required
 @role_required(['monitor'])
 def get_monitor_class_leaves():
     class_name = _get_class_name()
     if not class_name:
-        return error(message='班级信息不存在', code=4001, http_status=400)
+        raise ServiceException('班级信息不存在', code=4001)
 
     result = LeaveService.get_pending_applications(
         class_name,
@@ -125,13 +139,14 @@ def get_monitor_class_leaves():
     return success(result)
 
 
+# 获取班级补卡情况（班长）
 @student_bp.route('/monitor/class-makeups', methods=['GET'])
 @token_required
 @role_required(['monitor'])
 def get_monitor_class_makeups():
     class_name = _get_class_name()
     if not class_name:
-        return error(message='班级信息不存在', code=4001, http_status=400)
+        raise ServiceException('班级信息不存在', code=4001)
 
     result = MakeupService.get_pending_makeup_applications(
         class_name,
