@@ -950,7 +950,7 @@ class AdminService:
         return AdminService._build_page(items, total, page, size)
 
     @staticmethod
-    def export_attendance_records(username=None, user_id=None, start_date=None, end_date=None, leave_status=None):
+    def export_attendance_records_csv(username=None, user_id=None, start_date=None, end_date=None, leave_status=None):
         records = AdminService.get_attendance_records(
             username=username, user_id=user_id, start_date=start_date,
             end_date=end_date, leave_status=leave_status, page=1, size=None
@@ -1037,32 +1037,6 @@ class AdminService:
         return {'success': True, 'message': '请假记录添加成功', 'id': new_id}
 
     @staticmethod
-    def save_attendance_record(record_id, user_id, punch_date, leave_start_date, leave_end_date, leave_status):
-        # 兼容层：保留历史接口，但写入已拆分到语义单一方法
-        has_punch = bool(punch_date)
-        has_leave = bool(leave_start_date and leave_end_date)
-
-        if not has_punch and not has_leave:
-            raise ServiceException('打卡日期和请假日期不能同时为空', code=5016)
-
-        if has_punch and has_leave:
-            raise ServiceException('打卡记录和请假记录不能同时存在', code=5017)
-
-        if has_punch:
-            return AdminService.save_punch_record(
-                record_id=record_id,
-                user_id=user_id,
-                punch_date=punch_date
-            )
-        return AdminService.save_leave_record(
-            record_id=record_id,
-            user_id=user_id,
-            leave_start_date=leave_start_date,
-            leave_end_date=leave_end_date,
-            leave_status=leave_status
-        )
-
-    @staticmethod
     def delete_punch_record(record_id):
         deleted = punch_dao.delete(record_id)
         if not deleted:
@@ -1075,14 +1049,6 @@ class AdminService:
         if not deleted:
             raise ServiceException('请假记录不存在', code=5013, http_status=404)
         return {'success': True, 'message': '请假记录删除成功'}
-
-    @staticmethod
-    def delete_attendance_record(record_id):
-        # 兼容层：删除仍支持旧路径
-        try:
-            return AdminService.delete_punch_record(record_id)
-        except ServiceException:
-            return AdminService.delete_leave_record(record_id)
 
     @staticmethod
     def get_punch_location():
