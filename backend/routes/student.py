@@ -109,7 +109,7 @@ def get_makeup_records():
     return success(result)
 
 
-# 获取班级打卡情况（班长）
+# 获取班级打卡情况（班委）
 @student_bp.route('/monitor/class-punch-status', methods=['GET'])
 @token_required
 @role_required(['monitor'])
@@ -122,7 +122,7 @@ def get_monitor_class_punch_status():
     return success(summary)
 
 
-# 获取班级请假情况（班长）
+# 获取班级请假情况（班委）
 @student_bp.route('/monitor/class-leaves', methods=['GET'])
 @token_required
 @role_required(['monitor'])
@@ -139,7 +139,7 @@ def get_monitor_class_leaves():
     return success(result)
 
 
-# 获取班级补卡情况（班长）
+# 获取班级补卡情况（班委）
 @student_bp.route('/monitor/class-makeups', methods=['GET'])
 @token_required
 @role_required(['monitor'])
