@@ -2,78 +2,60 @@
 认证路由模块
 提供登录、修改密码
 """
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 from services import AuthService
-from utils.api_response import success, error
+from utils.jwt import token_required
+from utils.api_response import success
+from utils.exceptions import ServiceException
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    """
-    统一登录接口（小程序 + 网页管理后台）
-    ---
-    请求头: X-Client-Type: miniprogram（小程序端必传，网页端不传）
-    请求体: {"user_id": "xxx", "password": "xxx"}
-    """
-    data = request.get_json()
-    user_id = data.get('user_id', '').strip()
-    password = data.get('password', '').strip()
+    data = request.get_json(silent=True)
+    if data is None:
+        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+    user_id = (data.get('user_id') or '').strip()
+    password = (data.get('password') or '').strip()
     is_web = request.headers.get('X-Client-Type') != 'miniprogram'
 
     if not user_id or not password:
-        return error(message='学号/工号和密码不能为空', code=1000, http_status=400)
+        raise ServiceException('学号/工号和密码不能为空', code=1000)
 
     if len(user_id) < 6 or len(user_id) > 12:
-        return error(message='学号/工号或密码错误', code=1000, http_status=400)
+        raise ServiceException('学号/工号或密码错误', code=1000)
 
     if len(password) < 6 or len(password) > 20:
-        return error(message='学号/工号或密码错误', code=1000, http_status=400)
+        raise ServiceException('学号/工号或密码错误', code=1000)
 
     result = AuthService.login(user_id, password)
 
     if is_web and result['user']['role'] != 'admin':
-        return error(message='无管理员权限', code=2003, http_status=403)
+        raise ServiceException('无管理员权限', code=2003, http_status=403)
 
     resp, status = success(result)
 
     if is_web:
         resp.set_cookie('token', result['token'],
-                        httponly=True, max_age=86400)
+                       httponly=True, max_age=86400)
 
     return resp, status
 
 
 @auth_bp.route('/change-password', methods=['POST'])
+@token_required
 def change_password():
-    """
-    修改密码接口（需要登录）
-    ---
-    请求体: {"old_password": "xxx", "new_password": "xxx"}
-    返回: {"code": 200, "message": "success", "data": {...}}
-    """
-    from utils.jwt import token_required
+    data = request.get_json(silent=True)
+    if data is None:
+        raise ServiceException('请求体不是有效的JSON格式', code=4999)
+    old_password = (data.get('old_password') or '').strip()
+    new_password = (data.get('new_password') or '').strip()
 
-    @token_required
-    def _change_password():
-        data = request.get_json()
-        old_password = data.get('old_password', '').strip()
-        new_password = data.get('new_password', '').strip()
+    if not old_password or not new_password:
+        raise ServiceException('原密码和新密码不能为空', code=1007)
 
-        if not old_password or not new_password:
-            return jsonify({
-                'code': 1007,
-                'message': '原密码和新密码不能为空'
-            }), 400
+    user_id = request.current_user['user_id']
+    result = AuthService.change_password(user_id, old_password, new_password)
 
-        user_id = request.current_user['user_id']
-        result = AuthService.change_password(user_id, old_password, new_password)
-
-        return jsonify({
-            'code': 200,
-            'message': 'success',
-            'data': result
-        }), 200
-
-    return _change_password()
+    return success(data=result)
