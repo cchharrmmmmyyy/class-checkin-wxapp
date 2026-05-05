@@ -32,10 +32,10 @@
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | username | string | 是 | 姓名 |
-| user_id | string | 是 | 学号/工号，6-12 位 |
-| password | string | 是 | 密码，6-20 位 |
+| user_id | string | 是 | 学号/工号 |
+| password | string | 是 | 密码 |
 | role | string | 是 | 角色：student / teacher / monitor / admin |
-| class | string | 否 | 班级名称 |
+| class | string | 是 | 班级名称 |
 
 ---
 
@@ -61,7 +61,7 @@
 
 ```json
 // 响应
-{ "code": 200, "message": "success", "data": { "new_password": "abc123" } }
+{ "code": 200, "message": "success", "data": { "new_password": "..." } }
 ```
 
 ---
@@ -115,14 +115,21 @@
 
 ## 三、教学安排
 
-### `GET/POST /api/admin/teaching/assignments`
+### `GET /api/admin/teaching/assignments`
 
-`GET`: 查询参数 `class_name`、`teacher_id`、`semester`、`include_deleted`、`page`、`size`
-`POST`: 请求体 `class_name`（必填）、`teacher_id`（必填）、`semester`
+获取教学分配记录。查询参数 `class_name`、`teacher_id`、`semester`、`include_deleted`、`page`、`size`。
 
-### `PUT/DELETE /api/admin/teaching/assignments/<class_name>/<teacher_id>`
+### `POST /api/admin/teaching/assignments`
 
-`PUT`: 请求体 `semester`
+创建教学分配记录。请求体 `class_name`（必填）、`teacher_id`（必填）、`semester`。
+
+### `PUT /api/admin/teaching/assignments/<class_name>/<teacher_id>`
+
+更新教学分配记录。请求体 `semester`。
+
+### `DELETE /api/admin/teaching/assignments/<class_name>/<teacher_id>`
+
+删除教学分配记录。
 
 ---
 
@@ -157,7 +164,7 @@
 
 ## 五、考勤记录
 
-### `GET /api/admin/attendance-records`
+### 考勤记录 — `GET /api/admin/attendance-records`
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -169,29 +176,23 @@
 | page | int | 否 | 默认 1 |
 | size | int | 否 | 默认 10 |
 
-### `GET /api/admin/attendance/export`
+### 打卡记录 — `GET /api/admin/attendance/csv`
 
-导出考勤 CSV。参数同 `GET /attendance-records`，不分页。
-
-### `POST /api/admin/attendance-records`（兼容层）
-
-创建考勤记录。请求体 `user_id`（必填）、`punch_date`、`leave_start_date`、`leave_end_date`、`leave_status`。
-
-### `DELETE /api/admin/attendance-records/<record_id>`
-
----
+导出考勤 CSV。参数同 `GET /attendance-records`，不分页。返回 CSV 文件。
 
 ### 打卡记录 — `POST /api/admin/attendance/punch-records`
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | user_id | string | 是 | 学号 |
-| punch_date | string | 否 | 打卡日期 YYYY-MM-DD |
-| punch_time | string | 否 | 打卡时间 HH:MM:SS，默认 12:00:00 |
+| punch_date | string | 是 | 打卡日期 YYYY-MM-DD |
+| punch_time | string | 是 | 打卡时间 HH:MM:SS，默认 12:00:00 |
 | latitude | float | 否 | 纬度 |
 | longitude | float | 否 | 经度 |
 
 ### 打卡记录 — `PUT/DELETE /api/admin/attendance/punch-records/<record_id>`
+
+`PUT`: 请求体 `user_id`（必填）、`punch_date`（必填）、`punch_time`、`latitude`、`longitude`
 
 ---
 
@@ -200,13 +201,15 @@
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | user_id | string | 是 | 学号 |
-| leave_start_date | string | 否 | 请假开始日期 |
-| leave_end_date | string | 否 | 请假结束日期 |
+| leave_start_date | string | 是 | 请假开始日期 |
+| leave_end_date | string | 是 | 请假结束日期 |
 | leave_status | string | 否 | 默认 pending |
 | leave_type | string | 否 | 默认 personal |
 | leave_reason | string | 否 | 请假原因 |
 
 ### 请假记录 — `PUT/DELETE /api/admin/attendance/leave-records/<record_id>`
+
+`PUT`: 请求体 `leave_status`（必填）
 
 ---
 
@@ -234,16 +237,6 @@
 
 ---
 
-### `GET /api/admin/punch-location`（兼容）
-
-获取打卡位置配置。
-
-### `POST /api/admin/punch-location`（兼容）
-
-设置打卡位置。请求体 `name`、`latitude`、`longitude`、`radius`、`enabled`。
-
----
-
 ## 通用说明
 
 | 项 | 说明 |
@@ -252,4 +245,3 @@
 | 响应格式 | `{ "code": 200, "message": "success", "data": {...} }` |
 | 分页响应 | `{ "code": 200, "data": { "items": [...], "total": N } }` |
 | 软删除 | 删除操作标记 `deleted_at`，可通过 `include_deleted=true` 查询 |
-| 兼容层 | 标记 `Deprecation: true` + `Sunset: 2026-07-31` 的接口计划下线 |

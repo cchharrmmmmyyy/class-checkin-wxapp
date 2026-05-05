@@ -46,7 +46,10 @@ def export_attendance_csv():
         mimetype='text/csv', as_attachment=True, download_name=filename
     )
 
-# 创建学生打卡记录
+
+# ---- 打卡记录 ----
+
+# 创建打卡记录
 @admin_attendance_bp.route('/attendance/punch-records', methods=['POST'])
 @token_required(allow_cookie=True)
 @role_required(['admin'])
@@ -73,7 +76,7 @@ def create_punch_record():
     )
     return success(data=result)
 
-# 更新学生打卡记录
+# 更新打卡记录
 @admin_attendance_bp.route('/attendance/punch-records/<int:record_id>', methods=['PUT'])
 @token_required(allow_cookie=True)
 @role_required(['admin'])
@@ -98,7 +101,7 @@ def update_punch_record(record_id):
     )
     return success(data=result)
 
-# 删除学生打卡记录
+# 删除打卡记录
 @admin_attendance_bp.route('/attendance/punch-records/<int:record_id>', methods=['DELETE'])
 @token_required(allow_cookie=True)
 @role_required(['admin'])
@@ -107,7 +110,9 @@ def delete_punch_record(record_id):
     return success(data=result)
 
 
-# 创建学生请假记录
+# ---- 请假记录 ----
+
+# 创建请假记录
 @admin_attendance_bp.route('/attendance/leave-records', methods=['POST'])
 @token_required(allow_cookie=True)
 @role_required(['admin'])
@@ -136,7 +141,7 @@ def create_leave_record():
     )
     return success(data=result)
 
-# 更新学生请假记录
+# 更新请假记录
 @admin_attendance_bp.route('/attendance/leave-records/<int:record_id>', methods=['PUT'])
 @token_required(allow_cookie=True)
 @role_required(['admin'])
@@ -154,7 +159,7 @@ def update_leave_record(record_id):
     )
     return success(data=result)
 
-# 删除学生请假记录
+# 删除请假记录
 @admin_attendance_bp.route('/attendance/leave-records/<int:record_id>', methods=['DELETE'])
 @token_required(allow_cookie=True)
 @role_required(['admin'])
