@@ -46,8 +46,7 @@ Thumbs.db
 *.log
 logs/
 
-# Local config (create your own config.py)
-config.py
+# Local config 
 .env
 .env.local
 
