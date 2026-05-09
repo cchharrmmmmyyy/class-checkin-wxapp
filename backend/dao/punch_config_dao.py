@@ -1,37 +1,17 @@
-from typing import List, Optional
+from typing import Optional
 from models.punch_config import PunchConfig
+from .base_dao import BaseDAO
 
 
-class PunchConfigDAO:
+class PunchConfigDAO(BaseDAO[PunchConfig]):
     def __init__(self):
-        from utils.db import get_connection
-        self.get_connection = get_connection
-
-    def _row_to_model(self, row):
-        if row is None:
-            return None
-        return PunchConfig(
-            id=row['id'],
-            global_time_check_enabled=row['global_time_check_enabled'],
-            global_location_check_enabled=row['global_location_check_enabled'],
-            allow_multi_punch=row['allow_multi_punch'],
-            allow_makeup=row['allow_makeup'],
-            holiday_ranges=row['holiday_ranges'],
-            updated_at=row['updated_at']
-        )
+        super().__init__(PunchConfig, 'punch_config', 'id')
 
     def get_config(self) -> Optional[PunchConfig]:
-        conn = self.get_connection()
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM punch_config WHERE id = 1")
-            row = cursor.fetchone()
-            return self._row_to_model(row)
-        finally:
-            conn.close()
+        return self.get_by_id(1)
 
     def update(self, data: dict) -> bool:
-        conn = self.get_connection()
+        conn = self._get_connection()
         try:
             cursor = conn.cursor()
             cursor.execute(

@@ -1,11 +1,11 @@
 from typing import List, Optional
 from models.class_teacher import ClassTeacher
+from .base_dao import BaseDAO
 
 
-class ClassTeacherDAO:
+class ClassTeacherDAO(BaseDAO[ClassTeacher]):
     def __init__(self):
-        from utils.db import get_connection
-        self.get_connection = get_connection
+        super().__init__(ClassTeacher, 'class_teachers', 'class_name')
 
     def _row_to_model(self, row):
         if row is None:
@@ -19,7 +19,7 @@ class ClassTeacherDAO:
         )
 
     def get_by_id(self, class_name: str, teacher_id: str) -> Optional[ClassTeacher]:
-        conn = self.get_connection()
+        conn = self._get_connection()
         try:
             cursor = conn.cursor()
             cursor.execute(
@@ -31,25 +31,8 @@ class ClassTeacherDAO:
         finally:
             conn.close()
 
-    def get_list(self, where: str = None, params: tuple = (), order_by: str = "class_name ASC",
-                 limit: int = None, offset: int = 0) -> List[ClassTeacher]:
-        conn = self.get_connection()
-        try:
-            cursor = conn.cursor()
-            sql = "SELECT * FROM class_teachers"
-            if where:
-                sql += f" WHERE {where}"
-            sql += f" ORDER BY {order_by}"
-            if limit is not None:
-                sql += f" LIMIT {limit} OFFSET {offset}"
-            cursor.execute(sql, params)
-            rows = cursor.fetchall()
-            return [self._row_to_model(row) for row in rows]
-        finally:
-            conn.close()
-
     def create(self, data: dict) -> tuple:
-        conn = self.get_connection()
+        conn = self._get_connection()
         try:
             cursor = conn.cursor()
             cursor.execute(
@@ -62,7 +45,7 @@ class ClassTeacherDAO:
             conn.close()
 
     def update(self, class_name: str, teacher_id: str, data: dict) -> bool:
-        conn = self.get_connection()
+        conn = self._get_connection()
         try:
             cursor = conn.cursor()
             cursor.execute(
@@ -75,7 +58,7 @@ class ClassTeacherDAO:
             conn.close()
 
     def delete(self, class_name: str, teacher_id: str) -> bool:
-        conn = self.get_connection()
+        conn = self._get_connection()
         try:
             cursor = conn.cursor()
             cursor.execute(

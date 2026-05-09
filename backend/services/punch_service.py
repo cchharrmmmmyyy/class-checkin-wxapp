@@ -52,7 +52,13 @@ class PunchService:
         if existing:
             raise ServiceException('今日已打卡', code=2003)
 
-        punch_id = punch_dao.create_punch(user_id, today, now, latitude, longitude)
+        punch_id = punch_dao.create({
+            'user_id': user_id,
+            'punch_date': today,
+            'punch_time': now,
+            'latitude': latitude,
+            'longitude': longitude,
+        })
 
         return {
             'success': True,
@@ -68,15 +74,15 @@ class PunchService:
         if start_date:
             conditions.append("punch_date >= ?")
             params.append(start_date)
+
         if end_date:
             conditions.append("punch_date <= ?")
             params.append(end_date)
 
         where = " AND ".join(conditions)
-        
         total = punch_dao.count(where=where, params=tuple(params))
         offset = (page - 1) * size
-        
+
         records = punch_dao.get_list(
             where=where,
             params=tuple(params),
@@ -84,17 +90,20 @@ class PunchService:
             limit=size,
             offset=offset
         )
-        
+
         items = [
             {
                 'id': r.id,
-                'user_id': r.user_id,
                 'punch_date': r.punch_date,
-                'punch_time': r.punch_time
+                'punch_time': r.punch_time,
+                'latitude': r.latitude,
+                'longitude': r.longitude,
+                'is_makeup': r.is_makeup,
+                'created_at': r.created_at
             }
             for r in records
         ]
-        
+
         total_pages = (total + size - 1) // size if total else 0
         return {
             'items': items,
@@ -106,6 +115,15 @@ class PunchService:
         }
 
     @staticmethod
-    def get_class_punch_records(class_name):
-        today = datetime.now().strftime('%Y-%m-%d')
-        return []
+    def get_statistics(date_str=None):
+        if date_str is None:
+            date_str = datetime.now().strftime('%Y-%m-%d')
+
+        punch_count = punch_dao.count_by_date(date_str)
+        leave_count = leave_dao.count_approved_by_date(date_str)
+
+        return {
+            'date': date_str,
+            'punch_count': punch_count,
+            'leave_count': leave_count
+        }

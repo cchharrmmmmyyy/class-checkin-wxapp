@@ -1,102 +1,30 @@
 from typing import List, Optional
+import sqlite3
 from models.notification import Notification
+from .base_dao import BaseDAO
 
 
-class NotificationDAO:
+class NotificationDAO(BaseDAO[Notification]):
     def __init__(self):
-        from utils.db import get_connection
-        self.get_connection = get_connection
+        super().__init__(Notification, 'notifications', 'id')
 
-    def _row_to_model(self, row):
-        if row is None:
-            return None
-        return Notification(
-            id=row['id'],
-            receiver_id=row['receiver_id'],
-            sender_id=row['sender_id'],
-            title=row['title'],
-            content=row['content'],
-            type=row['type'],
-            is_read=row['is_read'],
-            related_id=row['related_id'],
-            created_at=row['created_at']
-        )
+    def count(self, where: str = None, params: tuple = (), conn: sqlite3.Connection = None) -> int:
+        return super().count(where, params, conn)
 
-    def count(self, where: str = None, params: tuple = (), conn=None) -> int:
-        should_close = False
-        if conn is None:
-            conn = self.get_connection()
-            should_close = True
-        try:
-            cursor = conn.cursor()
-            sql = "SELECT COUNT(*) FROM notifications"
-            if where:
-                sql += f" WHERE {where}"
-            cursor.execute(sql, params)
-            return cursor.fetchone()[0]
-        finally:
-            if should_close:
-                conn.close()
-
-    def get_by_id(self, id: int, conn=None) -> Optional[Notification]:
-        should_close = False
-        if conn is None:
-            conn = self.get_connection()
-            should_close = True
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM notifications WHERE id = ?", (id,))
-            row = cursor.fetchone()
-            return self._row_to_model(row)
-        finally:
-            if should_close:
-                conn.close()
+    def get_by_id(self, id: int, conn: sqlite3.Connection = None) -> Optional[Notification]:
+        return super().get_by_id(id, conn)
 
     def get_list(self, where: str = None, params: tuple = (), order_by: str = "id DESC",
-                 limit: int = None, offset: int = 0, conn=None) -> List[Notification]:
-        should_close = False
-        if conn is None:
-            conn = self.get_connection()
-            should_close = True
-        try:
-            cursor = conn.cursor()
-            sql = "SELECT * FROM notifications"
-            if where:
-                sql += f" WHERE {where}"
-            sql += f" ORDER BY {order_by}"
-            if limit is not None:
-                sql += f" LIMIT {limit} OFFSET {offset}"
-            cursor.execute(sql, params)
-            rows = cursor.fetchall()
-            return [self._row_to_model(row) for row in rows]
-        finally:
-            if should_close:
-                conn.close()
+                 limit: int = None, offset: int = 0, conn: sqlite3.Connection = None) -> List[Notification]:
+        return super().get_list(where, params, order_by, limit, offset, conn)
 
-    def create(self, data: dict, conn=None) -> int:
-        should_close = False
-        if conn is None:
-            conn = self.get_connection()
-            should_close = True
-        try:
-            cursor = conn.cursor()
-            cursor.execute(
-                """INSERT INTO notifications (receiver_id, sender_id, title, content, type, related_id)
-                   VALUES (?, ?, ?, ?, ?, ?)""",
-                (data['receiver_id'], data.get('sender_id'), data['title'],
-                 data['content'], data['type'], data.get('related_id'))
-            )
-            if should_close:
-                conn.commit()
-            return cursor.lastrowid
-        finally:
-            if should_close:
-                conn.close()
+    def create(self, data: dict, conn: sqlite3.Connection = None) -> int:
+        return super().create(data, conn)
 
-    def mark_as_read(self, id: int, conn=None) -> bool:
+    def mark_as_read(self, id: int, conn: sqlite3.Connection = None) -> bool:
         should_close = False
         if conn is None:
-            conn = self.get_connection()
+            conn = self._get_connection()
             should_close = True
         try:
             cursor = conn.cursor()
@@ -108,17 +36,5 @@ class NotificationDAO:
             if should_close:
                 conn.close()
 
-    def delete(self, id: int, conn=None) -> bool:
-        should_close = False
-        if conn is None:
-            conn = self.get_connection()
-            should_close = True
-        try:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM notifications WHERE id = ?", (id,))
-            if should_close:
-                conn.commit()
-            return cursor.rowcount > 0
-        finally:
-            if should_close:
-                conn.close()
+    def delete(self, id: int, conn: sqlite3.Connection = None) -> bool:
+        return self.hard_delete(id, conn)

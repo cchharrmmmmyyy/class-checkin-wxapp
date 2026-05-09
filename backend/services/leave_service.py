@@ -2,7 +2,6 @@ from datetime import datetime
 from dao import LeaveDAO
 from utils.exceptions import ServiceException
 
-# 创建DAO实例
 leave_dao = LeaveDAO()
 
 
@@ -24,14 +23,20 @@ class LeaveService:
         if leave_start_date < today:
             raise ServiceException('请假开始日期不能是过去日期', code=3002)
 
-        # 检查是否与现有请假记录重叠
         existing_leaves = leave_dao.get_leave_records_by_user(user_id)
         for leave in existing_leaves:
-            if (leave['leave_status'] in ['pending', 'approved'] and
-                not (leave['leave_end_date'] < leave_start_date or leave['leave_start_date'] > leave_end_date)):
+            if (leave.leave_status in ['pending', 'approved'] and
+                not (leave.leave_end_date < leave_start_date or leave.leave_start_date > leave_end_date)):
                 raise ServiceException('该时间段内已存在请假记录', code=3004)
 
-        leave_dao.create_leave_record(user_id, leave_start_date, leave_end_date, leave_type, leave_reason)
+        leave_dao.create({
+            'user_id': user_id,
+            'leave_start_date': leave_start_date,
+            'leave_end_date': leave_end_date,
+            'leave_type': leave_type,
+            'leave_reason': leave_reason,
+            'leave_status': 'pending'
+        })
 
         return {
             'success': True,
@@ -53,37 +58,29 @@ class LeaveService:
 
         total = leave_dao.count(where=where, params=tuple(params))
         offset = (page - 1) * size
-        params += [size, offset]
 
-        conn = leave_dao.get_connection()
-        try:
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT id, user_id, leave_start_date, leave_end_date, leave_type, leave_reason, leave_status, username "
-                "FROM v_leave_user_read "
-                f"WHERE {where} "
-                "ORDER BY created_at DESC "
-                "LIMIT ? OFFSET ?",
-                tuple(params)
-            )
-            records = cursor.fetchall()
-        finally:
-            conn.close()
+        records = leave_dao.get_list(
+            where=where,
+            params=tuple(params),
+            order_by="created_at DESC",
+            limit=size,
+            offset=offset
+        )
 
         items = [
             {
-                'id': r['id'],
-                'user_id': r['user_id'],
-                'username': r['username'],
-                'leave_start_date': r['leave_start_date'],
-                'leave_end_date': r['leave_end_date'],
-                'leave_type': r['leave_type'],
-                'leave_reason': r['leave_reason'],
-                'leave_status': r['leave_status']
+                'id': r.id,
+                'user_id': r.user_id,
+                'leave_start_date': r.leave_start_date,
+                'leave_end_date': r.leave_end_date,
+                'leave_type': r.leave_type,
+                'leave_reason': r.leave_reason,
+                'leave_status': r.leave_status,
+                'created_at': r.created_at
             }
             for r in records
         ]
-        
+
         total_pages = (total + size - 1) // size if total else 0
         return {
             'items': items,
@@ -95,22 +92,25 @@ class LeaveService:
         }
 
     @staticmethod
-    def get_pending_applications(class_name, page=1, size=50):
+    def get_pending_leave_applications(class_name, page=1, size=50):
         where = "class_name = ? AND leave_status = 'pending' AND deleted_at IS NULL"
         params = (class_name,)
-        
+
         total = leave_dao.count(where=where, params=params)
         offset = (page - 1) * size
-        
-        conn = leave_dao.get_connection()
+
+        conn = leave_dao._get_connection()
         try:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT id, user_id, leave_start_date, leave_end_date, leave_type, leave_reason, leave_status, username "
-                "FROM v_leave_user_read "
-                "WHERE class_name = ? AND leave_status = 'pending' AND deleted_at IS NULL "
-                "ORDER BY created_at DESC "
-                "LIMIT ? OFFSET ?",
+                """
+                SELECT id, user_id, leave_start_date, leave_end_date, leave_type, leave_reason,
+                       leave_status, approved_by, approved_at, created_at, username
+                FROM v_leave_user_read
+                WHERE class_name = ? AND leave_status = 'pending' AND deleted_at IS NULL
+                ORDER BY created_at DESC
+                LIMIT ? OFFSET ?
+                """,
                 (class_name, size, offset)
             )
             applications = cursor.fetchall()
@@ -126,11 +126,12 @@ class LeaveService:
                 'leave_end_date': app['leave_end_date'],
                 'leave_type': app['leave_type'],
                 'leave_reason': app['leave_reason'],
-                'leave_status': app['leave_status']
+                'leave_status': app['leave_status'],
+                'created_at': app['created_at']
             }
             for app in applications
         ]
-        
+
         total_pages = (total + size - 1) // size if total else 0
         return {
             'items': items,
@@ -144,21 +145,21 @@ class LeaveService:
     @staticmethod
     def approve_leave(leave_id, class_name, status):
         if status not in ('approved', 'rejected'):
-            raise ServiceException('审批状态只能是approved或rejected', code=3004)
+            raise ServiceException('审批状态只能是approved或rejected', code=3005)
 
-        leave_application = leave_dao.get_leave_record_by_id_and_class(leave_id, class_name)
+        leave = leave_dao.get_leave_record_by_id_and_class(leave_id, class_name)
 
-        if not leave_application:
+        if not leave:
             raise ServiceException(
                 '未找到该请假申请或该申请不属于您的班级',
-                code=3005,
+                code=3006,
                 http_status=404
             )
 
-        if leave_application['leave_status'] != 'pending':
+        if leave.leave_status != 'pending':
             raise ServiceException(
-                f'该请假申请已处于{leave_application["leave_status"]}状态，无法重复审批',
-                code=3006
+                f'该请假申请已处于{leave.leave_status}状态，无法重复审批',
+                code=3007
             )
 
         leave_dao.update_leave_status(leave_id, status)
