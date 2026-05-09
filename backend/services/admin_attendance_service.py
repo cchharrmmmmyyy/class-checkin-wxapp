@@ -9,6 +9,7 @@ from dao.punch_dao import PunchDAO
 from dao.leave_dao import LeaveDAO
 from dao.punch_geofence_dao import PunchGeofenceDAO
 from utils.exceptions import ServiceException
+from utils.error_codes import PUNCH_TIME_MISSING
 from utils.serializers import load_polygon_coords
 from utils.pagination import paginate, normalize_pagination
 
@@ -27,6 +28,20 @@ class AdminAttendanceService:
         punch_params = []
         leave_conditions = ['1=1']
         leave_params = []
+
+        if username:
+            users = user_dao.get_list(
+                where='username LIKE ? AND deleted_at IS NULL',
+                params=(f'%{username}%',),
+            )
+            user_ids = [u.user_id for u in users]
+            if not user_ids:
+                return paginate([], 0, page, size)
+            placeholders = ','.join('?' * len(user_ids))
+            punch_conditions.append(f'user_id IN ({placeholders})')
+            punch_params.extend(user_ids)
+            leave_conditions.append(f'user_id IN ({placeholders})')
+            leave_params.extend(user_ids)
 
         if user_id:
             punch_conditions.append('user_id = ?')
@@ -118,18 +133,20 @@ class AdminAttendanceService:
         return output.getvalue().encode('utf-8-sig'), filename
 
     @staticmethod
-    def save_punch_record(record_id, user_id, punch_date, punch_time='12:00:00', latitude=0.0, longitude=0.0):
+    def save_punch_record(record_id, user_id, punch_date, punch_time, latitude=0.0, longitude=0.0):
         if not user_id:
             raise ServiceException('用户ID不能为空', code=6008)
         if not punch_date:
             raise ServiceException('打卡日期不能为空', code=6009)
+        if not punch_time:
+            raise ServiceException('打卡时间不能为空', code=PUNCH_TIME_MISSING)
         target_user = user_dao.get_by_id(user_id)
         if not target_user or target_user.deleted_at:
             raise ServiceException('用户不存在', code=6002, http_status=404)
         payload = {
             'user_id': user_id,
             'punch_date': punch_date,
-            'punch_time': punch_time or '12:00:00',
+            'punch_time': punch_time,
             'latitude': latitude if latitude is not None else 0.0,
             'longitude': longitude if longitude is not None else 0.0,
         }

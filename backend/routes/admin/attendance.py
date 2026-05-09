@@ -99,6 +99,8 @@ def update_punch_record(record_id):
         raise ServiceException('用户ID不能为空', code=USER_INFO_INCOMPLETE)
     if not punch_date:
         raise ServiceException('打卡日期不能为空', code=PUNCH_DATE_MISSING)
+    if not punch_time:
+        raise ServiceException('打卡时间不能为空', code=PUNCH_TIME_MISSING)
 
     result = AdminAttendanceService.save_punch_record(
         record_id=record_id, user_id=user_id, punch_date=punch_date,
