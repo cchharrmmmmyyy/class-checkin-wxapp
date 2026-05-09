@@ -1,4 +1,3 @@
-from typing import List, Optional
 from models.class_model import Class
 from .base_dao import BaseDAO
 

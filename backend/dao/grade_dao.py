@@ -1,4 +1,3 @@
-from typing import List, Optional
 from models.grade import Grade
 from .base_dao import BaseDAO
 

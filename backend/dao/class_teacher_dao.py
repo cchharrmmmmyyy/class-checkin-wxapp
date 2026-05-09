@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 from models.class_teacher import ClassTeacher
 from .base_dao import BaseDAO
 

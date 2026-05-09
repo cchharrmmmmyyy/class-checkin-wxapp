@@ -1,4 +1,3 @@
-from typing import List, Optional
 from models.punch_time_slot import PunchTimeSlot
 from .base_dao import BaseDAO
 

@@ -1,6 +1,7 @@
-from typing import List, Optional
+from typing import Optional
 from models.user import User
 from .base_dao import BaseDAO
+from utils.constants import ENABLED
 
 
 class UserDAO(BaseDAO[User]):
@@ -8,7 +9,7 @@ class UserDAO(BaseDAO[User]):
         super().__init__(User, 'users', 'user_id')
 
     def create(self, data: dict) -> str:
-        data.setdefault('is_first_login', 1)
+        data.setdefault('is_first_login', ENABLED)
         super().create(data)
         return data['user_id']
 

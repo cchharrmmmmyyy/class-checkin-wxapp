@@ -1,4 +1,3 @@
-from typing import List, Optional
 from models.major import Major
 from .base_dao import BaseDAO
 

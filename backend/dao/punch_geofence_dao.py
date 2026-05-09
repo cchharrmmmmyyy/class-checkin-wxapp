@@ -1,6 +1,7 @@
 from typing import List, Optional
 from models.punch_geofence import PunchGeofence
 from .base_dao import BaseDAO
+from utils.constants import ENABLED
 
 
 class PunchGeofenceDAO(BaseDAO[PunchGeofence]):
@@ -8,7 +9,7 @@ class PunchGeofenceDAO(BaseDAO[PunchGeofence]):
         super().__init__(PunchGeofence, 'punch_geofences', 'id')
 
     def create(self, data: dict) -> int:
-        data.setdefault('enabled', 1)
+        data.setdefault('enabled', ENABLED)
         return super().create(data)
 
     def get_enabled_geofences(self) -> List[PunchGeofence]:

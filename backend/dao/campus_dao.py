@@ -1,4 +1,3 @@
-from typing import List, Optional
 from models.campus import Campus
 from .base_dao import BaseDAO
 

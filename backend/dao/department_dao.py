@@ -1,4 +1,3 @@
-from typing import List, Optional
 from models.department import Department
 from .base_dao import BaseDAO
 
