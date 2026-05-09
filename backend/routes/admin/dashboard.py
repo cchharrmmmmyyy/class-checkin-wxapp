@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from services import AdminService, ConfigService, StatisticsService
+from services import AdminAttendanceService, ConfigService, StatisticsService
 from utils.jwt import token_required, role_required
 from utils.api_response import success
 from utils.exceptions import ServiceException
@@ -13,7 +13,7 @@ admin_dashboard_bp = Blueprint('admin_dashboard', __name__, url_prefix='/api/adm
 @token_required(allow_cookie=True)
 @role_required(['admin'])
 def dashboard_stats():
-    result = AdminService.get_dashboard_stats()
+    result = AdminAttendanceService.get_dashboard_stats()
     return success(data=result)
 
 

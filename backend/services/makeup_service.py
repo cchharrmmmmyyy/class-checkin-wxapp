@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from dao import MakeupRequestDAO, PunchDAO
 from utils.exceptions import ServiceException
+from utils.pagination import paginate
+from utils import error_codes as EC
 
 makeup_request_dao = MakeupRequestDAO()
 punch_dao = PunchDAO()
@@ -11,27 +13,27 @@ class MakeupService:
     @staticmethod
     def apply_makeup(user_id, punch_date, reason):
         if not punch_date:
-            raise ServiceException('补卡日期不能为空', code=4001)
+            raise ServiceException('补卡日期不能为空', code=EC.MAKEUP_DATE_MISSING)
 
         if not reason:
-            raise ServiceException('补卡原因不能为空', code=4002)
+            raise ServiceException('补卡原因不能为空', code=EC.MAKEUP_REASON_MISSING)
 
         today = datetime.now().strftime('%Y-%m-%d')
 
         if punch_date > today:
-            raise ServiceException('补卡日期不能是未来日期', code=4003)
+            raise ServiceException('补卡日期不能是未来日期', code=EC.MAKEUP_FUTURE_DATE)
 
         three_days_ago = (datetime.now() - timedelta(days=3)).strftime('%Y-%m-%d')
         if punch_date < three_days_ago:
-            raise ServiceException('只能补近3天的卡', code=4008)
+            raise ServiceException('只能补近3天的卡', code=EC.MAKEUP_TOO_OLD)
 
         existing_punch = punch_dao.get_punch_by_user_and_date(user_id, punch_date)
         if existing_punch:
-            raise ServiceException('当日已有打卡记录，不能补卡', code=4009)
+            raise ServiceException('当日已有打卡记录，不能补卡', code=EC.MAKEUP_ALREADY_PUNCHED)
 
         existing = makeup_request_dao.get_by_user_and_date(user_id, punch_date)
         if existing:
-            raise ServiceException('该日期已经申请过补卡', code=4004)
+            raise ServiceException('该日期已经申请过补卡', code=EC.MAKEUP_ALREADY_APPLIED)
 
         makeup_request_dao.create({
             'user_id': user_id,
@@ -51,10 +53,10 @@ class MakeupService:
     def get_user_makeup_records(user_id, page=1, size=50):
         where = "user_id = ? AND deleted_at IS NULL"
         params = (user_id,)
-        
+
         total = makeup_request_dao.count(where=where, params=params)
         offset = (page - 1) * size
-        
+
         records = makeup_request_dao.get_list(
             where=where,
             params=params,
@@ -62,7 +64,7 @@ class MakeupService:
             limit=size,
             offset=offset
         )
-        
+
         items = [
             {
                 'id': r.id,
@@ -74,25 +76,17 @@ class MakeupService:
             }
             for r in records
         ]
-        
-        total_pages = (total + size - 1) // size if total else 0
-        return {
-            'items': items,
-            'total': total,
-            'page': page,
-            'size': size,
-            'total_pages': total_pages,
-            'has_next': page < total_pages
-        }
+
+        return paginate(items, total, page, size)
 
     @staticmethod
     def get_pending_makeup_applications(class_name, page=1, size=50):
         where = "class_name = ? AND status = 'pending' AND deleted_at IS NULL"
         params = (class_name,)
-        
+
         total = makeup_request_dao.count(where=where, params=params)
         offset = (page - 1) * size
-        
+
         conn = makeup_request_dao._get_connection()
         try:
             cursor = conn.cursor()
@@ -122,35 +116,27 @@ class MakeupService:
             }
             for app in applications
         ]
-        
-        total_pages = (total + size - 1) // size if total else 0
-        return {
-            'items': items,
-            'total': total,
-            'page': page,
-            'size': size,
-            'total_pages': total_pages,
-            'has_next': page < total_pages
-        }
+
+        return paginate(items, total, page, size)
 
     @staticmethod
     def approve_makeup(request_id, class_name, status):
         if status not in ('approved', 'rejected'):
-            raise ServiceException('审批状态只能是approved或rejected', code=4005)
+            raise ServiceException('审批状态只能是approved或rejected', code=EC.MAKEUP_STATUS_INVALID)
 
         makeup_application = makeup_request_dao.get_by_id_and_class(request_id, class_name)
 
         if not makeup_application:
             raise ServiceException(
                 '未找到该补卡申请或该申请不属于您的班级',
-                code=4006,
+                code=EC.MAKEUP_NOT_IN_CLASS,
                 http_status=404
             )
 
         if makeup_application.status != 'pending':
             raise ServiceException(
                 f'该补卡申请已处于{makeup_application.status}状态，无法重复审批',
-                code=4007
+                code=EC.MAKEUP_STATUS_INVALID
             )
 
         makeup_request_dao.update_status(request_id, status)

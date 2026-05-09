@@ -4,6 +4,11 @@ from .leave_service import LeaveService
 from .makeup_service import MakeupService
 from .teacher_service import TeacherService
 from .admin_service import AdminService
+from .admin_org_service import AdminOrgService
+from .admin_user_service import AdminUserService
+from .admin_rule_service import AdminRuleService
+from .admin_teaching_service import AdminTeachingService
+from .admin_attendance_service import AdminAttendanceService
 from .log_service import LogService
 from .notification_service import NotificationService
 from .config_service import ConfigService

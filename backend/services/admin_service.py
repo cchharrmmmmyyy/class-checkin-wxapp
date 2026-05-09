@@ -844,7 +844,7 @@ class AdminService:
             raise ServiceException('用户不存在', code=5004, http_status=404)
 
         if target.role == 'admin':
-            admins = user_dao.get_list(where="role = 'admin' AND deleted_at IS NULL")
+            admins = user_dao.get_list(where="role = ? AND deleted_at IS NULL", params=('admin',))
             if len(admins) <= 1:
                 raise ServiceException('不能删除最后一个管理员账户', code=5005, http_status=403)
 

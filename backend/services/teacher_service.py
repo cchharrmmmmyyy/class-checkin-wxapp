@@ -1,8 +1,9 @@
 from datetime import datetime
 from dao.user_dao import UserDAO
 from utils.exceptions import ServiceException
+from utils.pagination import paginate
+from utils import error_codes as EC
 
-# 创建DAO实例
 user_dao = UserDAO()
 
 
@@ -13,13 +14,13 @@ class TeacherService:
         student = user_dao.get_by_id(student_id)
 
         if not student or student.deleted_at:
-            raise ServiceException('未找到该学生', code=4001, http_status=404)
+            raise ServiceException('未找到该学生', code=EC.USER_NOT_FOUND, http_status=404)
 
         if student.class_name != teacher_class:
-            raise ServiceException('该学生不在您的班级中', code=4002, http_status=403)
+            raise ServiceException('该学生不在您的班级中', code=EC.LEAVE_NOT_IN_CLASS, http_status=403)
 
         if student.role != 'student':
-            raise ServiceException('只有学生才能被任命为班委', code=4003)
+            raise ServiceException('只有学生才能被任命为班委', code=EC.USER_ROLE_INVALID)
 
         user_dao.update(student_id, {'role': 'monitor'})
 
@@ -39,13 +40,13 @@ class TeacherService:
         student = user_dao.get_by_id(student_id)
 
         if not student or student.deleted_at:
-            raise ServiceException('未找到该学生', code=4004, http_status=404)
+            raise ServiceException('未找到该学生', code=EC.USER_NOT_FOUND, http_status=404)
 
         if student.class_name != teacher_class:
-            raise ServiceException('该学生不在您的班级中', code=4005, http_status=403)
+            raise ServiceException('该学生不在您的班级中', code=EC.LEAVE_NOT_IN_CLASS, http_status=403)
 
         if student.role != 'monitor':
-            raise ServiceException('该学生不是班委', code=4006)
+            raise ServiceException('该学生不是班委', code=EC.USER_ROLE_INVALID)
 
         user_dao.update(student_id, {'role': 'student'})
 
@@ -64,10 +65,10 @@ class TeacherService:
     def get_monitors(class_name, page=1, size=50):
         where = "class_name = ? AND role = 'monitor' AND deleted_at IS NULL"
         params = (class_name,)
-        
+
         total = user_dao.count(where=where, params=params)
         offset = (page - 1) * size
-        
+
         monitors = user_dao.get_list(
             where=where,
             params=params,
@@ -75,30 +76,22 @@ class TeacherService:
             limit=size,
             offset=offset
         )
-        
+
         items = [
             {'username': m.username, 'user_id': m.user_id}
             for m in monitors
         ]
-        
-        total_pages = (total + size - 1) // size if total else 0
-        return {
-            'items': items,
-            'total': total,
-            'page': page,
-            'size': size,
-            'total_pages': total_pages,
-            'has_next': page < total_pages
-        }
+
+        return paginate(items, total, page, size)
 
     @staticmethod
     def get_students(class_name, page=1, size=50):
         where = "class_name = ? AND deleted_at IS NULL"
         params = (class_name,)
-        
+
         total = user_dao.count(where=where, params=params)
         offset = (page - 1) * size
-        
+
         students = user_dao.get_list(
             where=where,
             params=params,
@@ -106,25 +99,16 @@ class TeacherService:
             limit=size,
             offset=offset
         )
-        
+
         items = [
             {'username': s.username, 'user_id': s.user_id, 'role': s.role}
             for s in students
         ]
-        
-        total_pages = (total + size - 1) // size if total else 0
-        return {
-            'items': items,
-            'total': total,
-            'page': page,
-            'size': size,
-            'total_pages': total_pages,
-            'has_next': page < total_pages
-        }
+
+        return paginate(items, total, page, size)
 
     @staticmethod
     def get_class_list():
-        # 获取所有不重复的班级名称
         conn = user_dao.get_connection()
         try:
             cursor = conn.cursor()

@@ -25,9 +25,14 @@ SAFE_ORDER_BY_PATTERN = re.compile(
     re.IGNORECASE
 )
 
+_SAFE_CONDITION = (
+    r'(?:\d+\s*[<>=!]+\s*\d+'
+    r'|[a-zA-Z_][a-zA-Z0-9_]*(?:\s*[<>=!]+\s*\?|\s+LIKE\s+\?|\s+IS\s+NULL|\s+IS\s+NOT\s+NULL)'
+    r')'
+)
+
 SAFE_WHERE_PATTERN = re.compile(
-    r'^[a-zA-Z_][a-zA-Z0-9_]*(?:[<>=!]+|\s+LIKE\s+|\s+IN\s+)\s*\?'
-    r'(?:\s+AND\s+[a-zA-Z_][a-zA-Z0-9_]*(?:[<>=!]+|\s+LIKE\s+|\s+IN\s+)\s*\?)*$'
+    rf'^{_SAFE_CONDITION}(?:\s+AND\s+{_SAFE_CONDITION})*$'
 )
 
 TABLES_WITH_SOFT_DELETE = {

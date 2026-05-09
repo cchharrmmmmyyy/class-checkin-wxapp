@@ -2,6 +2,8 @@ from datetime import datetime
 from dao import UserDAO, PunchDAO, PunchGeofenceDAO, LeaveDAO
 from utils.geo import calculate_distance
 from utils.exceptions import ServiceException
+from utils.pagination import paginate
+from utils import error_codes as EC
 from config import Config
 
 user_dao = UserDAO()
@@ -29,16 +31,10 @@ class PunchService:
                     break
 
             if not in_range:
-                raise ServiceException(
-                    '不在打卡范围内',
-                    code=2001
-                )
+                raise ServiceException('不在打卡范围内', code=EC.PUNCH_OUT_OF_RANGE)
 
         if punch_geofences and (latitude is None or longitude is None):
-            raise ServiceException(
-                '无法获取您的位置，请确保定位服务已开启',
-                code=2002
-            )
+            raise ServiceException('无法获取您的位置，请确保定位服务已开启', code=EC.PUNCH_LOCATION_FAILED)
 
         today = datetime.now().strftime('%Y-%m-%d')
         now = datetime.now().strftime('%H:%M:%S')
@@ -46,11 +42,11 @@ class PunchService:
         leave_records = leave_dao.get_leave_records_by_user(user_id)
         for leave in leave_records:
             if leave.leave_status == 'approved' and leave.leave_start_date <= today <= leave.leave_end_date:
-                raise ServiceException('请假期间不允许打卡', code=2004)
+                raise ServiceException('请假期间不允许打卡', code=EC.PUNCH_ON_LEAVE)
 
         existing = punch_dao.get_punch_by_user_and_date(user_id, today)
         if existing:
-            raise ServiceException('今日已打卡', code=2003)
+            raise ServiceException('今日已打卡', code=EC.PUNCH_ALREADY_PUNCHED)
 
         punch_id = punch_dao.create({
             'user_id': user_id,
@@ -104,15 +100,7 @@ class PunchService:
             for r in records
         ]
 
-        total_pages = (total + size - 1) // size if total else 0
-        return {
-            'items': items,
-            'total': total,
-            'page': page,
-            'size': size,
-            'total_pages': total_pages,
-            'has_next': page < total_pages
-        }
+        return paginate(items, total, page, size)
 
     @staticmethod
     def get_statistics(date_str=None):

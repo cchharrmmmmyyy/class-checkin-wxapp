@@ -1,6 +1,8 @@
 from typing import List, Optional
 from dao import NotificationDAO
 from utils.exceptions import ServiceException
+from utils.pagination import paginate
+from utils import error_codes as EC
 
 
 class NotificationService:
@@ -13,7 +15,7 @@ class NotificationService:
         if notification_type not in valid_types:
             raise ServiceException(
                 f'无效的通知类型: {notification_type}',
-                code=8001,
+                code=EC.NOTIFICATION_INVALID_TYPE,
                 http_status=400
             )
 
@@ -90,15 +92,7 @@ class NotificationService:
             for n in notifications
         ]
         
-        total_pages = (total + size - 1) // size if total else 0
-        return {
-            'items': items,
-            'total': total,
-            'page': page,
-            'size': size,
-            'total_pages': total_pages,
-            'has_next': page < total_pages
-        }
+        return paginate(items, total, page, size)
 
     @staticmethod
     def get_unread_count(user_id: str, notification_type: str = None) -> int:
@@ -115,10 +109,10 @@ class NotificationService:
         notification_dao = NotificationDAO()
         notification = notification_dao.get_by_id(notification_id)
         if not notification:
-            raise ServiceException('通知不存在', code=8002, http_status=404)
+            raise ServiceException('通知不存在', code=EC.NOTIFICATION_NOT_FOUND, http_status=404)
 
         if notification.receiver_id != user_id:
-            raise ServiceException('无权限操作', code=8003, http_status=403)
+            raise ServiceException('无权限操作', code=EC.NOTIFICATION_NO_PERMISSION, http_status=403)
 
         return notification_dao.mark_as_read(notification_id)
 
@@ -142,9 +136,9 @@ class NotificationService:
         notification_dao = NotificationDAO()
         notification = notification_dao.get_by_id(notification_id)
         if not notification:
-            raise ServiceException('通知不存在', code=8002, http_status=404)
+            raise ServiceException('通知不存在', code=EC.NOTIFICATION_NOT_FOUND, http_status=404)
 
         if notification.receiver_id != user_id:
-            raise ServiceException('无权限操作', code=8003, http_status=403)
+            raise ServiceException('无权限操作', code=EC.NOTIFICATION_NO_PERMISSION, http_status=403)
 
         return notification_dao.delete(notification_id)

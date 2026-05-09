@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import List, Optional
 from dao import operation_log_dao
 from utils.exceptions import ServiceException
+from utils.pagination import paginate
+from utils import error_codes as EC
 
 
 class LogService:
@@ -15,7 +17,7 @@ class LogService:
         if operation_type not in valid_types:
             raise ServiceException(
                 f'无效的操作类型: {operation_type}',
-                code=9001,
+                code=EC.LOG_INVALID_TYPE,
                 http_status=400
             )
 
@@ -88,15 +90,7 @@ class LogService:
             for log in logs
         ]
         
-        total_pages = (total + size - 1) // size if total else 0
-        return {
-            'items': items,
-            'total': total,
-            'page': page,
-            'size': size,
-            'total_pages': total_pages,
-            'has_next': page < total_pages
-        }
+        return paginate(items, total, page, size)
 
     @staticmethod
     def get_user_operation_logs(user_id: str, operation_type: str = None,

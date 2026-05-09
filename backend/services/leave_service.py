@@ -1,6 +1,8 @@
 from datetime import datetime
 from dao import LeaveDAO
 from utils.exceptions import ServiceException
+from utils.pagination import paginate
+from utils import error_codes as EC
 
 leave_dao = LeaveDAO()
 
@@ -10,24 +12,24 @@ class LeaveService:
     @staticmethod
     def apply_leave(user_id, leave_start_date, leave_end_date, leave_type='personal', leave_reason=None):
         if not leave_start_date or not leave_end_date:
-            raise ServiceException('请假开始和结束日期不能为空', code=3001)
+            raise ServiceException('请假开始和结束日期不能为空', code=EC.LEAVE_DATE_EMPTY)
 
         if leave_start_date in ('null', 'undefined') or leave_end_date in ('null', 'undefined'):
-            raise ServiceException('请假开始和结束日期不能为空', code=3001)
+            raise ServiceException('请假开始和结束日期不能为空', code=EC.LEAVE_DATE_EMPTY)
 
         today = datetime.now().strftime('%Y-%m-%d')
 
         if leave_end_date < leave_start_date:
-            raise ServiceException('请假结束日期不能早于开始日期', code=3003)
+            raise ServiceException('请假结束日期不能早于开始日期', code=EC.LEAVE_END_BEFORE_START)
 
         if leave_start_date < today:
-            raise ServiceException('请假开始日期不能是过去日期', code=3002)
+            raise ServiceException('请假开始日期不能是过去日期', code=EC.LEAVE_START_IN_PAST)
 
         existing_leaves = leave_dao.get_leave_records_by_user(user_id)
         for leave in existing_leaves:
             if (leave.leave_status in ['pending', 'approved'] and
                 not (leave.leave_end_date < leave_start_date or leave.leave_start_date > leave_end_date)):
-                raise ServiceException('该时间段内已存在请假记录', code=3004)
+                raise ServiceException('该时间段内已存在请假记录', code=EC.LEAVE_OVERLAP)
 
         leave_dao.create({
             'user_id': user_id,
@@ -81,15 +83,7 @@ class LeaveService:
             for r in records
         ]
 
-        total_pages = (total + size - 1) // size if total else 0
-        return {
-            'items': items,
-            'total': total,
-            'page': page,
-            'size': size,
-            'total_pages': total_pages,
-            'has_next': page < total_pages
-        }
+        return paginate(items, total, page, size)
 
     @staticmethod
     def get_pending_leave_applications(class_name, page=1, size=50):
@@ -132,34 +126,26 @@ class LeaveService:
             for app in applications
         ]
 
-        total_pages = (total + size - 1) // size if total else 0
-        return {
-            'items': items,
-            'total': total,
-            'page': page,
-            'size': size,
-            'total_pages': total_pages,
-            'has_next': page < total_pages
-        }
+        return paginate(items, total, page, size)
 
     @staticmethod
     def approve_leave(leave_id, class_name, status):
         if status not in ('approved', 'rejected'):
-            raise ServiceException('审批状态只能是approved或rejected', code=3005)
+            raise ServiceException('审批状态只能是approved或rejected', code=EC.LEAVE_STATUS_INVALID)
 
         leave = leave_dao.get_leave_record_by_id_and_class(leave_id, class_name)
 
         if not leave:
             raise ServiceException(
                 '未找到该请假申请或该申请不属于您的班级',
-                code=3006,
+                code=EC.LEAVE_NOT_IN_CLASS,
                 http_status=404
             )
 
         if leave.leave_status != 'pending':
             raise ServiceException(
                 f'该请假申请已处于{leave.leave_status}状态，无法重复审批',
-                code=3007
+                code=EC.LEAVE_STATUS_INVALID
             )
 
         leave_dao.update_leave_status(leave_id, status)

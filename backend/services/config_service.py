@@ -1,5 +1,6 @@
 from dao import PunchConfigDAO
 from utils.exceptions import ServiceException
+from utils import error_codes as EC
 import json
 
 # 创建DAO实例
@@ -52,7 +53,7 @@ class ConfigService:
         required_fields = ['global_time_check_enabled', 'global_location_check_enabled', 'allow_multi_punch', 'allow_makeup']
         for field in required_fields:
             if field not in config_data:
-                raise ServiceException(f'缺少必要配置项: {field}', code=2001)
+                raise ServiceException(f'缺少必要配置项: {field}', code=EC.JSON_INVALID)
         
         # 验证数据类型（兼容 0/1）
         normalized_bools = {}
@@ -63,7 +64,7 @@ class ConfigService:
             elif isinstance(val, int) and val in (0, 1):
                 normalized_bools[field] = bool(val)
             else:
-                raise ServiceException(f'配置项 {field} 必须是布尔值', code=2002)
+                raise ServiceException(f'配置项 {field} 必须是布尔值', code=EC.JSON_INVALID)
 
         payload = dict(normalized_bools)
         if 'holiday_ranges' in config_data:
@@ -80,17 +81,17 @@ class ConfigService:
                     try:
                         decoded = json.loads(s)
                     except Exception as e:
-                        raise ServiceException('holiday_ranges 必须是数组或合法的 JSON 字符串', code=2002) from e
+                        raise ServiceException('holiday_ranges 必须是数组或合法的 JSON 字符串', code=EC.JSON_INVALID) from e
                     if not isinstance(decoded, list):
-                        raise ServiceException('holiday_ranges 必须是数组或合法的 JSON 字符串', code=2002)
+                        raise ServiceException('holiday_ranges 必须是数组或合法的 JSON 字符串', code=EC.JSON_INVALID)
                     payload['holiday_ranges'] = s
             else:
-                raise ServiceException('holiday_ranges 必须是数组或合法的 JSON 字符串', code=2002)
+                raise ServiceException('holiday_ranges 必须是数组或合法的 JSON 字符串', code=EC.JSON_INVALID)
 
         # 更新配置
         result = punch_config_dao.update(payload)
         if not result:
-            raise ServiceException('更新配置失败', code=2003)
+            raise ServiceException('更新配置失败', code=EC.JSON_INVALID)
         
         return {
             'success': True,
