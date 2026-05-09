@@ -3,7 +3,6 @@ from .punch_service import PunchService
 from .leave_service import LeaveService
 from .makeup_service import MakeupService
 from .teacher_service import TeacherService
-from .admin_service import AdminService
 from .admin_org_service import AdminOrgService
 from .admin_user_service import AdminUserService
 from .admin_rule_service import AdminRuleService
