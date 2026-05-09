@@ -2,7 +2,7 @@ from datetime import datetime
 from dao import UserDAO, PunchDAO, PunchGeofenceDAO, LeaveDAO
 from utils.geo import calculate_distance
 from utils.exceptions import ServiceException
-from utils.pagination import paginate
+from utils.pagination import paginate, normalize_pagination
 from utils import error_codes as EC
 from config import Config
 
@@ -77,7 +77,7 @@ class PunchService:
 
         where = " AND ".join(conditions)
         total = punch_dao.count(where=where, params=tuple(params))
-        offset = (page - 1) * size
+        page, size, offset = normalize_pagination(page, size)
 
         records = punch_dao.get_list(
             where=where,

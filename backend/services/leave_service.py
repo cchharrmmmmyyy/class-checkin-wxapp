@@ -1,7 +1,7 @@
 from datetime import datetime
 from dao import LeaveDAO
 from utils.exceptions import ServiceException
-from utils.pagination import paginate
+from utils.pagination import paginate, normalize_pagination
 from utils import error_codes as EC
 
 leave_dao = LeaveDAO()
@@ -12,9 +12,6 @@ class LeaveService:
     @staticmethod
     def apply_leave(user_id, leave_start_date, leave_end_date, leave_type='personal', leave_reason=None):
         if not leave_start_date or not leave_end_date:
-            raise ServiceException('请假开始和结束日期不能为空', code=EC.LEAVE_DATE_EMPTY)
-
-        if leave_start_date in ('null', 'undefined') or leave_end_date in ('null', 'undefined'):
             raise ServiceException('请假开始和结束日期不能为空', code=EC.LEAVE_DATE_EMPTY)
 
         today = datetime.now().strftime('%Y-%m-%d')
@@ -59,7 +56,7 @@ class LeaveService:
             params.append(status)
 
         total = leave_dao.count(where=where, params=tuple(params))
-        offset = (page - 1) * size
+        page, size, offset = normalize_pagination(page, size)
 
         records = leave_dao.get_list(
             where=where,
@@ -91,7 +88,7 @@ class LeaveService:
         params = (class_name,)
 
         total = leave_dao.count(where=where, params=params)
-        offset = (page - 1) * size
+        page, size, offset = normalize_pagination(page, size)
 
         conn = leave_dao._get_connection()
         try:

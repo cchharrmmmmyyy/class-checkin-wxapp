@@ -2,8 +2,11 @@ from datetime import datetime
 from typing import List, Optional
 from dao import operation_log_dao
 from utils.exceptions import ServiceException
-from utils.pagination import paginate
+from utils.pagination import paginate, normalize_pagination
 from utils import error_codes as EC
+
+
+operation_log_dao_instance = operation_log_dao.OperationLogDAO()
 
 
 class LogService:
@@ -63,11 +66,10 @@ class LogService:
         where = ' AND '.join(conditions) if conditions else None
         order_by = 'created_at DESC'
 
-        dao = operation_log_dao.OperationLogDAO()
-        total = dao.count(where=where, params=tuple(params))
+        total = operation_log_dao_instance.count(where=where, params=tuple(params))
         
-        offset = (page - 1) * size
-        logs = dao.get_list(
+        page, size, offset = normalize_pagination(page, size)
+        logs = operation_log_dao_instance.get_list(
             where=where,
             params=tuple(params),
             order_by=order_by,
@@ -94,20 +96,20 @@ class LogService:
 
     @staticmethod
     def get_user_operation_logs(user_id: str, operation_type: str = None,
-                                limit: int = 50, offset: int = 0) -> List[dict]:
+                                page: int = 1, size: int = 50) -> dict:
         return LogService.get_operation_logs(
             operator_id=user_id,
             operation_type=operation_type,
-            limit=limit,
-            offset=offset
+            page=page,
+            size=size
         )
 
     @staticmethod
     def get_target_logs(target_type: str, target_id: str,
-                       limit: int = 50, offset: int = 0) -> List[dict]:
+                       page: int = 1, size: int = 50) -> dict:
         return LogService.get_operation_logs(
             target_type=target_type,
             target_id=target_id,
-            limit=limit,
-            offset=offset
+            page=page,
+            size=size
         )

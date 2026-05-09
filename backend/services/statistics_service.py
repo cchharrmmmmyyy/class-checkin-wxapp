@@ -2,6 +2,7 @@ from dao.user_dao import UserDAO
 from dao.punch_dao import PunchDAO
 from dao.leave_dao import LeaveDAO
 from utils.exceptions import ServiceException
+from utils import error_codes as EC
 import datetime
 
 user_dao = UserDAO()
@@ -17,7 +18,7 @@ class StatisticsService:
         students = user_dao.get_list(where="class_name = ? AND deleted_at IS NULL", params=(class_name,))
         
         if not students:
-            raise ServiceException(f"班级 {class_name} 没有学生")
+            raise ServiceException(f"班级 {class_name} 没有学生", code=EC.CLASS_NOT_FOUND)
         
         start = datetime.datetime.strptime(start_date, '%Y-%m-%d')
         end = datetime.datetime.strptime(end_date, '%Y-%m-%d')
@@ -85,7 +86,7 @@ class StatisticsService:
         user = user_dao.get_by_id(user_id)
         
         if not user:
-            raise ServiceException(f"用户 {user_id} 不存在")
+            raise ServiceException(f"用户 {user_id} 不存在", code=EC.USER_NOT_FOUND)
         
         start = datetime.datetime.strptime(start_date, '%Y-%m-%d')
         end = datetime.datetime.strptime(end_date, '%Y-%m-%d')
@@ -173,7 +174,7 @@ class StatisticsService:
         start_date = end_date - datetime.timedelta(days=days - 1)
         
         trend = {
-            'class_name': class_name or '全局',
+            'class_name': class_name,
             'start_date': start_date.strftime('%Y-%m-%d'),
             'end_date': end_date.strftime('%Y-%m-%d'),
             'days': days,
@@ -252,7 +253,7 @@ class StatisticsService:
         student_count = len(students)
         
         if student_count == 0:
-            raise ServiceException(f"班级 {class_name} 没有学生")
+            raise ServiceException(f"班级 {class_name} 没有学生", code=EC.CLASS_NOT_FOUND)
         
         statistics = {
             'class_name': class_name,

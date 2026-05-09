@@ -9,7 +9,7 @@ from dao.punch_dao import PunchDAO
 from dao.leave_dao import LeaveDAO
 from dao.punch_geofence_dao import PunchGeofenceDAO
 from utils.exceptions import ServiceException
-from utils.error_codes import PUNCH_TIME_MISSING
+from utils.error_codes import PUNCH_TIME_MISSING, PUNCH_LOCATION_MISSING
 from utils.serializers import load_polygon_coords
 from utils.pagination import paginate, normalize_pagination
 
@@ -133,13 +133,17 @@ class AdminAttendanceService:
         return output.getvalue().encode('utf-8-sig'), filename
 
     @staticmethod
-    def save_punch_record(record_id, user_id, punch_date, punch_time, latitude=0.0, longitude=0.0):
+    def save_punch_record(record_id, user_id, punch_date, punch_time, latitude, longitude):
         if not user_id:
             raise ServiceException('用户ID不能为空', code=6008)
         if not punch_date:
             raise ServiceException('打卡日期不能为空', code=6009)
         if not punch_time:
             raise ServiceException('打卡时间不能为空', code=PUNCH_TIME_MISSING)
+        if latitude is None:
+            raise ServiceException('打卡纬度不能为空', code=PUNCH_LOCATION_MISSING)
+        if longitude is None:
+            raise ServiceException('打卡经度不能为空', code=PUNCH_LOCATION_MISSING)
         target_user = user_dao.get_by_id(user_id)
         if not target_user or target_user.deleted_at:
             raise ServiceException('用户不存在', code=6002, http_status=404)
@@ -147,8 +151,8 @@ class AdminAttendanceService:
             'user_id': user_id,
             'punch_date': punch_date,
             'punch_time': punch_time,
-            'latitude': latitude if latitude is not None else 0.0,
-            'longitude': longitude if longitude is not None else 0.0,
+            'latitude': latitude,
+            'longitude': longitude,
         }
         if record_id:
             target = punch_dao.get_by_id(record_id)
@@ -160,7 +164,7 @@ class AdminAttendanceService:
         return {'success': True, 'message': '打卡记录添加成功', 'id': new_id}
 
     @staticmethod
-    def save_leave_record(record_id, user_id, leave_start_date=None, leave_end_date=None, leave_status='pending', leave_type='personal', leave_reason=None):
+    def save_leave_record(record_id, user_id, leave_start_date=None, leave_end_date=None, leave_status=None, leave_type=None, leave_reason=None):
         if record_id:
             target = leave_dao.get_by_id(record_id)
             if not target or target.deleted_at:
@@ -173,6 +177,8 @@ class AdminAttendanceService:
 
         if not user_id or not leave_start_date or not leave_end_date:
             raise ServiceException('用户ID和请假起止日期不能为空', code=4001)
+        if not leave_type:
+            raise ServiceException('请假类型不能为空', code=4001)
         target_user = user_dao.get_by_id(user_id)
         if not target_user or target_user.deleted_at:
             raise ServiceException('用户不存在', code=6002, http_status=404)
@@ -180,7 +186,7 @@ class AdminAttendanceService:
             'user_id': user_id,
             'leave_start_date': leave_start_date,
             'leave_end_date': leave_end_date,
-            'leave_type': leave_type or 'personal',
+            'leave_type': leave_type,
             'leave_reason': leave_reason,
         }
         new_id = leave_dao.create(data)

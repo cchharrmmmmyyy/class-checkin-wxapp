@@ -35,11 +35,13 @@ def create_user():
     password = (data.get('password') or '').strip()
     role = (data.get('role') or '').strip()
     class_name = (data.get('class') or '').strip()
+    real_name = (data.get('real_name') or '').strip()
+    student_id = (data.get('student_id') or '').strip()
 
     if not username or not user_id or not password or not role or not class_name:
         raise ServiceException('用户名、用户ID、密码、角色和班级不能为空', code=USER_INFO_INCOMPLETE)
 
-    result = AdminUserService.save_user(username, user_id, password, role, class_name)
+    result = AdminUserService.save_user(username, user_id, password, role, class_name, real_name, student_id)
     return success(data=result)
 
 
@@ -54,8 +56,10 @@ def update_user(user_id):
     password = (data.get('password') or '').strip()
     role = (data.get('role') or '').strip()
     class_name = (data.get('class') or '').strip()
+    real_name = (data.get('real_name') or '').strip()
+    student_id = (data.get('student_id') or '').strip()
 
-    result = AdminUserService.save_user(username, user_id, password, role, class_name)
+    result = AdminUserService.save_user(username, user_id, password, role, class_name, real_name, student_id)
     return success(data=result)
 
 

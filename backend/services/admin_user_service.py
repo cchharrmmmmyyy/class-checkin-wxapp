@@ -51,7 +51,7 @@ class AdminUserService:
         return paginate(items, total, page, size)
 
     @staticmethod
-    def save_user(username, user_id, password, role, class_name):
+    def save_user(username, user_id, password, role, class_name, real_name=None, student_id=None):
         valid_roles = ('admin', 'teacher', 'student', 'monitor')
         if role not in valid_roles:
             raise ServiceException(f'角色必须是 {"、".join(valid_roles)} 之一', code=6004)
@@ -68,6 +68,10 @@ class AdminUserService:
             data = {'username': username, 'role': role, 'class_name': class_name}
             if password:
                 data['password'] = password
+            if real_name:
+                data['real_name'] = real_name
+            if student_id:
+                data['student_id'] = student_id
             user_dao.update(user_id, data)
             message = '用户更新成功'
         else:
@@ -75,10 +79,10 @@ class AdminUserService:
                 'user_id': user_id,
                 'username': username,
                 'password': password,
-                'real_name': username,
+                'real_name': real_name or username,
                 'role': role,
                 'class_name': class_name,
-                'student_id': user_id,
+                'student_id': student_id or user_id,
             }
             user_dao.create(data)
             message = '用户添加成功'

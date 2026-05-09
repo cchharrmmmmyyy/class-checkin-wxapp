@@ -1,8 +1,11 @@
 from typing import List, Optional
 from dao import NotificationDAO
 from utils.exceptions import ServiceException
-from utils.pagination import paginate
+from utils.pagination import paginate, normalize_pagination
 from utils import error_codes as EC
+
+
+notification_dao = NotificationDAO()
 
 
 class NotificationService:
@@ -28,7 +31,6 @@ class NotificationService:
             'related_id': related_id
         }
 
-        notification_dao = NotificationDAO()
         return notification_dao.create(data, conn=conn)
 
     @staticmethod
@@ -53,7 +55,6 @@ class NotificationService:
     def get_user_notifications(user_id: str, notification_type: str = None,
                                is_read: bool = None, page: int = 1,
                                size: int = 50) -> dict:
-        notification_dao = NotificationDAO()
         conditions = ['receiver_id = ?']
         params = [user_id]
 
@@ -68,7 +69,7 @@ class NotificationService:
         order_by = 'created_at DESC'
 
         total = notification_dao.count(where=where, params=tuple(params))
-        offset = (page - 1) * size
+        page, size, offset = normalize_pagination(page, size)
         notifications = notification_dao.get_list(
             where=where,
             params=tuple(params),
@@ -100,13 +101,12 @@ class NotificationService:
             user_id=user_id,
             notification_type=notification_type,
             is_read=False,
-            limit=1000
+            size=1000
         )
         return len(notifications)
 
     @staticmethod
     def mark_as_read(notification_id: int, user_id: str) -> bool:
-        notification_dao = NotificationDAO()
         notification = notification_dao.get_by_id(notification_id)
         if not notification:
             raise ServiceException('通知不存在', code=EC.NOTIFICATION_NOT_FOUND, http_status=404)
@@ -118,11 +118,10 @@ class NotificationService:
 
     @staticmethod
     def mark_all_as_read(user_id: str) -> int:
-        notification_dao = NotificationDAO()
         notifications = NotificationService.get_user_notifications(
             user_id=user_id,
             is_read=False,
-            limit=1000
+            size=1000
         )
 
         count = 0
@@ -133,7 +132,6 @@ class NotificationService:
 
     @staticmethod
     def delete_notification(notification_id: int, user_id: str) -> bool:
-        notification_dao = NotificationDAO()
         notification = notification_dao.get_by_id(notification_id)
         if not notification:
             raise ServiceException('通知不存在', code=EC.NOTIFICATION_NOT_FOUND, http_status=404)

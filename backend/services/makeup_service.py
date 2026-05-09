@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from dao import MakeupRequestDAO, PunchDAO
 from utils.exceptions import ServiceException
-from utils.pagination import paginate
+from utils.pagination import paginate, normalize_pagination
 from utils import error_codes as EC
 
 makeup_request_dao = MakeupRequestDAO()
@@ -55,7 +55,7 @@ class MakeupService:
         params = (user_id,)
 
         total = makeup_request_dao.count(where=where, params=params)
-        offset = (page - 1) * size
+        page, size, offset = normalize_pagination(page, size)
 
         records = makeup_request_dao.get_list(
             where=where,
@@ -85,7 +85,7 @@ class MakeupService:
         params = (class_name,)
 
         total = makeup_request_dao.count(where=where, params=params)
-        offset = (page - 1) * size
+        page, size, offset = normalize_pagination(page, size)
 
         conn = makeup_request_dao._get_connection()
         try:
@@ -120,7 +120,7 @@ class MakeupService:
         return paginate(items, total, page, size)
 
     @staticmethod
-    def approve_makeup(request_id, class_name, status):
+    def approve_makeup(request_id, class_name, status, punch_time, latitude, longitude):
         if status not in ('approved', 'rejected'):
             raise ServiceException('审批状态只能是approved或rejected', code=EC.MAKEUP_STATUS_INVALID)
 
@@ -142,12 +142,18 @@ class MakeupService:
         makeup_request_dao.update_status(request_id, status)
 
         if status == 'approved':
+            if not punch_time:
+                raise ServiceException('打卡时间不能为空', code=EC.MAKEUP_DATE_MISSING)
+            if latitude is None:
+                raise ServiceException('打卡纬度不能为空', code=EC.PUNCH_LOCATION_FAILED)
+            if longitude is None:
+                raise ServiceException('打卡经度不能为空', code=EC.PUNCH_LOCATION_FAILED)
             punch_dao.create({
                 'user_id': makeup_application.user_id,
                 'punch_date': makeup_application.target_date,
-                'punch_time': '12:00:00',
-                'latitude': 0,
-                'longitude': 0,
+                'punch_time': punch_time,
+                'latitude': latitude,
+                'longitude': longitude,
                 'is_makeup': 1,
             })
 

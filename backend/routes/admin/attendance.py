@@ -7,7 +7,7 @@ from utils.api_response import success
 from utils.exceptions import ServiceException
 from utils.error_codes import (
     JSON_INVALID, USER_INFO_INCOMPLETE,
-    PUNCH_DATE_MISSING, PUNCH_TIME_MISSING,
+    PUNCH_DATE_MISSING, PUNCH_TIME_MISSING, PUNCH_LOCATION_MISSING,
     LEAVE_START_DATE_MISSING, LEAVE_END_DATE_MISSING, LEAVE_STATUS_MISSING
 )
 
@@ -74,6 +74,10 @@ def create_punch_record():
         raise ServiceException('打卡日期不能为空', code=PUNCH_DATE_MISSING)
     if not punch_time:
         raise ServiceException('打卡时间不能为空', code=PUNCH_TIME_MISSING)
+    if latitude is None:
+        raise ServiceException('打卡纬度不能为空', code=PUNCH_LOCATION_MISSING)
+    if longitude is None:
+        raise ServiceException('打卡经度不能为空', code=PUNCH_LOCATION_MISSING)
 
     result = AdminAttendanceService.save_punch_record(
         record_id=None, user_id=user_id, punch_date=punch_date,
@@ -101,6 +105,10 @@ def update_punch_record(record_id):
         raise ServiceException('打卡日期不能为空', code=PUNCH_DATE_MISSING)
     if not punch_time:
         raise ServiceException('打卡时间不能为空', code=PUNCH_TIME_MISSING)
+    if latitude is None:
+        raise ServiceException('打卡纬度不能为空', code=PUNCH_LOCATION_MISSING)
+    if longitude is None:
+        raise ServiceException('打卡经度不能为空', code=PUNCH_LOCATION_MISSING)
 
     result = AdminAttendanceService.save_punch_record(
         record_id=record_id, user_id=user_id, punch_date=punch_date,
@@ -129,6 +137,8 @@ def create_leave_record():
     user_id = (data.get('user_id') or '').strip()
     leave_start_date = (data.get('leave_start_date') or '').strip()
     leave_end_date = (data.get('leave_end_date') or '').strip()
+    leave_status = (data.get('leave_status') or '').strip()
+    leave_type = (data.get('leave_type') or '').strip()
 
     if not user_id:
         raise ServiceException('用户ID不能为空', code=USER_INFO_INCOMPLETE)
@@ -136,13 +146,17 @@ def create_leave_record():
         raise ServiceException('请假开始日期不能为空', code=LEAVE_START_DATE_MISSING)
     if not leave_end_date:
         raise ServiceException('请假结束日期不能为空', code=LEAVE_END_DATE_MISSING)
+    if not leave_status:
+        raise ServiceException('请假状态不能为空', code=LEAVE_STATUS_MISSING)
+    if not leave_type:
+        raise ServiceException('请假类型不能为空', code=LEAVE_START_DATE_MISSING)
 
     result = AdminAttendanceService.save_leave_record(
         record_id=None, user_id=user_id,
         leave_start_date=leave_start_date,
         leave_end_date=leave_end_date,
-        leave_status=(data.get('leave_status') or 'pending').strip(),
-        leave_type=(data.get('leave_type') or 'personal').strip(),
+        leave_status=leave_status,
+        leave_type=leave_type,
         leave_reason=data.get('leave_reason')
     )
     return success(data=result)

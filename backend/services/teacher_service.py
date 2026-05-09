@@ -1,7 +1,7 @@
 from datetime import datetime
 from dao.user_dao import UserDAO
 from utils.exceptions import ServiceException
-from utils.pagination import paginate
+from utils.pagination import paginate, normalize_pagination
 from utils import error_codes as EC
 
 user_dao = UserDAO()
@@ -67,7 +67,7 @@ class TeacherService:
         params = (class_name,)
 
         total = user_dao.count(where=where, params=params)
-        offset = (page - 1) * size
+        page, size, offset = normalize_pagination(page, size)
 
         monitors = user_dao.get_list(
             where=where,
@@ -90,7 +90,7 @@ class TeacherService:
         params = (class_name,)
 
         total = user_dao.count(where=where, params=params)
-        offset = (page - 1) * size
+        page, size, offset = normalize_pagination(page, size)
 
         students = user_dao.get_list(
             where=where,
@@ -109,11 +109,11 @@ class TeacherService:
 
     @staticmethod
     def get_class_list():
-        conn = user_dao.get_connection()
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT DISTINCT class_name FROM users WHERE class_name IS NOT NULL AND deleted_at IS NULL")
-            classes = cursor.fetchall()
-            return [class_row[0] for class_row in classes]
-        finally:
-            conn.close()
+        users = user_dao.get_list(where="class_name IS NOT NULL AND deleted_at IS NULL")
+        seen = set()
+        result = []
+        for u in users:
+            if u.class_name and u.class_name not in seen:
+                seen.add(u.class_name)
+                result.append(u.class_name)
+        return result

@@ -11,6 +11,7 @@ from utils.error_codes import (
     JSON_INVALID, CLASS_NAME_MISSING,
     LEAVE_RECORD_ID_MISSING, LEAVE_STATUS_MISSING,
     MAKEUP_RECORD_ID_MISSING, MAKEUP_STATUS_MISSING,
+    PUNCH_TIME_MISSING,
     USER_STUDENT_ID_MISSING
 )
 from datetime import date
@@ -133,7 +134,9 @@ def approve_makeup():
         raise ServiceException('请求体不是有效的JSON格式', code=JSON_INVALID)
     makeup_id = data.get('makeup_id')
     status = (data.get('status') or '').strip()
-    punch_time = (data.get('punch_time') or '12:00:00').strip()
+    punch_time = (data.get('punch_time') or '').strip()
+    latitude = data.get('latitude')
+    longitude = data.get('longitude')
 
     if not makeup_id:
         raise ServiceException('补卡记录ID不能为空', code=MAKEUP_RECORD_ID_MISSING)
@@ -141,8 +144,16 @@ def approve_makeup():
     if not status:
         raise ServiceException('审批状态不能为空', code=MAKEUP_STATUS_MISSING)
 
+    if status == 'approved':
+        if not punch_time:
+            raise ServiceException('打卡时间不能为空', code=PUNCH_TIME_MISSING)
+        if latitude is None:
+            raise ServiceException('打卡纬度不能为空', code=PUNCH_TIME_MISSING)
+        if longitude is None:
+            raise ServiceException('打卡经度不能为空', code=PUNCH_TIME_MISSING)
+
     class_name = _get_teacher_class(teacher)
-    result = MakeupService.approve_makeup(makeup_id, class_name, status, punch_time)
+    result = MakeupService.approve_makeup(makeup_id, class_name, status, punch_time, latitude, longitude)
     return success(result)
 
 

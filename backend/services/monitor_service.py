@@ -2,6 +2,7 @@ from dao.user_dao import UserDAO
 from dao.punch_dao import PunchDAO
 from dao.leave_dao import LeaveDAO
 from utils.exceptions import ServiceException
+import datetime
 
 # 创建DAO实例
 user_dao = UserDAO()
@@ -163,7 +164,6 @@ class MonitorService:
             leave_days = len(leaves)
             
             # 计算总天数
-            import datetime
             start = datetime.datetime.strptime(start_date, '%Y-%m-%d')
             end = datetime.datetime.strptime(end_date, '%Y-%m-%d')
             total_days = (end - start).days + 1

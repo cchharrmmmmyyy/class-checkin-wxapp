@@ -14,14 +14,7 @@ class ConfigService:
         """获取打卡配置"""
         config = punch_config_dao.get_config()
         if not config:
-            # 返回默认配置
-            return {
-                'global_time_check_enabled': True,
-                'global_location_check_enabled': True,
-                'allow_multi_punch': False,
-                'allow_makeup': True,
-                'holiday_ranges': []
-            }
+            raise ServiceException('打卡配置未初始化', code=EC.JSON_INVALID)
 
         holiday_ranges = []
         raw_holiday_ranges = getattr(config, 'holiday_ranges', None)
