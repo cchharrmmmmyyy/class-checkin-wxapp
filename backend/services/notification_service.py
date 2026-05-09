@@ -103,7 +103,7 @@ class NotificationService:
             is_read=False,
             size=1000
         )
-        return len(notifications)
+        return notifications.get('total', 0)
 
     @staticmethod
     def mark_as_read(notification_id: int, user_id: str) -> bool:
@@ -125,7 +125,7 @@ class NotificationService:
         )
 
         count = 0
-        for n in notifications:
+        for n in notifications.get('items', []):
             if notification_dao.mark_as_read(n['id']):
                 count += 1
         return count

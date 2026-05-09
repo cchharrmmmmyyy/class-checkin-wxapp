@@ -8,6 +8,9 @@ class LeaveDAO(BaseDAO[Leave]):
         super().__init__(Leave, 'leaves', 'id')
 
     def count(self, where: str = None, params: tuple = ()) -> int:
+        from .base_dao import SAFE_WHERE_PATTERN
+        if where and not SAFE_WHERE_PATTERN.match(where):
+            raise ValueError(f"Invalid where parameter: {where}")
         conn = self._get_connection()
         try:
             cursor = conn.cursor()

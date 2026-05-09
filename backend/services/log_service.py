@@ -34,7 +34,7 @@ class LogService:
             'ip_address': ip_address
         }
 
-        return operation_log_dao.create(data, conn=conn)
+        return operation_log_dao_instance.create(data, conn=conn)
 
     @staticmethod
     def get_operation_logs(target_type: str = None, target_id: str = None,

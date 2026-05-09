@@ -27,7 +27,7 @@ SAFE_ORDER_BY_PATTERN = re.compile(
 
 _SAFE_CONDITION = (
     r'(?:\d+\s*[<>=!]+\s*\d+'
-    r'|[a-zA-Z_][a-zA-Z0-9_]*(?:\s*[<>=!]+\s*\?|\s+LIKE\s+\?|\s+IS\s+NULL|\s+IS\s+NOT\s+NULL)'
+    r'|[a-zA-Z_][a-zA-Z0-9_]*(?:\s+IN\s+\(\s*\?(?:\s*,\s*\?)*\s*\)|\s*[<>=!]+\s*\?|\s+LIKE\s+\?|\s+IS\s+NULL|\s+IS\s+NOT\s+NULL)'
     r')'
 )
 
