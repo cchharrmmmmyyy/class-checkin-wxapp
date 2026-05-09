@@ -58,7 +58,6 @@ backend/
 | `FLASK_PORT` | int | 是 | 服务器监听端口 |
 | `FLASK_DEBUG` | bool | 是 | 调试模式（影响异常信息输出详细程度） |
 | `RANDOM_PASSWORD_LENGTH` | int | 是 | 重置密码时随机密码长度 |
-| `PUNCH_RECORDS_LIMIT` | int | 是 | 打卡记录查询默认条数，供 `PunchDAO.get_punches_by_user()` 使用 |
 
 ## 3. 路由层 — `routes/`
 
@@ -103,10 +102,16 @@ Service 是业务的核心，路由层不关心"怎么做"，Service 不关心"�
 
 **职责：封装所有 SQL 操作，每个 DAO 对应一张表。**
 
-- `base_dao.py` — 抽象基类，提供通用的 CRUD 方法
-- 其余文件各对应一张数据库表（如 `punch_dao.py` → `punches` 表）
+- `base_dao.py` — 泛型抽象基类 `BaseDAO(Generic[T])`，提供通用的 CRUD 方法，内置 SQL 注入防护（表名白名单、列名校验、ORDER BY 白名单 + 安全正则）
+- 其余文件各继承 `BaseDAO[T]`，仅重写或扩展表特有的方法（如 `punch_dao.py` → `get_punch_by_user_and_date()`）
 
-DAO 只做数据库读写，不包含业务判断。
+BaseDAO 关键设计：
+- 泛型参数 `T` 绑定 Model 类型，所有 CRUD 方法返回类型安全的 Model 对象
+- `_row_to_model()` 自动过滤 Model 不存在的列（兼容联表视图查询）
+- `delete()` 自动路由：支持软删除的表调 `soft_delete()`，其余调 `hard_delete()`
+- 所有方法支持可选 `conn` 参数，便于跨表事务操作
+
+DAO 只做数据库读写，不包含业务判断（密码哈希、默认值兜底等由 Service 层负责）。
 
 ## 6. 数据模型 — `models/`
 
@@ -163,7 +168,7 @@ DAO 只做数据库读写，不包含业务判断。
 | DAO | `dao/punch_dao.py`、`dao/punch_geofence_dao.py`、`dao/punch_time_slot_dao.py`、`dao/leave_dao.py` |
 | 模型 | `models/punch.py`、`models/punch_geofence.py`、`models/punch_time_slot.py` |
 | 工具 | `utils/geo.py`（距离计算） |
-| 配置 | `services/config_service.py` → `dao/punch_config_dao.py` |
+| 配置 | `services/config_service.py` → `dao/punch_config_dao.py`（继承 `BaseDAO[PunchConfig]`） |
 | 建表 | `db/schema/08_punch_geofences.sql`、`09_punch_time_slots.sql`、`10_punch_rules.sql`、`11_punches.sql`、`14_punch_config.sql` |
 
 ### 学生请假
