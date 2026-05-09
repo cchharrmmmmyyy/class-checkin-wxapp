@@ -11,6 +11,7 @@ from config import Config
 from utils.exceptions import ServiceException, AuthenticationException
 from utils.api_response import error, success
 from utils.jwt import decode_token
+from utils.seed_data import insert_test_data
 
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -70,6 +71,9 @@ def fallback(path):
 
 
 check_and_init_database()
+
+if Config.INSERT_TEST_DATA:
+    insert_test_data()
 
 if __name__ == '__main__':
     print(f"后端服务启动在 http://{Config.FLASK_HOST}:{Config.FLASK_PORT}")

@@ -1,5 +1,4 @@
 import sqlite3
-import bcrypt
 from config import Config
 
 DATABASE_FILE = Config.DATABASE_FILE
@@ -8,18 +7,8 @@ DATABASE_FILE = Config.DATABASE_FILE
 def get_connection():
     conn = sqlite3.connect(DATABASE_FILE)
     conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA foreign_keys = ON')
     return conn
-
-
-def hash_password(password):
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-
-def verify_password(password, stored_hash):
-    try:
-        return bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
-    except:
-        return False
 
 
 def execute_query(sql, params=()):

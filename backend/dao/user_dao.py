@@ -58,7 +58,7 @@ class UserDAO:
             conn.close()
 
     def create(self, data: dict) -> str:
-        from utils.db import hash_password
+        from utils.password import hash_password
         conn = self.get_connection()
         try:
             cursor = conn.cursor()
@@ -85,7 +85,7 @@ class UserDAO:
                     fields.append(f"{key} = ?")
                     values.append(data[key])
             if 'password' in data:
-                from utils.db import hash_password
+                from utils.password import hash_password
                 fields.append("password = ?")
                 values.append(hash_password(data['password']))
             if not fields:
