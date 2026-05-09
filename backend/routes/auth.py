@@ -9,7 +9,7 @@ from utils.api_response import success
 from utils.exceptions import ServiceException
 from utils.error_codes import (
     JSON_INVALID, AUTH_CREDENTIALS_MISSING, AUTH_CREDENTIALS_INVALID,
-    AUTH_PASSWORD_CHANGE_MISSING, AUTH_ROLE_DENIED
+    AUTH_PASSWORD_CHANGE_MISSING, PERM_ROLE_DENIED
 )
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api')
@@ -36,7 +36,7 @@ def login():
     result = AuthService.login(user_id, password)
 
     if is_web and result['user']['role'] != 'admin':
-        raise ServiceException('无管理员权限', code=AUTH_ROLE_DENIED, http_status=403)
+        raise ServiceException('无管理员权限', code=PERM_ROLE_DENIED, http_status=403)
 
     resp, status = success(result)
 

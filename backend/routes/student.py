@@ -7,7 +7,7 @@ from services import PunchService, LeaveService, MakeupService, StatisticsServic
 from utils.jwt import token_required, role_required
 from utils.api_response import success
 from utils.exceptions import ServiceException
-from utils.error_codes import JSON_INVALID, LEAVE_CLASS_NOT_FOUND
+from utils.error_codes import JSON_INVALID, CLASS_INFO_MISSING
 
 student_bp = Blueprint('student', __name__, url_prefix='/api/student')
 
@@ -117,7 +117,7 @@ def get_makeup_records():
 def get_monitor_class_punch_status():
     class_name = _get_class_name()
     if not class_name:
-        raise ServiceException('班级信息不存在', code=LEAVE_CLASS_NOT_FOUND)
+        raise ServiceException('班级信息不存在', code=CLASS_INFO_MISSING)
 
     summary = StatisticsService.get_daily_statistics(class_name, request.args.get('date'))
     return success(summary)
@@ -130,7 +130,7 @@ def get_monitor_class_punch_status():
 def get_monitor_class_leaves():
     class_name = _get_class_name()
     if not class_name:
-        raise ServiceException('班级信息不存在', code=LEAVE_CLASS_NOT_FOUND)
+        raise ServiceException('班级信息不存在', code=CLASS_INFO_MISSING)
 
     result = LeaveService.get_pending_applications(
         class_name,
@@ -147,7 +147,7 @@ def get_monitor_class_leaves():
 def get_monitor_class_makeups():
     class_name = _get_class_name()
     if not class_name:
-        raise ServiceException('班级信息不存在', code=LEAVE_CLASS_NOT_FOUND)
+        raise ServiceException('班级信息不存在', code=CLASS_INFO_MISSING)
 
     result = MakeupService.get_pending_makeup_applications(
         class_name,
