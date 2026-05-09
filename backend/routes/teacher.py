@@ -79,7 +79,7 @@ def get_pending_leaves():
     if not class_name:
         raise ServiceException('班级名称不能为空', code=CLASS_NAME_MISSING)
 
-    result = LeaveService.get_pending_applications(class_name, page=page, size=size)
+    result = LeaveService.get_pending_leave_applications(class_name, page=page, size=size)
     return success(result)
 
 

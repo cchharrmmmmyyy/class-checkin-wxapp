@@ -84,8 +84,8 @@ class LeaveService:
 
     @staticmethod
     def get_pending_leave_applications(class_name, page=1, size=50):
-        where = "class_name = ? AND leave_status = 'pending' AND deleted_at IS NULL"
-        params = (class_name,)
+        where = "class_name = ? AND leave_status = ? AND deleted_at IS NULL"
+        params = (class_name, 'pending')
 
         total = leave_dao.count(where=where, params=params)
         page, size, offset = normalize_pagination(page, size)

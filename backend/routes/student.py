@@ -132,7 +132,7 @@ def get_monitor_class_leaves():
     if not class_name:
         raise ServiceException('班级信息不存在', code=CLASS_INFO_MISSING)
 
-    result = LeaveService.get_pending_applications(
+    result = LeaveService.get_pending_leave_applications(
         class_name,
         page=request.args.get('page', 1, type=int),
         size=request.args.get('size', 50, type=int)

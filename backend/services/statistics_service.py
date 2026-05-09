@@ -57,8 +57,8 @@ class StatisticsService:
             student_stat['punches'] = len(punches)
             
             leaves = leave_dao.get_list(
-                where="user_id = ? AND leave_start_date <= ? AND leave_end_date >= ? AND leave_status = 'approved' AND deleted_at IS NULL",
-                params=(student.user_id, end_date, start_date)
+                where="user_id = ? AND leave_start_date <= ? AND leave_end_date >= ? AND leave_status = ? AND deleted_at IS NULL",
+                params=(student.user_id, end_date, start_date, 'approved')
             )
             student_stat['leaves'] = len(leaves)
             
@@ -98,8 +98,8 @@ class StatisticsService:
         )
         
         leaves = leave_dao.get_list(
-            where="user_id = ? AND leave_start_date <= ? AND leave_end_date >= ? AND leave_status = 'approved' AND deleted_at IS NULL",
-            params=(user_id, end_date, start_date)
+            where="user_id = ? AND leave_start_date <= ? AND leave_end_date >= ? AND leave_status = ? AND deleted_at IS NULL",
+            params=(user_id, end_date, start_date, 'approved')
         )
         
         statistics = {
@@ -182,9 +182,9 @@ class StatisticsService:
         }
         
         if class_name:
-            students = user_dao.get_list(where="class_name = ? AND role = 'student' AND deleted_at IS NULL", params=(class_name,))
+            students = user_dao.get_list(where="class_name = ? AND role = ? AND deleted_at IS NULL", params=(class_name, 'student'))
         else:
-            students = user_dao.get_list(where="role = 'student' AND deleted_at IS NULL")
+            students = user_dao.get_list(where="role = ? AND deleted_at IS NULL", params=('student',))
             
         student_count = len(students)
         
@@ -206,8 +206,8 @@ class StatisticsService:
                 )
                 
                 leaves = leave_dao.get_list(
-                    where="leave_start_date <= ? AND leave_end_date >= ? AND leave_status = 'approved' AND deleted_at IS NULL AND user_id IN ({})".format(','.join(['?'] * len(student_ids))),
-                    params=(date_str, date_str, *student_ids)
+                    where="leave_start_date <= ? AND leave_end_date >= ? AND leave_status = ? AND deleted_at IS NULL AND user_id IN ({})".format(','.join(['?'] * len(student_ids))),
+                    params=(date_str, date_str, 'approved', *student_ids)
                 )
             else:
                 # 全局模式
@@ -217,8 +217,8 @@ class StatisticsService:
                 )
                 
                 leaves = leave_dao.get_list(
-                    where="leave_start_date <= ? AND leave_end_date >= ? AND leave_status = 'approved' AND deleted_at IS NULL",
-                    params=(date_str, date_str)
+                    where="leave_start_date <= ? AND leave_end_date >= ? AND leave_status = ? AND deleted_at IS NULL",
+                    params=(date_str, date_str, 'approved')
                 )
             
             daily_punch_users = set(p.user_id for p in punches)
@@ -280,8 +280,8 @@ class StatisticsService:
                 detail['punch_time'] = punch.punch_time
             
             leaves = leave_dao.get_list(
-                where="user_id = ? AND leave_start_date <= ? AND leave_end_date >= ? AND leave_status = 'approved' AND deleted_at IS NULL",
-                params=(student.user_id, date, date)
+                where="user_id = ? AND leave_start_date <= ? AND leave_end_date >= ? AND leave_status = ? AND deleted_at IS NULL",
+                params=(student.user_id, date, date, 'approved')
             )
             if leaves:
                 detail['status'] = 'leave'
