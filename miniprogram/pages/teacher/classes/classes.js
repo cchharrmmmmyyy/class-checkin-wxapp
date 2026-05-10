@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -19,21 +19,21 @@ Page({
   async loadClasses() {
     this.setData({ loading: true });
 
-    request('/teacher/classes', 'GET')
+    api.teacher.getClasses()
       .then(async classes => {
         const classesWithStats = await Promise.all(
           classes.map(async (cls) => {
             const className = typeof cls === 'string' ? cls : cls.class_name;
             try {
               const [summary, leaveRes, makeupRes] = await Promise.all([
-                request('/teacher/class/punch-summary', 'GET', {
+                api.teacher.getClassPunchSummary({
                   class_name: className,
                   date: new Date().toISOString().split('T')[0]
                 }).catch(() => null),
-                request('/teacher/leave/pending', 'GET', {
+                api.teacher.getLeavePending({
                   class_name: className
                 }).catch(() => ({ items: [] })),
-                request('/teacher/makeup/pending', 'GET', {
+                api.teacher.getMakeupPending({
                   class_name: className
                 }).catch(() => ({ items: [] }))
               ]);

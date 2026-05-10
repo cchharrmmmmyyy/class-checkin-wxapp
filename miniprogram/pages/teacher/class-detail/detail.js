@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -54,7 +54,7 @@ Page({
 
   async loadData() {
     try {
-      const summary = await request('/teacher/class/punch-summary', 'GET', {
+      const summary = await api.teacher.getClassPunchSummary({
         class_name: this.data.className,
         date: this.data.currentDate
       });

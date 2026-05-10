@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -33,7 +33,7 @@ Page({
   async loadPunchRecords() {
     this.setData({ loading: true });
 
-    request('/student/punch-records', 'GET', {
+    api.student.getPunchRecords({
       page: this.data.page,
       size: this.data.pageSize
     })
@@ -55,7 +55,7 @@ Page({
   async loadLeaveRecords() {
     this.setData({ loading: true });
 
-    request('/student/leave/records', 'GET', {
+    api.student.getLeaveRecords({
       page: this.data.page,
       size: this.data.pageSize
     })
@@ -77,7 +77,7 @@ Page({
   async loadMakeupRecords() {
     this.setData({ loading: true });
 
-    request('/student/makeup/records', 'GET', {
+    api.student.getMakeupRecords({
       page: this.data.page,
       size: this.data.pageSize
     })

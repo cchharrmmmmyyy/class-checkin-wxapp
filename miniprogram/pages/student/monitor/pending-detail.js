@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -28,10 +28,10 @@ Page({
 
     try {
       if (this.data.type === 'leave') {
-        const list = await request('/student/monitor/class-leaves', 'GET');
+        const list = await api.monitor.getClassLeaves();
         this.setData({ leaveList: list || [] });
       } else {
-        const list = await request('/student/monitor/class-makeups', 'GET');
+        const list = await api.monitor.getClassMakeups();
         this.setData({ makeupList: list || [] });
       }
     } catch (err) {

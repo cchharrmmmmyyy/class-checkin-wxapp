@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -54,10 +54,7 @@ Page({
 
     wx.showLoading({ title: '提交中...', mask: true });
 
-    request('/change-password', 'POST', {
-      old_password: oldPassword,
-      new_password: newPassword
-    })
+    api.auth.changePassword(old_password, new_password)
       .then(() => {
         wx.showToast({ title: '密码修改成功', icon: 'success' });
         this.setData({ showPasswordModal: false });

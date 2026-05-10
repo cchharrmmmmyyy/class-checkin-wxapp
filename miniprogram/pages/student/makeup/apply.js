@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -40,7 +40,7 @@ Page({
 
     wx.showLoading({ title: '提交中...', mask: true });
 
-    request('/student/makeup/apply', 'POST', {
+    api.student.applyMakeup({
       target_date: targetDate,
       reason: reason
     })

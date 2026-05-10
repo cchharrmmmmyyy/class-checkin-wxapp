@@ -18,12 +18,22 @@ const appendQuery = (url, params) => {
   return `${url}${url.includes('?') ? '&' : '?'}${query}`;
 };
 
+let _pendingToastTimer = null;
+
 const buildAppError = (message, extra = {}) => {
   const error = new Error(message || '请求失败');
   error.code = extra.code;
   error.httpStatus = extra.httpStatus;
   error.traceId = extra.traceId;
   error.data = extra.data;
+  error._autoToastSuppressed = false;
+  error.preventAutoToast = () => {
+    error._autoToastSuppressed = true;
+    if (_pendingToastTimer) {
+      clearTimeout(_pendingToastTimer);
+      _pendingToastTimer = null;
+    }
+  };
   return error;
 };
 
@@ -35,13 +45,18 @@ const isUnifiedEnvelope = (body) => (
   && Object.prototype.hasOwnProperty.call(body, 'data')
 );
 
-const maybeToast = (message, showError) => {
+const scheduleToast = (error, message, showError) => {
   if (!showError) return;
-  wx.showToast({
-    title: trimToastTitle(message),
-    icon: 'none',
-    duration: 2000
-  });
+  _pendingToastTimer = setTimeout(() => {
+    _pendingToastTimer = null;
+    if (!error._autoToastSuppressed) {
+      wx.showToast({
+        title: trimToastTitle(message),
+        icon: 'none',
+        duration: 2000
+      });
+    }
+  }, 0);
 };
 
 const requestCore = (path, method = 'GET', data = {}, options = {}) => {
@@ -70,13 +85,14 @@ const requestCore = (path, method = 'GET', data = {}, options = {}) => {
 
         if (!isUnifiedEnvelope(body)) {
           const contractErrorMessage = '响应格式错误';
-          maybeToast(contractErrorMessage, showError);
-          reject(buildAppError(contractErrorMessage, {
+          const err = buildAppError(contractErrorMessage, {
             code: 'INVALID_RESPONSE_ENVELOPE',
             httpStatus: statusCode,
             traceId,
             data: body
-          }));
+          });
+          scheduleToast(err, contractErrorMessage, showError);
+          reject(err);
           return;
         }
 
@@ -86,20 +102,22 @@ const requestCore = (path, method = 'GET', data = {}, options = {}) => {
         }
 
         const errorMessage = body.message || `请求失败(${statusCode})`;
-        maybeToast(errorMessage, showError);
-        reject(buildAppError(errorMessage, {
+        const bizErr = buildAppError(errorMessage, {
           code: body.code,
           httpStatus: statusCode,
           traceId,
           data: body.data
-        }));
+        });
+        scheduleToast(bizErr, errorMessage, showError);
+        reject(bizErr);
       },
       fail(err) {
-        maybeToast('网络异常，请检查网络连接', showError);
-        reject(buildAppError('网络异常，请检查网络连接', {
+        const netErr = buildAppError('网络异常，请检查网络连接', {
           code: 'NETWORK_ERROR',
           data: err
-        }));
+        });
+        scheduleToast(netErr, '网络异常，请检查网络连接', showError);
+        reject(netErr);
       }
     });
   });

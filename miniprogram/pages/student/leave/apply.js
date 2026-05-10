@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -56,7 +56,7 @@ Page({
 
     wx.showLoading({ title: '提交中...', mask: true });
 
-    request('/student/leave/apply', 'POST', {
+    api.student.applyLeave({
       start_date: startDate,
       end_date: endDate,
       leave_type: this.data.leaveType,

@@ -1,4 +1,5 @@
-const { request } = require('../../network/request.js');
+const api = require('../../network/api.js');
+const ErrorCodes = require('../../config/error-codes.js');
 
 Page({
   data: {
@@ -40,7 +41,7 @@ Page({
     wx.showLoading({ title: '登录中...', mask: true });
 
     try {
-      const data = await request('/login', 'POST', { user_id, password });
+      const data = await api.auth.login(user_id, password);
       const normalizedUser = {
         ...data.user,
         class: data.user.class || data.user.class_name || ''
@@ -55,7 +56,8 @@ Page({
       }, 1000);
     } catch (err) {
       console.error('登录失败', err);
-      if (err.code === 1003) {
+      if (err.code === ErrorCodes.AUTH_ACCOUNT_LOCKED) {
+        err.preventAutoToast();
         wx.showModal({
           title: '账户已锁定',
           content: '连续5次密码错误，请1小时后再试',

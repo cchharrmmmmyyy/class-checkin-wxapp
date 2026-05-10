@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -29,8 +29,8 @@ Page({
 
     try {
       const [leaveRes, makeupRes] = await Promise.all([
-        request('/teacher/leave/pending', 'GET'),
-        request('/teacher/makeup/pending', 'GET')
+        api.teacher.getLeavePending(),
+        api.teacher.getMakeupPending()
       ]);
       this.setData({ 
         leaveList: leaveRes.items || [], 
@@ -51,9 +51,9 @@ Page({
       content: '确定通过该申请？',
       success: async (res) => {
         if (res.confirm) {
-          const apiPath = type === 'leave' ? '/teacher/leave/approve' : '/teacher/makeup/approve';
+          const apiPath = type === 'leave' ? 'approveLeave' : 'approveMakeup';
           const requestData = type === 'leave' ? { leave_id: id, status: 'approved' } : { makeup_id: id, status: 'approved' };
-          request(apiPath, 'POST', requestData)
+          api.teacher[apiPath](requestData)
             .then(() => {
               wx.showToast({ title: '已通过', icon: 'success' });
               this.loadData();
@@ -74,9 +74,9 @@ Page({
       content: '确定拒绝该申请？',
       success: async (res) => {
         if (res.confirm) {
-          const apiPath = type === 'leave' ? '/teacher/leave/approve' : '/teacher/makeup/approve';
+          const apiPath = type === 'leave' ? 'approveLeave' : 'approveMakeup';
           const requestData = type === 'leave' ? { leave_id: id, status: 'rejected' } : { makeup_id: id, status: 'rejected' };
-          request(apiPath, 'POST', requestData)
+          api.teacher[apiPath](requestData)
             .then(() => {
               wx.showToast({ title: '已拒绝', icon: 'success' });
               this.loadData();

@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -13,7 +13,7 @@ Page({
   },
 
   async loadClasses() {
-    request('/teacher/classes', 'GET')
+    api.teacher.getClasses()
       .then(classes => {
         const classList = classes.map(c => typeof c === 'string' ? c : c.class_name);
         this.setData({ classes: classList });
@@ -39,10 +39,10 @@ Page({
     this.setData({ loading: true });
 
     Promise.all([
-      request('/teacher/class/students', 'GET', {
+      api.teacher.getClassStudents({
         class_name: this.data.selectedClass
       }),
-      request('/teacher/monitors', 'GET', {
+      api.teacher.getMonitors({
         class_name: this.data.selectedClass
       })
     ])
@@ -70,7 +70,7 @@ Page({
       content: `确定任命 ${student.username} 为班委？`,
       success: (res) => {
         if (res.confirm) {
-          request('/teacher/monitor/appoint', 'POST', {
+          api.teacher.appointMonitor({
             student_id: student.user_id,
             class_name: this.data.selectedClass
           })
@@ -94,7 +94,7 @@ Page({
       content: `确定撤销 ${student.username} 的班委身份？`,
       success: (res) => {
         if (res.confirm) {
-          request('/teacher/monitor/remove', 'DELETE', {
+          api.teacher.removeMonitor({
             student_id: student.user_id,
             class_name: this.data.selectedClass
           })

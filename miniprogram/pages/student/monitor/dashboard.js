@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -45,17 +45,17 @@ Page({
 
     try {
       const [summary, leavePending, makeupPending] = await Promise.all([
-        request('/student/monitor/class-punch-status', 'GET', {
+        api.monitor.getClassPunchStatus({
           date: this.data.currentDate
         }).catch(err => {
           console.error('加载打卡概览失败', err);
           return null;
         }),
-        request('/student/monitor/class-leaves', 'GET').catch(err => {
+        api.monitor.getClassLeaves().catch(err => {
           console.error('加载请假待审批失败', err);
           return [];
         }),
-        request('/student/monitor/class-makeups', 'GET').catch(err => {
+        api.monitor.getClassMakeups().catch(err => {
           console.error('加载补卡待审批失败', err);
           return [];
         })

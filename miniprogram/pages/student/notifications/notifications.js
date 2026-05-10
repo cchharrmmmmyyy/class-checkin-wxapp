@@ -1,4 +1,4 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
 
 Page({
   data: {
@@ -20,7 +20,7 @@ Page({
   async loadNotifications() {
     this.setData({ loading: true });
 
-    request('/student/notifications', 'GET')
+    api.notification.getList()
       .then(data => {
         this.setData({ notifications: data.items || [] });
       })
@@ -38,7 +38,7 @@ Page({
 
     if (notification.is_read) return;
 
-    request('/notifications/mark-read', 'POST', { notification_id: notification.id })
+    api.notification.markRead(notification.id)
       .then(() => {
         const notifications = this.data.notifications;
         notifications[index].is_read = true;
@@ -56,7 +56,7 @@ Page({
       return;
     }
 
-    Promise.all(unreadList.map(item => request('/notifications/mark-read', 'POST', { notification_id: item.id }, { showError: false })))
+    Promise.all(unreadList.map(item => api.notification.markRead(item.id, { showError: false })))
       .then(() => {
         const notifications = this.data.notifications.map(n => ({ ...n, is_read: true }));
         this.setData({ notifications });

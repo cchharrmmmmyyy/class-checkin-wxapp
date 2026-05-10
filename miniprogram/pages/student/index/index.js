@@ -1,4 +1,5 @@
-const { request } = require('../../../network/request.js');
+const api = require('../../../network/api.js');
+const ErrorCodes = require('../../../config/error-codes.js');
 
 Page({
   data: {
@@ -29,7 +30,7 @@ Page({
 
   async loadTodayPunch() {
     try {
-      const records = await request('/student/punch-records', 'GET', { limit: 1 });
+      const records = await api.student.getPunchRecords({ size: 1 });
       if (records && records.length > 0) {
         const today = new Date().toISOString().split('T')[0];
         const punch = records.find(r => r.punch_date === today);
@@ -49,8 +50,8 @@ Page({
 
   async loadUnreadCount() {
     try {
-      const notifications = await request('/student/notifications', 'GET');
-      const unreadCount = notifications.filter(n => !n.is_read).length;
+      const data = await api.notification.getList();
+      const unreadCount = (data.items || []).filter(n => !n.is_read).length;
       this.setData({ unreadCount });
     } catch (err) {
       console.error('加载通知失败', err);
@@ -72,16 +73,15 @@ Page({
     try {
       const location = await this.getLocation();
       const userInfo = this.data.userInfo;
-      await request('/student/punch', 'POST', {
-        user_id: userInfo.user_id,
-        latitude: location.latitude,
-        longitude: location.longitude
-      });
+      await api.student.punch({
+        user_id: userInfo.user_id
+      }, location, { showError: false });
       wx.showToast({ title: '打卡成功', icon: 'success' });
       this.loadTodayPunch();
     } catch (err) {
       console.error('打卡失败', err);
-      if (err.code === 1004) {
+      if (err.code === ErrorCodes.PUNCH_OUT_OF_RANGE) {
+        err.preventAutoToast();
         wx.showModal({
           title: '打卡失败',
           content: '不在允许的打卡范围内',

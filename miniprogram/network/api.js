@@ -1,103 +1,286 @@
 /**
- * API 服务层 - 统一管理所有接口
- * 业务层调用接口统一从这里导出
- * 改接口只需修改此处，无需动业务代码
+ * API 服务层 —— 统一管理所有后端接口。
+ * 业务层调用接口的唯一入口，改接口只需修改此处。
  */
 
-import request from './request.js';
-import { API_ENDPOINTS } from '../config/api.js';
+const request = require('./request.js');
+const { API_ENDPOINTS } = require('../config/api.js');
 
 const api = {
-  // 认证相关
+  // ================================================================
+  // 认证
+  // ================================================================
+
   auth: {
-    login(user_id, password) {
-      return request.post(API_ENDPOINTS.LOGIN, { user_id, password });
+    /**
+     * @param {string} user_id
+     * @param {string} password
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<{ token: string, user: object }>}
+     */
+    login(user_id, password, options = {}) {
+      return request.post(API_ENDPOINTS.LOGIN, { user_id, password }, options);
+    },
+
+    /**
+     * @param {string} old_password
+     * @param {string} new_password
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    changePassword(old_password, new_password, options = {}) {
+      return request.post(API_ENDPOINTS.CHANGE_PASSWORD, { old_password, new_password }, options);
     }
   },
 
-  // 学生相关
+  // ================================================================
+  // 学生
+  // ================================================================
+
   student: {
-    punch(userInfo, location) {
+    /**
+     * @param {{ user_id: string, username?: string, role?: string, class?: string }} userInfo
+     * @param {{ latitude: number, longitude: number }|null} location
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    punch(userInfo, location, options = {}) {
       return request.post(API_ENDPOINTS.STUDENT_PUNCH, {
-        username: userInfo.username,
         user_id: userInfo.user_id,
-        role: userInfo.role,
-        class: userInfo.class,
         latitude: location ? location.latitude : null,
         longitude: location ? location.longitude : null
-      });
+      }, options);
     },
 
-    getRecords(user_id) {
-      return request.get(`${API_ENDPOINTS.STUDENT_RECORDS}/${user_id}`);
+    /**
+     * @param {{ page?: number, size?: number }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<{ items: object[], total?: number }>}
+     */
+    getPunchRecords(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.STUDENT_PUNCH_RECORDS, params, options);
     },
 
-    getClassRecords(className) {
-      return request.get(`${API_ENDPOINTS.STUDENT_CLASS_RECORDS}/${className}`);
+    /**
+     * @param {{ start_date: string, end_date: string, leave_type?: string, reason: string }} data
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    applyLeave(data, options = {}) {
+      return request.post(API_ENDPOINTS.STUDENT_LEAVE_APPLY, data, options);
     },
 
-    applyLeave(userInfo, leaveStartDate, leaveEndDate) {
-      return request.post(API_ENDPOINTS.STUDENT_APPLY_LEAVE, {
-        username: userInfo.username,
-        user_id: userInfo.user_id,
-        leave_start_date: leaveStartDate,
-        leave_end_date: leaveEndDate
-      });
+    /**
+     * @param {{ status?: string, page?: number, size?: number }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<{ items: object[], total?: number }>}
+     */
+    getLeaveRecords(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.STUDENT_LEAVE_RECORDS, params, options);
     },
 
-    getLeaveRecords(user_id) {
-      return request.get(API_ENDPOINTS.STUDENT_LEAVE_RECORDS, { user_id });
+    /**
+     * @param {{ target_date: string, reason: string }} data
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    applyMakeup(data, options = {}) {
+      return request.post(API_ENDPOINTS.STUDENT_MAKEUP_APPLY, data, options);
+    },
+
+    /**
+     * @param {{ page?: number, size?: number }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<{ items: object[], total?: number }>}
+     */
+    getMakeupRecords(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.STUDENT_MAKEUP_RECORDS, params, options);
     }
   },
 
-  // 教师相关
+  // ================================================================
+  // 班委
+  // ================================================================
+
+  monitor: {
+    /**
+     * @param {{ date?: string }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    getClassPunchStatus(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.MONITOR_CLASS_PUNCH_STATUS, params, options);
+    },
+
+    /**
+     * @param {{ page?: number, size?: number }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object[]>}
+     */
+    getClassLeaves(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.MONITOR_CLASS_LEAVES, params, options);
+    },
+
+    /**
+     * @param {{ page?: number, size?: number }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object[]>}
+     */
+    getClassMakeups(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.MONITOR_CLASS_MAKEUPS, params, options);
+    }
+  },
+
+  // ================================================================
+  // 教师
+  // ================================================================
+
   teacher: {
-    getClassList() {
-      return request.get(API_ENDPOINTS.TEACHER_CLASS_LIST);
+    /**
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<string[]>}
+     */
+    getClasses(options = {}) {
+      return request.get(API_ENDPOINTS.TEACHER_CLASSES, {}, options);
     },
 
-    getLeaveApplications(class_name) {
-      return request.get(API_ENDPOINTS.TEACHER_LEAVE_APPLICATIONS, { class_name });
+    /**
+     * @param {{ class_name: string, page?: number, size?: number }} params
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<{ items: object[], total?: number }>}
+     */
+    getClassStudents(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.TEACHER_CLASS_STUDENTS, params, options);
     },
 
-    approveLeave(leave_id, status, teacher_id) {
-      return request.post(API_ENDPOINTS.TEACHER_APPROVE_LEAVE, {
-        id: leave_id,
-        status,
-        teacher_id
-      });
+    /**
+     * @param {{ class_name: string, date?: string }} params
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    getClassPunchSummary(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.TEACHER_CLASS_PUNCH_SUMMARY, params, options);
     },
 
-    getClassMonitor(className) {
-      return request.get(`${API_ENDPOINTS.TEACHER_CLASS_MONITOR}/${className}`);
+    /**
+     * @param {{ class_name?: string, page?: number, size?: number }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<{ items: object[], total?: number }>}
+     */
+    getLeavePending(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.TEACHER_LEAVE_PENDING, params, options);
     },
 
-    appointMonitor(student_id, class_name, teacher_id) {
-      return request.post(API_ENDPOINTS.TEACHER_APPOINT_MONITOR, {
-        student_id,
-        class_name,
-        teacher_id
-      });
+    /**
+     * @param {{ leave_id: number|string, status: string }} data
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    approveLeave(data, options = {}) {
+      return request.post(API_ENDPOINTS.TEACHER_LEAVE_APPROVE, data, options);
     },
 
-    removeMonitor(student_id, class_name, teacher_id) {
-      return request.post(API_ENDPOINTS.TEACHER_REMOVE_MONITOR, {
-        student_id,
-        class_name,
-        teacher_id
-      });
+    /**
+     * @param {{ class_name?: string, page?: number, size?: number }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<{ items: object[], total?: number }>}
+     */
+    getMakeupPending(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.TEACHER_MAKEUP_PENDING, params, options);
+    },
+
+    /**
+     * @param {{ makeup_id: number|string, status: string, punch_time?: string, latitude?: number, longitude?: number }} data
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    approveMakeup(data, options = {}) {
+      return request.post(API_ENDPOINTS.TEACHER_MAKEUP_APPROVE, data, options);
+    },
+
+    /**
+     * @param {{ class_name?: string, page?: number, size?: number }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object[]>}
+     */
+    getMonitors(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.TEACHER_MONITORS, params, options);
+    },
+
+    /**
+     * @param {{ student_id: string, class_name?: string }} data
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    appointMonitor(data, options = {}) {
+      return request.post(API_ENDPOINTS.TEACHER_MONITOR_APPOINT, data, options);
+    },
+
+    /**
+     * @param {{ student_id: string, class_name?: string }} params
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    removeMonitor(params = {}, options = {}) {
+      return request.delete(API_ENDPOINTS.TEACHER_MONITOR_REMOVE, params, options);
     }
   },
+
+  // ================================================================
+  // 通知
+  // ================================================================
+
+  notification: {
+    /**
+     * @param {{ type?: string, unread_only?: boolean, page?: number, size?: number }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<{ items: object[], total?: number }>}
+     */
+    getList(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.NOTIFICATIONS, params, options);
+    },
+
+    /**
+     * @param {number|string} notification_id
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    markRead(notification_id, options = {}) {
+      return request.post(API_ENDPOINTS.NOTIFICATIONS_MARK_READ, { notification_id }, options);
+    },
+
+    /**
+     * @param {{ type?: string }} [params]
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<{ count: number }>}
+     */
+    getUnreadCount(params = {}, options = {}) {
+      return request.get(API_ENDPOINTS.NOTIFICATIONS_UNREAD_COUNT, params, options);
+    }
+  },
+
+  // ================================================================
+  // 管理员
+  // ================================================================
 
   admin: {
-    getPunchLocation() {
-      return request.get(API_ENDPOINTS.ADMIN_PUNCH_LOCATION);
+    /**
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    getPunchLocation(options = {}) {
+      return request.get(API_ENDPOINTS.ADMIN_PUNCH_LOCATION, {}, options);
     },
-    
-    setPunchLocation(data) {
-      return request.post(API_ENDPOINTS.ADMIN_PUNCH_LOCATION, data);
+
+    /**
+     * @param {object} data
+     * @param {{ showError?: boolean, headers?: object }} [options]
+     * @returns {Promise<object>}
+     */
+    setPunchLocation(data, options = {}) {
+      return request.post(API_ENDPOINTS.ADMIN_PUNCH_LOCATION, data, options);
     }
   }
 };
 
-export default api;
+module.exports = api;
