@@ -85,9 +85,7 @@ routes/  →  services/  →  dao/  →  SQLite (via utils/db.py)
 
 ### Known issues / code debt
 
-- `utils/auth.js` is a **legacy file** — it duplicates the network layer with its own hardcoded `BASE_URL`. New code should use `network/request.js` or `network/api.js` instead.
-- Some pages exist in both flat and nested forms (e.g., `pages/student/leave-apply.js` vs `pages/student/leave/apply.js`). Prefer the nested (`leave/apply.js`) versions.
-- The frontend currently calls `request()` directly in pages; the `network/api.js` wrapper exists but isn't consistently used across all pages.
+- The frontend used to call `request()` directly in pages; the `network/api.js` wrapper now exists and is consistently used. All active pages (app.json) import from `api.js`.
 
 ## Role system
 
