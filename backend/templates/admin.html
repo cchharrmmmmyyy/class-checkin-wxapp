@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>考勤系统 · 管理后台</title>
-  <link rel="stylesheet" href="/static/css/element-plus.css">
+  <link rel="stylesheet" href="/static/dist/vendor-element-plus.css">
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/element-plus.full.js"></script>
+  <script src="/static/dist/vendor-element-plus.js"></script>
   <script src="/static/js/axios.min.js"></script>
-  <script src="/static/js/echarts.min.js"></script>
+  <script src="/static/dist/vendor-echarts.js"></script>
   <style>
     /* 不要使用全局的 * {} 重置，会影响 Element Plus */
     body { font-family: 'Microsoft YaHei', sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
@@ -921,7 +921,7 @@
 
   <script>
     const { createApp, ref, reactive, onMounted, watch, nextTick, computed } = Vue;
-    const { ElMessage, ElMessageBox } = ElementPlus;
+    const { ElMessage, ElMessageBox } = window.__EL_PLUS__;
 
     const app = createApp({
       setup() {
@@ -2059,7 +2059,10 @@
       }
     });
 
-    app.use(ElementPlus);
+    // 按需注册 Element Plus 组件和图标
+    const ep = window.__EL_PLUS__;
+    Object.values(ep.components).forEach(c => app.use(c));
+    Object.entries(ep.icons).forEach(([name, icon]) => app.component(name, icon));
     app.mount('#app');
   </script>
 </body>

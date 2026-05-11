@@ -58,3 +58,6 @@ backend/user.db
 
 # Documentation
 docs/*
+
+# Node.js
+node_modules/

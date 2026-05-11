@@ -1,4 +1,5 @@
 from flask import Flask, send_from_directory, request
+from flask_compress import Compress
 from werkzeug.exceptions import HTTPException
 from routes import (
     auth_bp, student_bp, teacher_bp,
@@ -16,6 +17,7 @@ from utils.seed_data import insert_test_data
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.secret_key = Config.SECRET_KEY
+Compress(app)
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(student_bp)
