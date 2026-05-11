@@ -29,45 +29,56 @@ def _serialize_campus(item):
     }
 
 
-def _serialize_department(item):
+def _serialize_department(row):
     return {
-        'id': item.id,
-        'campus_id': item.campus_id,
-        'name': item.name,
-        'code': item.code,
-        'created_at': to_datetime_str(item.created_at),
+        'id': row['id'],
+        'campus_id': row['campus_id'],
+        'name': row['name'],
+        'code': row['code'],
+        'campus_name': row['campus_name'],
+        'created_at': to_datetime_str(row['created_at']),
         'deleted_at': None,
     }
 
 
-def _serialize_major(item):
+def _serialize_major(row):
     return {
-        'id': item.id,
-        'department_id': item.department_id,
-        'name': item.name,
-        'code': item.code,
-        'created_at': to_datetime_str(item.created_at),
+        'id': row['id'],
+        'department_id': row['department_id'],
+        'name': row['name'],
+        'code': row['code'],
+        'department_name': row['department_name'],
+        'campus_id': row['campus_id'],
+        'campus_name': row['campus_name'],
+        'created_at': to_datetime_str(row['created_at']),
         'deleted_at': None,
     }
 
 
-def _serialize_grade(item):
+def _serialize_grade(row):
     return {
-        'id': item.id,
-        'major_id': item.major_id,
-        'year': item.year,
-        'name': item.name,
-        'created_at': to_datetime_str(item.created_at),
+        'id': row['id'],
+        'major_id': row['major_id'],
+        'year': row['year'],
+        'name': row['name'],
+        'major_name': row['major_name'],
+        'department_id': row['department_id'],
+        'department_name': row['department_name'],
+        'campus_id': row['campus_id'],
+        'campus_name': row['campus_name'],
+        'created_at': to_datetime_str(row['created_at']),
         'deleted_at': None,
     }
 
 
-def _serialize_class(item):
+def _serialize_class(row):
     return {
-        'class_name': item.class_name,
-        'grade_id': item.grade_id,
-        'created_at': to_datetime_str(item.created_at),
-        'deleted_at': to_datetime_str(item.deleted_at),
+        'class_name': row['class_name'],
+        'grade_id': row['grade_id'],
+        'grade_name': row['grade_name'],
+        'major_name': row['major_name'],
+        'created_at': to_datetime_str(row['created_at']),
+        'deleted_at': to_datetime_str(row['deleted_at']) if row['deleted_at'] else None,
     }
 
 
@@ -119,17 +130,34 @@ class AdminOrgService:
         conditions = []
         params = []
         if campus_id is not None:
-            conditions.append('campus_id = ?')
+            conditions.append('d.campus_id = ?')
             params.append(campus_id)
         if name:
-            conditions.append('name LIKE ?')
+            conditions.append('d.name LIKE ?')
             params.append(f'%{name}%')
-        where = ' AND '.join(conditions) if conditions else None
-        params_tuple = tuple(params)
-        total = len(department_dao.get_list(where=where, params=params_tuple))
-        records = department_dao.get_list(where=where, params=params_tuple, limit=size, offset=offset)
-        items = [_serialize_department(item) for item in records]
-        return paginate(items, total, page, size)
+
+        base_sql = 'FROM departments d JOIN campuses c ON c.id = d.campus_id'
+        where_clause = ''
+        if conditions:
+            where_clause = ' WHERE ' + ' AND '.join(conditions)
+
+        conn = get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(f'SELECT COUNT(*) {base_sql}{where_clause}', tuple(params))
+            total = cursor.fetchone()[0]
+
+            cursor.execute(
+                f'SELECT d.*, c.name AS campus_name'
+                f' {base_sql}{where_clause}'
+                f' ORDER BY d.id'
+                f' LIMIT {size} OFFSET {offset}',
+                tuple(params),
+            )
+            items = [_serialize_department(row) for row in cursor.fetchall()]
+            return paginate(items, total, page, size)
+        finally:
+            conn.close()
 
     @staticmethod
     def save_department(department_id, campus_id, name, code):
@@ -159,22 +187,46 @@ class AdminOrgService:
     # ---- 专业 ----
 
     @staticmethod
-    def list_majors(department_id=None, name=None, page=1, size=20):
+    def list_majors(campus_id=None, department_id=None, name=None, page=1, size=20):
         page, size, offset = normalize_pagination(page, size)
         conditions = []
         params = []
+        if campus_id is not None:
+            conditions.append('d.campus_id = ?')
+            params.append(campus_id)
         if department_id is not None:
-            conditions.append('department_id = ?')
+            conditions.append('m.department_id = ?')
             params.append(department_id)
         if name:
-            conditions.append('name LIKE ?')
+            conditions.append('m.name LIKE ?')
             params.append(f'%{name}%')
-        where = ' AND '.join(conditions) if conditions else None
-        params_tuple = tuple(params)
-        total = len(major_dao.get_list(where=where, params=params_tuple))
-        records = major_dao.get_list(where=where, params=params_tuple, limit=size, offset=offset)
-        items = [_serialize_major(item) for item in records]
-        return paginate(items, total, page, size)
+
+        base_sql = (
+            'FROM majors m'
+            ' JOIN departments d ON d.id = m.department_id'
+            ' JOIN campuses c ON c.id = d.campus_id'
+        )
+        where_clause = ''
+        if conditions:
+            where_clause = ' WHERE ' + ' AND '.join(conditions)
+
+        conn = get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(f'SELECT COUNT(*) {base_sql}{where_clause}', tuple(params))
+            total = cursor.fetchone()[0]
+
+            cursor.execute(
+                f'SELECT m.*, d.name AS department_name, d.campus_id AS campus_id, c.name AS campus_name'
+                f' {base_sql}{where_clause}'
+                f' ORDER BY m.id'
+                f' LIMIT {size} OFFSET {offset}',
+                tuple(params),
+            )
+            items = [_serialize_major(row) for row in cursor.fetchall()]
+            return paginate(items, total, page, size)
+        finally:
+            conn.close()
 
     @staticmethod
     def save_major(major_id, department_id, name, code):
@@ -204,22 +256,52 @@ class AdminOrgService:
     # ---- 年级 ----
 
     @staticmethod
-    def list_grades(major_id=None, year=None, page=1, size=20):
+    def list_grades(campus_id=None, department_id=None, major_id=None, year=None, page=1, size=20):
         page, size, offset = normalize_pagination(page, size)
         conditions = []
         params = []
+        if campus_id is not None:
+            conditions.append('d.campus_id = ?')
+            params.append(campus_id)
+        if department_id is not None:
+            conditions.append('m.department_id = ?')
+            params.append(department_id)
         if major_id is not None:
-            conditions.append('major_id = ?')
+            conditions.append('g.major_id = ?')
             params.append(major_id)
         if year is not None:
-            conditions.append('year = ?')
+            conditions.append('g.year = ?')
             params.append(year)
-        where = ' AND '.join(conditions) if conditions else None
-        params_tuple = tuple(params)
-        total = len(grade_dao.get_list(where=where, params=params_tuple))
-        records = grade_dao.get_list(where=where, params=params_tuple, limit=size, offset=offset)
-        items = [_serialize_grade(item) for item in records]
-        return paginate(items, total, page, size)
+
+        base_sql = (
+            'FROM grades g'
+            ' JOIN majors m ON m.id = g.major_id'
+            ' JOIN departments d ON d.id = m.department_id'
+            ' JOIN campuses c ON c.id = d.campus_id'
+        )
+        where_clause = ''
+        if conditions:
+            where_clause = ' WHERE ' + ' AND '.join(conditions)
+
+        conn = get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(f'SELECT COUNT(*) {base_sql}{where_clause}', tuple(params))
+            total = cursor.fetchone()[0]
+
+            cursor.execute(
+                f'SELECT g.id, g.major_id, g.year, g.name, g.created_at,'
+                f' m.name AS major_name, d.id AS department_id, d.name AS department_name,'
+                f' c.id AS campus_id, c.name AS campus_name'
+                f' {base_sql}{where_clause}'
+                f' ORDER BY g.year DESC, m.name'
+                f' LIMIT {size} OFFSET {offset}',
+                tuple(params),
+            )
+            items = [_serialize_grade(row) for row in cursor.fetchall()]
+            return paginate(items, total, page, size)
+        finally:
+            conn.close()
 
     @staticmethod
     def save_grade(grade_id, major_id, year, name):
@@ -269,19 +351,40 @@ class AdminOrgService:
         conditions = []
         params = []
         if grade_id is not None:
-            conditions.append('grade_id = ?')
+            conditions.append('cl.grade_id = ?')
             params.append(grade_id)
         if class_name:
-            conditions.append('class_name LIKE ?')
+            conditions.append('cl.class_name LIKE ?')
             params.append(f'%{class_name}%')
         if not include_deleted:
-            conditions.append('deleted_at IS NULL')
-        where = ' AND '.join(conditions) if conditions else None
-        params_tuple = tuple(params)
-        total = len(class_dao.get_list(where=where, params=params_tuple))
-        records = class_dao.get_list(where=where, params=params_tuple, limit=size, offset=offset)
-        items = [_serialize_class(item) for item in records]
-        return paginate(items, total, page, size)
+            conditions.append('cl.deleted_at IS NULL')
+
+        base_sql = (
+            'FROM classes cl'
+            ' JOIN grades g ON g.id = cl.grade_id'
+            ' JOIN majors m ON m.id = g.major_id'
+        )
+        where_clause = ''
+        if conditions:
+            where_clause = ' WHERE ' + ' AND '.join(conditions)
+
+        conn = get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(f'SELECT COUNT(*) {base_sql}{where_clause}', tuple(params))
+            total = cursor.fetchone()[0]
+
+            cursor.execute(
+                f'SELECT cl.*, g.name AS grade_name, g.year, m.name AS major_name'
+                f' {base_sql}{where_clause}'
+                f' ORDER BY cl.class_name'
+                f' LIMIT {size} OFFSET {offset}',
+                tuple(params),
+            )
+            items = [_serialize_class(row) for row in cursor.fetchall()]
+            return paginate(items, total, page, size)
+        finally:
+            conn.close()
 
     @staticmethod
     def save_class(target_class_name, class_name, grade_id):

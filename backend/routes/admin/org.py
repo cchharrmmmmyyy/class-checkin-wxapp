@@ -114,9 +114,12 @@ def delete_department(department_id):
 def list_majors():
     page = request.args.get('page', 1, type=int)
     size = request.args.get('size', 20, type=int)
+    campus_id = request.args.get('campus_id', type=int)
     department_id = request.args.get('department_id', type=int)
     name = request.args.get('name', '').strip() or None
-    result = AdminOrgService.list_majors(department_id=department_id, name=name, page=page, size=size)
+    result = AdminOrgService.list_majors(
+        campus_id=campus_id, department_id=department_id, name=name, page=page, size=size
+    )
     return success(data=result)
 
 
@@ -164,9 +167,14 @@ def delete_major(major_id):
 def list_grades():
     page = request.args.get('page', 1, type=int)
     size = request.args.get('size', 20, type=int)
+    campus_id = request.args.get('campus_id', type=int)
+    department_id = request.args.get('department_id', type=int)
     major_id = request.args.get('major_id', type=int)
     year = request.args.get('year', type=int)
-    result = AdminOrgService.list_grades(major_id=major_id, year=year, page=page, size=size)
+    result = AdminOrgService.list_grades(
+        campus_id=campus_id, department_id=department_id,
+        major_id=major_id, year=year, page=page, size=size
+    )
     return success(data=result)
 
 
