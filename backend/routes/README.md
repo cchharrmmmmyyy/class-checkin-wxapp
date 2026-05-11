@@ -76,7 +76,8 @@ HTTP 接口暴露层，每个文件是一个 Flask Blueprint。只做参数校�
 | 端点 | 方法 | 功能 |
 |------|------|------|
 | `/api/admin/teaching/assignments` | GET/POST | 获取/创建教师班级关联 |
-| `/api/admin/teaching/assignments/<class_name>/<teacher_id>` | PUT/DELETE | 更新/删除教师班级关联 |
+| `/api/admin/teaching/assignments` | PUT | 更新教师班级关联（body: class_name, teacher_id, semester） |
+| `/api/admin/teaching/assignments` | DELETE | 删除教师班级关联（query: class_name, teacher_id） |
 
 #### `admin/rule.py` - 打卡规则配置
 | 端点 | 方法 | 功能 |
@@ -94,7 +95,7 @@ HTTP 接口暴露层，每个文件是一个 Flask Blueprint。只做参数校�
 | `/api/admin/attendance-records` | GET | 获取考勤记录（兼容层） |
 | `/api/admin/attendance-records` | POST | 创建考勤记录（兼容层） |
 | `/api/admin/attendance-records/<record_id>` | DELETE | 删除考勤记录（兼容层） |
-| `/api/admin/attendance/export` | GET | 导出考勤记录 CSV |
+| `/api/admin/attendance/csv` | GET | 导出考勤记录 CSV |
 | `/api/admin/attendance/punch-records` | POST | 创建打卡记录 |
 | `/api/admin/attendance/punch-records/<record_id>` | PUT/DELETE | 更新/删除打卡记录 |
 | `/api/admin/attendance/leave-records` | POST | 创建请假记录 |
@@ -106,7 +107,6 @@ HTTP 接口暴露层，每个文件是一个 Flask Blueprint。只做参数校�
 | `/api/admin/dashboard/stats` | GET | 获取统计数据 |
 | `/api/admin/dashboard/trend` | GET | 获取考勤趋势 |
 | `/api/admin/config` | GET/PUT | 获取/更新系统配置 |
-| `/api/admin/punch-location` | GET/POST | 获取/设置打卡地点（兼容层） |
 
 ### `common.py`
 公共接口，挂载在 `/api` 下。供所有角色使用。

@@ -1070,6 +1070,7 @@
         const punchForm = reactive({ user_id: '', punch_date: '', remark: '' });
 
         const geofenceForm = reactive({ name: '', latitude: null, longitude: null, radius: 200, enabled: false });
+        let geofenceSimpleId = null;
         const configForm = reactive({ global_time_check_enabled: true, global_location_check_enabled: true, allow_multi_punch: false, allow_makeup: true });
 
         const logs = ref([]);
@@ -1844,7 +1845,7 @@
           try {
             if (teachingEditKey.value) {
               const [className, teacherId] = teachingEditKey.value.split('|');
-              await request.put(`/admin/teaching/assignments/${className}/${teacherId}`, { semester: teachingForm.semester });
+              await request.put('/admin/teaching/assignments', { class_name: className, teacher_id: teacherId, semester: teachingForm.semester });
             } else {
               await request.post('/admin/teaching/assignments', teachingForm);
             }
@@ -1858,7 +1859,7 @@
         const deleteTeachingAssignment = async (row) => {
           try {
             await ElMessageBox.confirm(`确定要移除教师「${row.teacher_name}」在「${row.class_name}」的任课关系吗？`, '警告', { type: 'warning' });
-            await request.delete(`/admin/teaching/assignments/${row.class_name}/${row.teacher_id}`);
+            await request.delete('/admin/teaching/assignments', { params: { class_name: row.class_name, teacher_id: row.teacher_id } });
             ElMessage.success('移除成功');
             loadTeachingAssignments();
           } catch (e) { if (e !== 'cancel') console.error(e); }
@@ -1894,7 +1895,7 @@
           }
           if (attendanceFilters.leaveStatus) params.append('leave_status', attendanceFilters.leaveStatus);
 
-          window.location.href = `/api/admin/attendance/export?${params.toString()}`;
+          window.location.href = `/api/admin/attendance/csv?${params.toString()}`;
         };
 
         const openPunchDialog = () => { Object.assign(punchForm, { user_id: '', punch_date: '', remark: '' }); punchDialogVisible.value = true; };
@@ -1920,17 +1921,27 @@
 
         const loadGeofence = async () => {
           try {
-            const data = await request.get('/admin/punch-location');
-            if (data) {
-              Object.assign(geofenceForm, data);
-              geofenceForm.enabled = !!data.enabled;
+            const data = await request.get('/admin/rules/punch-geofences', { params: { size: 1, include_deleted: false } });
+            if (data && data.items && data.items.length > 0) {
+              const item = data.items[0];
+              geofenceSimpleId = item.id;
+              Object.assign(geofenceForm, { name: item.name, latitude: item.latitude, longitude: item.longitude, radius: item.radius });
+              geofenceForm.enabled = !!item.enabled;
+            } else {
+              geofenceSimpleId = null;
+              Object.assign(geofenceForm, { name: '', latitude: null, longitude: null, radius: 200, enabled: false });
             }
           } catch (e) { console.error(e); }
         };
         const saveGeofence = async () => {
           saving.value = true;
           try {
-            await request.post('/admin/punch-location', { name: geofenceForm.name, latitude: geofenceForm.latitude, longitude: geofenceForm.longitude, radius: geofenceForm.radius, enabled: geofenceForm.enabled ? 1 : 0 });
+            const payload = { name: geofenceForm.name, fence_type: 'circle', latitude: geofenceForm.latitude, longitude: geofenceForm.longitude, radius: geofenceForm.radius, enabled: geofenceForm.enabled ? 1 : 0 };
+            if (geofenceSimpleId) {
+              await request.put(`/admin/rules/punch-geofences/${geofenceSimpleId}`, payload);
+            } else {
+              await request.post('/admin/rules/punch-geofences', payload);
+            }
             ElMessage.success('保存成功');
             loadGeofence();
           } catch (e) { console.error(e); }

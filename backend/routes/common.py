@@ -61,7 +61,7 @@ def get_unread_count():
 
 # 获取操作日志
 @common_bp.route('/operation-logs', methods=['GET'])
-@token_required
+@token_required(allow_cookie=True)
 @role_required(['admin', 'teacher'])
 def get_operation_logs():
     target_type = request.args.get('target_type')

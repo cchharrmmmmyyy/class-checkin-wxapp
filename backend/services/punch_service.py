@@ -5,6 +5,7 @@ from utils.exceptions import ServiceException
 from utils.pagination import paginate, normalize_pagination
 from utils import error_codes as EC
 from config import Config
+from services.config_service import ConfigService
 
 user_dao = UserDAO()
 punch_dao = PunchDAO()
@@ -16,25 +17,26 @@ class PunchService:
 
     @staticmethod
     def punch(user_id, latitude, longitude):
-        punch_geofences = punch_geofence_dao.get_enabled_geofences()
+        if ConfigService.is_location_check_enabled():
+            punch_geofences = punch_geofence_dao.get_enabled_geofences()
 
-        if punch_geofences and latitude is not None and longitude is not None:
-            in_range = False
-            for geofence in punch_geofences:
-                distance = calculate_distance(
-                    latitude, longitude,
-                    geofence.latitude,
-                    geofence.longitude
-                )
-                if distance <= geofence.radius:
-                    in_range = True
-                    break
+            if punch_geofences and latitude is not None and longitude is not None:
+                in_range = False
+                for geofence in punch_geofences:
+                    distance = calculate_distance(
+                        latitude, longitude,
+                        geofence.latitude,
+                        geofence.longitude
+                    )
+                    if distance <= geofence.radius:
+                        in_range = True
+                        break
 
-            if not in_range:
-                raise ServiceException('不在打卡范围内', code=EC.PUNCH_OUT_OF_RANGE)
+                if not in_range:
+                    raise ServiceException('不在打卡范围内', code=EC.PUNCH_OUT_OF_RANGE)
 
-        if punch_geofences and (latitude is None or longitude is None):
-            raise ServiceException('无法获取您的位置，请确保定位服务已开启', code=EC.PUNCH_LOCATION_FAILED)
+            if punch_geofences and (latitude is None or longitude is None):
+                raise ServiceException('无法获取您的位置，请确保定位服务已开启', code=EC.PUNCH_LOCATION_FAILED)
 
         today = datetime.now().strftime('%Y-%m-%d')
         now = datetime.now().strftime('%H:%M:%S')
