@@ -1903,7 +1903,7 @@
           if (!punchForm.user_id || !punchForm.punch_date) { ElMessage.warning('请填写学号和打卡日期'); return; }
           saving.value = true;
           try {
-            await request.post('/admin/attendance-records', { user_id: punchForm.user_id, punch_date: punchForm.punch_date, remark: punchForm.remark });
+            await request.post('/admin/attendance/punch-records', { user_id: punchForm.user_id, punch_date: punchForm.punch_date, punch_time: '08:00:00', latitude: 0, longitude: 0 });
             ElMessage.success('补打卡成功');
             punchDialogVisible.value = false;
             loadAttendance();
@@ -1913,7 +1913,7 @@
         const deleteAttendance = async (row) => {
           try {
             await ElMessageBox.confirm('确定要删除这条考勤记录吗？', '提示', { type: 'warning' });
-            await request.delete(`/admin/attendance-records/${row.id}`);
+            await request.delete(`/admin/attendance/punch-records/${row.id}`);
             ElMessage.success('删除成功');
             loadAttendance();
           } catch (e) { if (e !== 'cancel') console.error(e); }
