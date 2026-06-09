@@ -61,3 +61,4 @@ docs/*
 
 # Node.js
 node_modules/
+CLAUDE.md
